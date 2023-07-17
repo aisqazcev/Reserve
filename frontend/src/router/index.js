@@ -19,7 +19,12 @@ const routes = [
     path: '/reserve',
     name: 'Reserve',   
     component: () => import(/* webpackChunkName: "about" */ '../views/Reserve.vue')
-  }
+  },
+  {
+    path: '/reserve/:slug',
+    name: 'ReservePost',   
+    component: () => import('../views/PostDetail.vue')
+  },
 ]
 
 const router = createRouter({
