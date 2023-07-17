@@ -5,7 +5,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
     path('reserve/', include('reserve.urls', namespace="reserve")),
+    
     path('api-auth/', include('rest_framework.urls')),
 ]
 

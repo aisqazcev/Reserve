@@ -7,10 +7,11 @@ from .serializers import PostSerializer
 
 class PostListView(APIView):
     def get(self, request, *args, **kwargs):
-        posts = Post.PostObject.all()[0:4]
+        posts = Post.postObject.all()
         serializer = PostSerializer(posts, many=True)
 
         return Response(serializer.data)
+
 
 class PostShowView(APIView):
     def get(self, request, post_slug, *args, **kwargs):

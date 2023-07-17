@@ -7,7 +7,7 @@ def user_directory_path(instance, filename):
 
 class Post(models.Model):
 
-    class PostObject(models.Manager):
+    class PostObjects(models.Manager):
         def get_queryset(self):
             return super().get_queryset().filter(status='published')
         
@@ -26,4 +26,4 @@ class Post(models.Model):
     #como ver el post
     status = models.CharField(max_length=10, choices=options, default='draft')
     objects = models.Manager()
-    postObject = PostObject()
+    postObject = PostObjects()
