@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Booking, Space, Location, Room, Desk
-
-class PostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ('id', 'title', 'image', 'description', 'content', 'slug', 'published', 'author', 'status')
-
+from .models import Booking, Space, Location, Room, Desk
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:

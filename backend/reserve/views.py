@@ -1,27 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
-from .models import Post, Booking, Space, Location, Room, Desk
-from .serializers import PostSerializer, BookingSerializer, SpacesSerializer
-
-class PostListView(APIView):
-    def get(self, request, *args, **kwargs):
-        posts = Post.postObject.all()
-        serializer = PostSerializer(posts, many=True)
-
-        return Response(serializer.data)
-
-
-class PostShowView(APIView):
-    def get(self, request, post_id, *args, **kwargs):
-        post = get_object_or_404(Post, id = post_id)
-        serializer = PostSerializer(post)
-
-        return Response(serializer.data)
-
-
-##########################################################################################
+from .models import Booking, Space, Location, Room, Desk
+from .serializers import BookingSerializer, SpacesSerializer
 
 class LocationListView(APIView):
     def get(self, request, *args, **kwargs):
