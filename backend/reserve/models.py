@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 def user_directory_path(instance, filename):
-    return 'reserve/{0}/{1}'.format(instance.title, filename)
+    return 'reserve/{0}/{1}'.format(instance.name, filename)
 
 class Post(models.Model):
 
@@ -28,15 +28,24 @@ class Post(models.Model):
     objects = models.Manager()
     postObject = PostObjects()
 
-class Spaces(models.Model):
+class Location(models.Model):
+    name = models.CharField(max_length=250)
+    institution = models.CharField(max_length=250)
+    general_info = models.TextField(null=False)
+    schedule = models.TextField(null=False)
+    services = models.TextField(null=False)
+    geodata = models.TextField(null=False)
+    web = models.URLField(max_length=200)
+    email = models.EmailField(max_length=254)
+    phone = models.CharField(max_length=250)
+    image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
 
-    equipment = (
-        ('plug', 'Plug'),
-        ('screen', 'Screen'),
-        ('hdmi', 'HDMI'),
-        ('board', 'Board'),
-        ('soundproof', 'Soundproof'),    
-    )
+class Equipment(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(null=False)
+    image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
+
+class Space(models.Model):
 
     space = (
         ('desk', 'Desk'),
@@ -44,16 +53,21 @@ class Spaces(models.Model):
     )
 
     name = models.CharField(max_length=250)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)    
     image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
-    #occtime?
-    # equip = models.ManyToManyField(Equipment, blank=True)
     type = models.CharField(max_length=10, choices=space)
+    equipment = models.ManyToManyField(Equipment, blank=True)
+    occupied = models.BooleanField(default=False)
+
+class Room(Space):
+    capacity = models.IntegerField()
+
+class Desk(Space):
+    nearby_pl = models.ManyToManyField('self', blank=True)
 
 class Booking(models.Model):
-    space = models.OneToOneField(Spaces, blank=False, null=False, on_delete=models.CASCADE)
+    space = models.OneToOneField(Space, blank=False, null=False, on_delete=models.CASCADE)
     date = models.DateField() 
     start_time = models.TimeField()
     end_time = models.TimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    pplNumber = models.IntegerField() 
-    

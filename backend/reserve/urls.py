@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PostListView, PostShowView, BookingListView, BookingShowView, SpacesListView, SpacesShowView 
+from .views import PostListView, PostShowView, BookingListView, BookingShowView, SpaceListView, SpaceShowView, LocationListView, LocationShowView, RoomListView, RoomShowView, DeskListView, DeskShowView
 
 app_name="reserve"
 
@@ -8,7 +8,14 @@ urlpatterns = [
     path('posts/<int:post_id>/', PostShowView.as_view(), name='post-show'),
     path('bookings/', BookingListView.as_view(), name='booking-list'),
     path('bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
-    path('spaces/', SpacesListView.as_view()),
-    path('spaces/<int:space_id>/', SpacesShowView.as_view()),
+    path('space/', SpaceListView.as_view()),
+    path('space/<int:space_id>/', SpaceShowView.as_view()),
+    path('location/', LocationListView.as_view()),
+    path('location/<int:location_id>/', LocationShowView.as_view()),
+    path('room/', RoomListView.as_view()),
+    path('room/<int:room_id>/', RoomShowView.as_view()),
+    path('desk/', DeskListView.as_view()),
+    path('desk/<int:desk_id>/', DeskShowView.as_view()),
+    
     
 ]
