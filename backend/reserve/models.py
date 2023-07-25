@@ -45,7 +45,7 @@ class Desk(Space):
     type = models.CharField(max_length=10, choices=Space.option, default='desk')
 
 class Booking(models.Model):
-    space = models.OneToOneField(Space, blank=False, null=False, on_delete=models.CASCADE)
+    space = models.ForeignKey(Space, blank=False, null=False, on_delete=models.CASCADE)
     date = models.DateField() 
     start_time = models.TimeField()
     end_time = models.TimeField()

@@ -1,5 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import AdminPanel from '../views/AdminPanel.vue'
+
 
 const routes = [
   {
@@ -16,15 +18,27 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
   {
-    path: '/reserve',
-    name: 'Reserve',   
-    component: () => import(/* webpackChunkName: "about" */ '../views/Reserve.vue')
+    path: '/admin/',
+    name: 'AdminPanel',
+    component: AdminPanel,
   },
   {
-    path: '/reserve/:slug',
-    name: 'ReservePost',   
-    component: () => import('../views/PostDetail.vue')
+    path: '/admin/locations/',
+    name: 'LocationAdmin',
+    component: () => import(/* webpackChunkName: "about" */ '../views/LocationAdmin.vue'),
+
   },
+
+
+  {
+    path: '/admin/location/create',
+    name: 'CreateLocation',
+    component: () => import(/* webpackChunkName: "about" */ '../views/CreateLocation.vue')
+
+  }
+// Agrega más rutas hijas para otras funcionalidades aquí
+
+
 ]
 
 const router = createRouter({

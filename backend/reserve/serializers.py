@@ -6,7 +6,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = ('id', 'space', 'date', 'start_time', 'end_time', 'user')
 
-class SpacesSerializer(serializers.ModelSerializer):
+class SpaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Space
         fields = ('id', 'name', 'location', 'image', 'type', 'equipment', 'occupied')
