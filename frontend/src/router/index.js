@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AdminPanel from '../views/AdminPanel.vue'
+import EquipmentAdmin from '../views/EquipmentAdmin.vue'
 
 
 const routes = [
@@ -28,16 +29,20 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/LocationAdmin.vue'),
 
   },
-
-
   {
-    path: '/admin/location/create',
-    name: 'CreateLocation',
-    component: () => import(/* webpackChunkName: "about" */ '../views/CreateLocation.vue')
+    path: '/admin/equipment/',
+    name: 'EquipmentAdmin',
+    component: EquipmentAdmin,
 
   }
-// Agrega más rutas hijas para otras funcionalidades aquí
 
+
+  // {
+  //   path: '/admin/location/create',
+  //   name: 'CreateLocation',
+  //   component: () => import(/* webpackChunkName: "about" */ '../views/CreateLocation.vue')
+
+  // }
 
 ]
 
