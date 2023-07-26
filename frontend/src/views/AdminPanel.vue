@@ -4,6 +4,7 @@
       <nav>
         <ul>
           <li><router-link to="/admin/locations">Manage Locations</router-link></li>
+          <li><router-link to="/admin/equipment">Manage Equipments</router-link></li>
           <!-- Agregar aquí más enlaces a otras funcionalidades de administración -->
         </ul>
       </nav>

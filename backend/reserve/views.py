@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Booking, Space, Location, Room, Desk
-from .serializers import BookingSerializer, SpaceSerializer, LocationSerializer, RoomSerializer, DeskSerializer
+from .models import Booking, Equipment, Space, Location, Room, Desk
+from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer, LocationSerializer, RoomSerializer, DeskSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -110,4 +110,37 @@ class DeskShowView(APIView):
 
         return Response(serializer.data)
 
+##########################################################################################
+class EquipmentManagementView(APIView):
 
+    def get(self, request, *args, **kwargs):
+        equipments = Equipment.objects.all()
+        serializer = EquipmentSerializer(equipments, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        serializer = EquipmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_201)
+        return Response(data=serializer.errors, status=ST_409)
+
+    def put(self, request, equipment_id, *args, **kwargs):
+        equipment = get_object_or_404(Equipment, id = equipment_id)
+        serializer = EquipmentSerializer(equipment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_200)
+        return Response(data=serializer.errors, status=ST_409)
+
+    def delete(self, request, equipment_id, *args, **kwargs):
+        equipment = get_object_or_404(Equipment, id = equipment_id)
+        equipment.delete()
+        return Response(data={"message": "Equipment deleted successfully"}, status=ST_200)
+
+class EquipmentShowView(APIView):
+    def get(self, request, equipment_id, *args, **kwargs):
+        equipment = get_object_or_404(Equipment, id = equipment_id)
+        serializer = EquipmentSerializer(equipment)
+        return Response(serializer.data)
