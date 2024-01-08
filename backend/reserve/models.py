@@ -1,3 +1,4 @@
+from enum import Enum
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -5,48 +6,50 @@ from django.contrib.auth.models import User
 def user_directory_path(instance, filename):
     return 'reserve/{0}/{1}'.format(instance.name, filename)
 
-class Location(models.Model):
+
+# "Sala de estudio"
+class Space(models.Model):
     name = models.CharField(max_length=250)
-    institution = models.CharField(max_length=250)
+    building_name = models.CharField(max_length=250)
+    capacity = models.IntegerField()
     general_info = models.TextField(null=False)
     schedule = models.TextField(null=False)
     services = models.TextField(null=False)
-    geodata = models.TextField(null=False)
+    address = models.TextField(null=False)
     web = models.URLField(max_length=200)
     email = models.EmailField(max_length=254)
     phone = models.CharField(max_length=250)
-    image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
+    image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)    
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=False)
     image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
 
-class Space(models.Model):
+class SeatStatus(Enum):
+    FREE = 0
+    RESERVED = 1
+    EXPIRED = 2
+    DISABLED = 3
 
-    option = (
-        ('desk', 'Desk'),
-        ('room', 'Room'),
-    )
-
+class Space_item(models.Model): 
+    space_id = models.ForeignKey(Space, on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)    
     image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
-    equipment = models.ManyToManyField(Equipment, blank=True)
-    occupied = models.BooleanField(default=False)
+    equipment_id = models.ManyToManyField(Equipment, blank=True)
+    seat_status = models.IntegerField(default=0, choices=[(status.value, status.name) for status in SeatStatus])
 
-class Room(Space):
+
+class Room(Space_item):
     capacity = models.IntegerField()
-    type = models.CharField(max_length=10, choices=Space.option, default='room')
 
-
-class Desk(Space):
+class Desk(Space_item):
     nearby_pl = models.ManyToManyField('self', blank=True)
-    type = models.CharField(max_length=10, choices=Space.option, default='desk')
 
 class Booking(models.Model):
-    space = models.ForeignKey(Space, blank=False, null=False, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, null= False, on_delete=models.CASCADE)
+    space_item_id = models.ForeignKey(Space_item, blank=True, null=True, on_delete=models.CASCADE)
     date = models.DateField() 
     start_time = models.TimeField()
     end_time = models.TimeField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+

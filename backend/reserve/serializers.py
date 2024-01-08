@@ -1,33 +1,38 @@
 from rest_framework import serializers
-from .models import Booking, Equipment, Space, Location, Room, Desk
+from .models import Booking, Equipment, Space, Space_item, Room, Desk
+
+#create code for serializers here of the models
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ('id', 'space', 'date', 'start_time', 'end_time', 'user')
-
-class SpaceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Space
-        fields = ('id', 'name', 'location', 'image', 'type', 'equipment', 'occupied')
-
-class LocationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Location
-        fields = ('id', 'name', 'institution', 'general_info', 'schedule', 'services', 'geodata', 'web', 'email', 'phone', 'image')
-
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = ('id', 'name', 'location', 'image', 'type', 'equipment', 'occupied', 'capacity')
-
-class DeskSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Desk
-        fields = ('id', 'name', 'location', 'image', 'type', 'equipment', 'occupied', 'nearby_pl')
-    
+        fields = '__all__'
 
 class EquipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equipment
-        fields = ('id', 'name', 'description', 'image')
+        fields = '__all__'
+
+class SpaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Space
+        fields = '__all__'
+
+class Space_itemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Space_item
+        fields = '__all__'
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = '__all__'
+
+class DeskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Desk
+        fields = '__all__'
+
+
+
+

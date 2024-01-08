@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Booking, Equipment, Space, Location, Room, Desk
-from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer, LocationSerializer, RoomSerializer, DeskSerializer
+from .models import Booking, Equipment, Space, Room, Desk, Space_item
+from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -10,48 +10,49 @@ from rest_framework.status import (
     HTTP_409_CONFLICT as ST_409,
 )
 
-class LocationManagementView(APIView):
+class SpaceManagementView(APIView):
+        
+        #show all spaces
+        def get(self, request, *args, **kwargs):
+            spaces = Space.objects.all()
+            serializer = SpaceSerializer(spaces, many=True)
     
-    def get(self, request, *args, **kwargs):
-        locations = Location.objects.all()
-        serializer = LocationSerializer(locations, many=True)
+            return Response(serializer.data)
+        
+        def post(self, request, *args, **kwargs):
+            serializer = SpaceSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data=serializer.data, status=ST_201)
+            return Response(data=serializer.errors, status=ST_409)
+        
+        def put(self, request, space_id, *args, **kwargs):
+            space = get_object_or_404(Space, id = space_id)
+            serializer = SpaceSerializer(space, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data=serializer.data, status=ST_200)
+            return Response(data=serializer.errors, status=ST_409)
+        
+        def delete(self, request, space_id, *args, **kwargs):
+            space = get_object_or_404(Space, id = space_id)
+            space.delete()
+            return Response(data={"message": "Space deleted successfully"}, status=ST_200)
+   
+class SpaceShowView(APIView):
+    def get(self, request, space_id, *args, **kwargs):
+        space = get_object_or_404(Space, id = space_id)
+        serializer = SpaceSerializer(space)
 
-        return Response(serializer.data)
-    
-    def post(self, request, *args, **kwargs):
-        serializer = LocationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=ST_201)
-        return Response(data=serializer.errors, status=ST_409)
-    
-    def put(self, request, location_id, *args, **kwargs):
-        location = get_object_or_404(Location, id = location_id)
-        serializer = LocationSerializer(location, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=ST_200)
-        return Response(data=serializer.errors, status=ST_409)
-    
-    def delete(self, request, location_id, *args, **kwargs):
-        location = get_object_or_404(Location, id = location_id)
-        location.delete()
-        return Response(data={"message": "Location deleted successfully"}, status=ST_200)
-    
-
-class LocationShowView(APIView):
-    def get(self, request, location_id, *args, **kwargs):
-        location = get_object_or_404(Location, id = location_id)
-        serializer = LocationSerializer(location)
-
-        return Response(serializer.data)
+        return Response(serializer.data)    
 
 ##########################################################################################
 
-class SpaceListView(APIView):
+
+class SpaceItemListView(APIView):
     def get(self, request, *args, **kwargs):
-        spaces = Space.objects.all()
-        serializer = SpaceSerializer(spaces, many=True)
+        space_items = Space_item.objects.all()
+        serializer = SpaceSerializer(space_items, many=True)
 
         return Response(serializer.data)
     
@@ -64,6 +65,27 @@ class SpaceShowView(APIView):
     
 ##########################################################################################
 
+class RoomManagementView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = RoomSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_201)
+        return Response(data=serializer.errors, status=ST_409)
+    
+    def put(self, request, room_id, *args, **kwargs):
+        room = get_object_or_404(Room, id = room_id)
+        serializer = RoomSerializer(room, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_200)
+        return Response(data=serializer.errors, status=ST_409)
+    
+    def delete(self, request, room_id, *args, **kwargs):
+        room = get_object_or_404(Room, id = room_id)
+        room.delete()
+        return Response(data={"message": "Room deleted successfully"}, status=ST_200)
+        
 class RoomListView(APIView):
     def get(self, request, *args, **kwargs):
         rooms = Room.objects.all()
@@ -78,24 +100,30 @@ class RoomShowView(APIView):
 
         return Response(serializer.data)
 
-##########################################################################################    
-class BookingListView(APIView):
-    def get(self, request, *args, **kwargs):
-        bookings = Booking.objects.all()
-        serializer = BookingSerializer(bookings, many=True)
-
-        return Response(serializer.data)
-
-class BookingShowView(APIView):
-    def get(self, request, booking_id, *args, **kwargs):
-        booking = get_object_or_404(Booking, id = booking_id)
-        serializer = BookingSerializer(booking)
-
-        return Response(serializer.data)
-    
 
 ##########################################################################################
 
+class DeskManagementView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = DeskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_201)
+        return Response(data=serializer.errors, status=ST_409)
+    
+    def put(self, request, desk_id, *args, **kwargs):
+        desk = get_object_or_404(Desk, id = desk_id)
+        serializer = DeskSerializer(desk, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_200)
+        return Response(data=serializer.errors, status=ST_409)
+    
+    def delete(self, request, desk_id, *args, **kwargs):
+        desk = get_object_or_404(Desk, id = desk_id)
+        desk.delete()
+        return Response(data={"message": "Desk deleted successfully"}, status=ST_200)
+    
 class DeskListView(APIView):
     def get(self, request, *args, **kwargs):
         desks = Desk.objects.all()
@@ -110,6 +138,44 @@ class DeskShowView(APIView):
 
         return Response(serializer.data)
 
+
+##########################################################################################    
+
+class BookingManagementView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = BookingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_201)
+        return Response(data=serializer.errors, status=ST_409)
+    
+    def put(self, request, booking_id, *args, **kwargs):
+        booking = get_object_or_404(Booking, id = booking_id)
+        serializer = BookingSerializer(booking, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_200)
+        return Response(data=serializer.errors, status=ST_409)
+    
+    def delete(self, request, booking_id, *args, **kwargs):
+        booking = get_object_or_404(Booking, id = booking_id)
+        booking.delete()
+        return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
+    
+class BookingListView(APIView):
+    def get(self, request, *args, **kwargs):
+        bookings = Booking.objects.all()
+        serializer = BookingSerializer(bookings, many=True)
+
+        return Response(serializer.data)
+
+class BookingShowView(APIView):
+    def get(self, request, booking_id, *args, **kwargs):
+        booking = get_object_or_404(Booking, id = booking_id)
+        serializer = BookingSerializer(booking)
+
+        return Response(serializer.data)
+    
 ##########################################################################################
 class EquipmentManagementView(APIView):
 
