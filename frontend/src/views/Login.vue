@@ -1,81 +1,73 @@
 <template>
-    <section class="section section-shaped section-lg my-0">
-        <div class="shape shape-style-1 bg-gradient-default">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="container pt-lg-md">
-            <div class="row justify-content-center">
-                <div class="col-lg-5">
-                    <card type="secondary" shadow
-                          header-classes="bg-white pb-5"
-                          body-classes="px-lg-5 py-lg-5"
-                          class="border-0">
-                        <template>
-                            <div class="text-muted text-center mb-3">
-                                <small>Sign in with</small>
-                            </div>
-                            <div class="btn-wrapper text-center">
-                                <base-button type="neutral">
-                                    <img slot="icon" src="img/icons/common/github.svg">
-                                    Github
-                                </base-button>
-
-                                <base-button type="neutral">
-                                    <img slot="icon" src="img/icons/common/google.svg">
-                                    Google
-                                </base-button>
-                            </div>
-                        </template>
-                        <template>
-                            <div class="text-center text-muted mb-4">
-                                <small>Or sign in with credentials</small>
-                            </div>
-                            <form role="form">
-                                <base-input alternative
-                                            class="mb-3"
-                                            placeholder="Email"
-                                            addon-left-icon="ni ni-email-83">
-                                </base-input>
-                                <base-input alternative
-                                            type="password"
-                                            placeholder="Password"
-                                            addon-left-icon="ni ni-lock-circle-open">
-                                </base-input>
-                                <base-checkbox>
-                                    Remember me
-                                </base-checkbox>
-                                <div class="text-center">
-                                    <base-button type="primary" class="my-4">Sign In</base-button>
-                                </div>
-                            </form>
-                        </template>
-                    </card>
-                    <div class="row mt-3">
-                        <div class="col-6">
-                            <a href="#" class="text-light">
-                                <small>Forgot password?</small>
-                            </a>
-                        </div>
-                        <div class="col-6 text-right">
-                            <a href="#" class="text-light">
-                                <small>Create new account</small>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <div>
+    <h2>Login</h2>
+    <form @submit.prevent="handleSubmit">
+      <div>
+        <label for="username">Usuario:</label>
+        <input type="text" id="username" v-model="form.username" />
+        <span class="text-danger">{{ errors.username }}</span>
+      </div>
+      <div>
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" v-model="form.password" />
+        <span class="text-danger">{{ errors.password }}</span>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" v-model="form.remember" />
+          Recordarme
+        </label>
+      </div>
+      <div>
+        <button :disabled="loading" type="submit">
+          Iniciar
+        </button>
+      </div>
+      <span class="text-danger">{{ errors.login }}</span>
+    </form>
+  </div>
 </template>
+
 <script>
-export default {};
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import { backendUrl } from "../main.js";
+
+export default {
+  name: "Login",
+  data() {
+    return {
+      form: {
+        username: "",
+        password: "",
+        remember: false,
+      },
+      loading: false,
+      errors: {
+        username: "",
+        password: "",
+        login: "",
+      },
+    };
+  },
+  methods: {
+    async handleSubmit() {
+      console.log("handleSubmit called");
+      const response = await axios.post(`${backendUrl}login/`, this.form);
+   
+      console.log("response", response.status);
+      // Mocking a login request, adjust as needed
+      this.loading = true;
+      setTimeout(() => {
+        // Assuming a successful login, redirect to profile
+        this.$router.push("/profile");
+        this.loading = false;
+      }, 2000);
+    },
+  },
+};
 </script>
+
 <style>
+/* Add custom styles if necessary */
 </style>

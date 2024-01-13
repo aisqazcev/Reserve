@@ -1,4 +1,11 @@
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, render
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
+import json
+from rest_framework import views
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Booking, Equipment, Space, Room, Desk, Space_item
@@ -6,9 +13,17 @@ from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
+    HTTP_403_FORBIDDEN as ST_403,
     HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,
+    HTTP_204_NO_CONTENT as ST_204,
+    HTTP_400_BAD_REQUEST as ST_400,
+    HTTP_205_RESET_CONTENT as ST_205,
+    HTTP_401_UNAUTHORIZED as ST_401,
 )
+from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class SpaceManagementView(APIView):
         
@@ -210,3 +225,24 @@ class EquipmentShowView(APIView):
         equipment = get_object_or_404(Equipment, id = equipment_id)
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
+    
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import authenticate, login
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
