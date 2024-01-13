@@ -7551,6 +7551,11 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
+sweetalert2@^11.10.3:
+  version "11.10.3"
+  resolved "https://registry.npmjs.org/sweetalert2/-/sweetalert2-11.10.3.tgz"
+  integrity sha512-mZYtQR7v+khyEruq0SsVUa6XIdI9Aue8s2XAIpAwdlLN1T0w7mxKEjyubiBZ3/bLbHC/wGS4wNABvXWubCizvA==
+
 table@4.0.2:
   version "4.0.2"
   resolved "https://registry.npmjs.org/table/-/table-4.0.2.tgz"
