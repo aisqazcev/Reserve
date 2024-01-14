@@ -22,7 +22,7 @@
           >
             <template>
               <div class="text-center text-muted mb-4">
-                <small>Or sign in with credentials</small>
+                <small>Introduce tus credenciales</small>
               </div>
               <form @submit.prevent="handleSubmit" role="form">
                 <base-input
@@ -63,12 +63,12 @@
           <div class="row mt-3">
             <div class="col-6">
               <router-link to="#" class="text-light">
-                <small>Forgot password?</small>
+                <small>¿Olivdaste tu contraseña?</small>
               </router-link>
             </div>
             <div class="col-6 text-right">
               <router-link to="/register" class="text-light">
-                <small>Create new account</small>
+                <small>Registrarse</small>
               </router-link>
             </div>
           </div>
@@ -79,7 +79,6 @@
 </template>
 
 <script>
-import Swal from 'sweetalert2';
 import axios from 'axios';
 import { backendUrl } from "../main.js";
 

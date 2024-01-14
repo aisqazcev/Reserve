@@ -11,9 +11,6 @@ urlpatterns = [
     
     path('api-auth/', include('rest_framework.urls')),
 
-    # path("token/", TokenObtainPairView.as_view(), name="obtain_token"),
-    # path("token/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
-
     path('', include('reserve.urls', namespace="api")),
 
     

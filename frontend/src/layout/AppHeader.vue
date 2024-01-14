@@ -97,6 +97,9 @@
                     </a>
                 </li>
             </ul>
+            <button class="btn btn-danger" @click="logout">
+                Logout
+            </button>
         </base-nav>
     </header>
 </template>
@@ -110,6 +113,12 @@ export default {
     BaseNav,
     CloseButton,
     BaseDropdown
+  },
+  methods: {
+    logout() {
+      console.log('Realizar acción de logout');
+      this.$router.push('/');
+    }
   }
 };
 </script>

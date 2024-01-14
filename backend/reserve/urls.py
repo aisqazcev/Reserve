@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BookingListView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView
+from .views import BookingListView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView
 
 app_name="reserve"
 
