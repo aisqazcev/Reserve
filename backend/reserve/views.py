@@ -231,7 +231,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
+from .models import CustomUser 
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -239,10 +240,16 @@ class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
-        user = authenticate(request, username=username, password=password)
+        print(f"Attempting login for username: {username}, password: {password}")
 
-        if user is not None:
-            login(request, user)
-            return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
-        else:
+        try:
+            custom_user = CustomUser.objects.get(username=username)
+
+            if custom_user is not None:
+                login(request, custom_user)
+                return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        except CustomUser.DoesNotExist:
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)

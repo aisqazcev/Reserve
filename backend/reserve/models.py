@@ -10,27 +10,27 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, name, password=None, **extra_fields):
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, name=name, **extra_fields)
+    def create_user(self, username, name, password=None, **extra_fields):
+        if not username:
+            raise ValueError('The username field must be set')
+        
+        user = self.model(username=username, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, name, password=None, **extra_fields):
+    def create_superuser(self, username, name, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, name, password, **extra_fields)
+        return self.create_user(username, name, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
-    email = models.EmailField(max_length=254, unique=True)
+    username = models.CharField(max_length=150, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['name']
 
 # "Sala de estudio"
