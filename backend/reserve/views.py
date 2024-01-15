@@ -1,5 +1,7 @@
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import login
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404, render
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
@@ -9,11 +11,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from .models import CustomUser 
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login
 from django.views import View
 from rest_framework.response import Response
-from .models import Booking, Equipment, Space, Room, Desk, Space_item
-from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
+from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
+from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -265,3 +267,11 @@ class RegisterView(APIView):
             login(request, user)
             return Response({'detail': 'Registration successful'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#create BuildingListView
+class BuildingListView(APIView):
+    def get(self, request, *args, **kwargs):
+        buildings = Building.objects.all()
+        serializer = BuildingSerializer(buildings, many=True)
+
+        return Response(serializer.data)

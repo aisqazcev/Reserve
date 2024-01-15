@@ -111,7 +111,7 @@ export default {
         this.loading = true;
         setTimeout(() => {
           // Assuming a successful login, redirect to profile
-          this.$router.push("/profile");
+          this.$router.push("/landing");
           this.loading = false;
         }, 2000);
       } catch (error) {
