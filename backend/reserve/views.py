@@ -2,22 +2,18 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from django.contrib.auth import login
 from .models import CustomUser 
 from django.contrib.auth import logout
-from django.http import JsonResponse
 from django.views import View
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Booking, Equipment, Space, Room, Desk, Space_item
-from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
+from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -259,3 +255,13 @@ class LogoutView(View):
     def post(self, request, *args, **kwargs):
         logout(request)
         return JsonResponse({'message': 'Logout successful'})
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            login(request, user)
+            return Response({'detail': 'Registration successful'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
