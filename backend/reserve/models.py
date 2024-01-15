@@ -4,6 +4,8 @@ import os
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.conf import settings
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
 
 def user_directory_path(instance, filename):
     return 'reserve/{0}/{1}'.format(instance.name, filename)
@@ -12,27 +14,28 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, name, password=None, **extra_fields):
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, name=name, **extra_fields)
+    def create_user(self, username, password=None, **extra_fields):
+        if not username:
+            raise ValueError('The username field must be set')
+        
+        user = self.model(username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, name, password=None, **extra_fields):
+    def create_superuser(self, username, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, name, password, **extra_fields)
+        return self.create_user(username, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
+    username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(max_length=254, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['name']
 
 class Building(models.Model):
@@ -58,8 +61,11 @@ def load_building_data():
                     name_complete=data.get('name_complete', '')  
                 )
 
-# Llamada para cargar datos de edificios al iniciar la aplicación
-load_building_data()
+
+@receiver(post_migrate)
+def load_building_data_after_migrate(sender, **kwargs):
+    if sender.name == 'reserve':  
+        load_building_data()
 
 class Space(models.Model):
     name = models.CharField(max_length=250)

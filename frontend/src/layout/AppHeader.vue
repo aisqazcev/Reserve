@@ -81,6 +81,9 @@
                     </a>
                 </li>
             </ul>
+            <button class="btn btn-danger" @click="logout">
+                Logout
+            </button>
         </base-nav>
     </header>
 </template>
@@ -101,23 +104,27 @@ export default {
     },
     data() {
         return {
-            buildings: [] // Inicializa la lista de edificios
+            buildings: [] 
         };
     },
     mounted() {
-        // Carga la lista de edificios desde el backend al montar el componente
+
         this.fetchBuildings();
     },
     methods: {
     async fetchBuildings() {
         try {
-            // Realiza una solicitud al backend para obtener la lista de edificios
-            const response = await axios.get(`${backendUrl}buildings/`); // Ajusta la ruta según tu configuración
+
+            const response = await axios.get(`${backendUrl}buildings/`); 
             this.buildings = response.data;
             console.log("Lista de edificios:", this.buildings);
         } catch (error) {
             console.error("Error al cargar la lista de edificios", error);
         }
+    },
+    logout() {
+      console.log('Realizar acción de logout');
+      this.$router.push('/');
     }
 }
 };
