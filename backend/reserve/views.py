@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -8,8 +9,8 @@ import json
 from rest_framework import views
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Booking, Equipment, Space, Room, Desk, Space_item
-from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
+from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
+from .serializers import BookingSerializer, BuildingSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -246,3 +247,12 @@ class LoginView(APIView):
             return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
         else:
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+#create BuildingListView
+class BuildingListView(APIView):
+    def get(self, request, *args, **kwargs):
+        buildings = Building.objects.all()
+        serializer = BuildingSerializer(buildings, many=True)
+
+        return Response(serializer.data)
