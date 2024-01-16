@@ -1,7 +1,5 @@
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
@@ -11,9 +9,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from .models import CustomUser 
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
 from django.views import View
 from rest_framework.response import Response
+from rest_framework.decorators import authentication_classes, permission_classes
 from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
 from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
 from rest_framework.status import (
@@ -158,13 +157,19 @@ class DeskShowView(APIView):
 
 ##########################################################################################    
 
+
 class BookingManagementView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = BookingSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=ST_201)
-        return Response(data=serializer.errors, status=ST_409)
+        if request.user.is_authenticated:
+            booking = Booking(user=request.user)
+            serializer = BookingSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            return Response(data=serializer.errors, status=status.HTTP_409_CONFLICT)
+        else:
+            return Response(data={'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
     
     def put(self, request, booking_id, *args, **kwargs):
         booking = get_object_or_404(Booking, id = booking_id)
@@ -229,6 +234,8 @@ class EquipmentShowView(APIView):
         return Response(serializer.data)
     
 ##############################
+from rest_framework_simplejwt.tokens import RefreshToken
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -237,19 +244,22 @@ class LoginView(APIView):
         password = request.data.get('password')
         print(f"Attempting login for username: {username}, password: {password}")
 
+        custom_user = authenticate(request, username=username, password=password)
+
         try:
-            custom_user = CustomUser.objects.get(username=username)
+            custom_user = authenticate(request, username=username, password=password)
 
             if custom_user is not None:
                 login(request, custom_user)
-                return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
+                # Generar token de acceso
+                refresh = RefreshToken.for_user(custom_user)
+                access_token = str(refresh.access_token)
+                return Response({'access': access_token, 'detail': 'Login successful'}, status=status.HTTP_200_OK)
             else:
                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
         except CustomUser.DoesNotExist:
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
 
 @method_decorator(csrf_protect, name='dispatch')
 @method_decorator(login_required, name='dispatch')

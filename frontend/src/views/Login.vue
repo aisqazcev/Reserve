@@ -104,7 +104,14 @@ export default {
       console.log("handleSubmit called");
       
       try {
+      
         const response = await axios.post(`${backendUrl}login/`, this.form);
+        console.log('Token from login response:', response.data.access);
+        console.log('Full response from login:', response.data);
+
+        // Extraer y almacenar el token
+        const authToken = response.data.access;
+        localStorage.setItem('authToken', authToken);
         
         console.log("response", response.status);
         // Mocking a login request, adjust as needed

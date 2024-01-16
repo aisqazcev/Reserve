@@ -29,7 +29,7 @@
                 </base-dropdown>
 
                 <!-- Botón Reservar -->
-                <router-link to="/reservar" class="nav-link">
+                <router-link to="/booking" class="nav-link">
                     <span class="nav-link-inner--text">Reservar</span>
                 </router-link>
 
