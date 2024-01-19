@@ -106,8 +106,9 @@ class Desk(Space_item):
     nearby_pl = models.ManyToManyField('self', blank=True)
 
 class Booking(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    space_item_id = models.ForeignKey(Space_item, blank=True, null=True, on_delete=models.CASCADE)
+    # space_item_id = models.ForeignKey(Space_item, blank=True, null=True, on_delete=models.CASCADE)
     date = models.DateField() 
     start_time = models.TimeField()
     end_time = models.TimeField()
+    email = models.EmailField()
+    is_confirmed = models.BooleanField(default=False)

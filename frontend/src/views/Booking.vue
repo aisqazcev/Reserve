@@ -49,6 +49,14 @@
                 ></base-input>
                 <span class="text-danger">{{ errors.end_time }}</span>
 
+                <base-input
+                  alternative
+                  type="email"
+                  placeholder="Email"
+                  v-model="form.email"
+                ></base-input>
+                <span class="text-danger">{{ errors.email }}</span>
+
                 <div class="text-center">
                   <base-button
                     :disabled="loading"
@@ -79,16 +87,17 @@ export default {
   data() {
     return {
       form: {
-        user: "",
         date: "",
         start_time: "",
         end_time: "",
+        email: "",
       },
       loading: false,
       errors: {
         date: "",
         start_time: "",
         end_time: "",
+        email: "",
         booking: "",
       },
     };
@@ -98,14 +107,8 @@ export default {
       console.log("Booking called");
       
       try {
-        const authToken = localStorage.getItem('authToken');
-        console.log(authToken)
-
-        const response = await axios.post(`${backendUrl}booking/`, this.form, {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
+        console.log(this.form)
+        const response = await axios.post(`${backendUrl}booking/`, this.form)
 
         this.loading = true;
         setTimeout(() => {
