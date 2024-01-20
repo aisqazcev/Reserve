@@ -21,21 +21,14 @@
                     <a slot="title" href="#" class="nav-link" data-toggle="dropdown" role="button">
                         <span class="nav-link-inner--text">Facultades</span>
                     </a>
-                    <!-- Contenido del desplegable con lista de edificios -->
                     <div class="dropdown-menu-inner">
-        <!-- Itera sobre los edificios disponibles -->
-        <router-link v-for="building in buildings" :key="building.id" :to="`/${building.name}`" class="dropdown-item">{{ building.name_complete }}</router-link>
+                        <router-link v-for="building in buildings" :key="building.id" :to="`/building/${building.id}`" class="dropdown-item">{{ building.name_complete }}</router-link>
     </div>
                 </base-dropdown>
 
                 <!-- Botón Reservar -->
-                <router-link to="/reservar" class="nav-link">
+                <router-link to="/booking" class="nav-link">
                     <span class="nav-link-inner--text">Reservar</span>
-                </router-link>
-
-                <!-- Botón Mi cuenta -->
-                <router-link to="/mi-cuenta" class="nav-link">
-                    <span class="nav-link-inner--text">Mi cuenta</span>
                 </router-link>
 
                 <!-- Botón Mis reservas -->
@@ -106,10 +99,17 @@ export default {
         return {
             buildings: [] 
         };
+
     },
+
     mounted() {
 
         this.fetchBuildings();
+       
+    //     if (!this.buildingId) {
+    // console.error('No se pudo obtener buildingId de la ruta.');
+    // return;
+//    this.buildingId = this.$route.params.buildingId || '';
     },
     methods: {
     async fetchBuildings() {
@@ -126,7 +126,8 @@ export default {
       console.log('Realizar acción de logout');
       this.$router.push('/');
     }
-}
+},
+
 };
 </script>
 
