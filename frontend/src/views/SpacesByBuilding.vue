@@ -18,62 +18,53 @@
           <div class="col px-0">
             <div class="row">
               <div class="col-lg-6">
-                <h1 class="display-3  text-white">{{buildingName}}</h1>
+                <h1 class="display-3  text-white">{{ building.name }}</h1>
               </div>
             </div>
           </div>
         </div>
-        </section>
-                    <!-- 1st Hero Variation -->
+      </section>
+      <!-- 1st Hero Variation -->
     </div>
-        <section
-          class="section section-lg pt-lg-0 mt--200">
-          <div class="container">
-            <div class="row justify-content-center">
-              <div class="col-lg-12">
-                <div class="row row-grid">
-                  <!-- Utiliza v-for para iterar sobre cada espacio -->
-                  <div v-for="space in spaces" :key="space.id" class="col-lg-4">
-                    <card class="border-0" hover shadow body-classes="py-5">
-                      <!-- <icon
-                        name="ni ni-check-bold"
-                        type="primary"
-                        rounded
-                        class="mb-4"
-                      >
-                      </icon> -->
-                      <!--añadir recuadro con imagen cuadrado-->
-                      <div class="square-frame">
-                        <img
-      :src="getSpaceImageUrl(space.image)"
-      class="img-fluid shadow-lg mb-4 rounded-square"
-      alt="Imagen del espacio"
-    />
-    </div>
-                      <h5 :class="space.name">{{ space.name }}</h5>
-                      <p class="description mt-3">{{ space.general_info }}</p>
-                      <div>
-                        <!-- TODO Utiliza v-for para iterar sobre INFO de cada SALA -->
-                        <badge
-                          v-for="badge in space.badges"
-                          :type="badge.type"
-                          :rounded="badge.rounded"
-                          >{{ badge.label }}</badge
-                        >
-                      </div>
-                      <!--TODO Redireccionar a la página de detalles de la sala -->
-                      <base-button tag="a" href="#" type="primary" class="mt-4">
-                        Ver detalles
-                      </base-button>
-                    </card>
+    <section class="section section-lg pt-lg-0 mt--200">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-12">
+            <div class="row row-grid">
+              <!-- Utiliza v-for para iterar sobre cada espacio -->
+              <div v-for="space in spaces" :key="space.id" class="col-lg-4 col-md-6 mb-4">
+                <card class="border-0" hover shadow body-classes="py-5">
+                  <div class="square-frame">
+                    <img
+                    :src="space.image ? getSpaceImageUrl(space.image)  : '/img/alternative.jpg'"
+                      class="img-fluid shadow-lg mb-4 rounded-square"
+                      alt="Imagen del espacio"
+                    />
                   </div>
-                  <!-- Fin del bucle v-for -->
-                </div>
+                  <h5 :class="space.name">{{ space.name }}</h5>
+                  <p class="description mt-3">{{ space.general_info }}</p>
+                  <!-- <div>
+                    TODO Utiliza v-for para iterar sobre INFO de cada SALA 
+                    <badge
+                      v-for="badge in space.badges"
+                      :type="badge.type"
+                      :rounded="badge.rounded"
+                      >{{ badge.label }}</badge
+                    >
+                  </div> -->
+                  <!--TODO Redireccionar a la página de detalles de la sala -->
+                  <base-button tag="a" href="#" type="primary" class="mt-4">
+                    Ver detalles
+                  </base-button>
+                </card>
               </div>
+              <!-- Fin del bucle v-for -->
             </div>
           </div>
-        </section>
-    </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script>
@@ -83,50 +74,39 @@ import { backendUrl } from "../main.js";
 export default {
   data() {
     return {
+      building: {},
       spaces: [],
-      buildingName: "",
+      buildingId: null,
     };
   },
-  // computed: {
-  //   buildingName() {
-  //     return this.$route.params.buildingName;
-  //   },
-  // },
-  // watch: {
-  //   buildingName: "fetchSpaces",
-  // },
   mounted() {
-    // Asignar un valor inicial a buildingName
-    this.buildingName = this.$route.params.buildingName || '';
+    this.buildingId = this.$route.params.buildingId || '';
     // Luego, llamar a fetchSpaces
     this.fetchSpaces();
   },
   methods: {
     async fetchSpaces() {
-      
       console.log("backendUrl:", backendUrl);
 
-      try {
-        const response = await axios.get(
-          `${backendUrl}building/${this.buildingName}/spaces/`
-        );
-        this.spaces = response.data;
+      await axios
+        .get(`${backendUrl}building/${this.buildingId}/`)
+        .then((response) => {
+          this.building = response.data;
+          console.log("building", this.building);
+        })
+        .catch((error) => {
+          console.error("Error fetching building details:", error);
+        });
 
-        // Verificar si hay espacios
-         if (this.spaces.length > 0) {
-      // Obtener el nombre del edificio desde el primer espacio
-        this.buildingName = this.spaces[0].building.name_complete || "Nombre no disponible";
-      
-      console.log("Lista de espacios", this.spaces);
-      console.log("imagen", this.spaces[0].image);
-      console.log("buildingName", this.spaces[0].building.name_complete)
-    } else {
-      // En caso de que no haya espacios, establecer el nombre del edificio como vacío o algún valor predeterminado
-      this.buildingName = "Nombre no disponible";
-    }
-  } catch (error) {
-    console.error("Error al cargar la lista de espacios", error);
-  }
+      await axios
+        .get(`${backendUrl}building/${this.buildingId}/spaces/`)
+        .then((response) => {
+          this.spaces = response.data;
+          console.log("spaces", this.spaces);
+        })
+        .catch((error) => {
+          console.error("Error fetching spaces:", error);
+        });
     },
     getSpaceImageUrl(relativePath) {
       // Construir la URL completa de la imagen utilizando la URL del backend
@@ -134,6 +114,19 @@ export default {
     console.log('URL de la imagen completa:', imageUrl);
     return imageUrl;
     },
+  }, 
+  computed: {
+      get() {
+        return this.$route.params.buildingId;
+      },    
+  },
+  watch: {
+    '$route'(to, from) {
+    if (to.params && to.params.buildingId) {
+      this.buildingId = to.params.buildingId;
+      this.fetchSpaces();
+    }
+},
   },
 };
 </script>

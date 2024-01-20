@@ -7,13 +7,13 @@ import Landing from "./views/Landing.vue";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
-import BuildingSpaces from './views/SpacesByBuilding.vue';
+import SpacesByBuilding from './views/SpacesByBuilding.vue';
 import Booking from "./views/Booking.vue";
 
 Vue.use(Router);
 
 export default new Router({
-  linkExactActiveClass: "active",
+  mode: "history",
   routes: [
     {
       path: "/",
@@ -50,11 +50,11 @@ export default new Router({
       }
     },
     {
-      path: "/building/:buildingName/spaces",
+      path: "/building/:buildingId",
       name: "building-spaces",
       components: {
         header: AppHeader,
-        default: BuildingSpaces,
+        default: SpacesByBuilding,
         footer: AppFooter
       }
     },

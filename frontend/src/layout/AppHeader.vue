@@ -22,7 +22,7 @@
                         <span class="nav-link-inner--text">Facultades</span>
                     </a>
                     <div class="dropdown-menu-inner">
-                        <router-link v-for="building in buildings" :key="building.name" :to="`/building/${building.name}/spaces`" class="dropdown-item">{{ building.name_complete }}</router-link>
+                        <router-link v-for="building in buildings" :key="building.id" :to="`/building/${building.id}`" class="dropdown-item">{{ building.name_complete }}</router-link>
     </div>
                 </base-dropdown>
 
@@ -99,15 +99,17 @@ export default {
         return {
             buildings: [] 
         };
+
     },
-    watch: {
-        '$route.params.buildingName': function (newBuildingName, oldBuildingName) {
-      this.$router.go(); // O utiliza this.$router.push({ path: `/building/${newBuildingName}/spaces` });
-        }
-    },
+
     mounted() {
 
         this.fetchBuildings();
+       
+    //     if (!this.buildingId) {
+    // console.error('No se pudo obtener buildingId de la ruta.');
+    // return;
+//    this.buildingId = this.$route.params.buildingId || '';
     },
     methods: {
     async fetchBuildings() {
@@ -124,7 +126,8 @@ export default {
       console.log('Realizar acción de logout');
       this.$router.push('/');
     }
-}
+},
+
 };
 </script>
 

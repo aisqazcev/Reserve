@@ -275,10 +275,18 @@ class BuildingListView(APIView):
 
         return Response(serializer.data)
     
+class BuildingDetailstView(APIView):
+    def get(self, request, building_id, *args, **kwargs):
+        building = get_object_or_404(Building, id = building_id)
+        serializer = BuildingSerializer(building)
+
+        return Response(serializer.data)
+    
+
 class SpacesByBuildingView(APIView):
-    def get(self, request, building_name, *args, **kwargs):
-        building = get_object_or_404(Building, name = building_name)
-        spaces = Space.objects.filter(building=building).select_related('building')
+    def get(self, request, building_id, *args, **kwargs):
+        spaces = Space.objects.filter(building_id=building_id)
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
+    
