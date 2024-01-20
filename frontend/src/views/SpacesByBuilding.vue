@@ -19,11 +19,6 @@
             <div class="row">
               <div class="col-lg-6">
                 <h1 class="display-3  text-white">{{buildingName}}</h1>
-                <ul>
-                  <li v-for="space in spaces" :key="space.id">
-                    {{ space.name }}
-                  </li>
-                </ul>
               </div>
             </div>
           </div>
@@ -40,13 +35,21 @@
                   <!-- Utiliza v-for para iterar sobre cada espacio -->
                   <div v-for="space in spaces" :key="space.id" class="col-lg-4">
                     <card class="border-0" hover shadow body-classes="py-5">
-                      <icon
+                      <!-- <icon
                         name="ni ni-check-bold"
                         type="primary"
                         rounded
                         class="mb-4"
                       >
-                      </icon>
+                      </icon> -->
+                      <!--añadir recuadro con imagen cuadrado-->
+                      <div class="square-frame">
+                        <img
+      :src="getSpaceImageUrl(space.image)"
+      class="img-fluid shadow-lg mb-4 rounded-square"
+      alt="Imagen del espacio"
+    />
+    </div>
                       <h5 :class="space.name">{{ space.name }}</h5>
                       <p class="description mt-3">{{ space.general_info }}</p>
                       <div>
@@ -100,6 +103,9 @@ export default {
   },
   methods: {
     async fetchSpaces() {
+      
+      console.log("backendUrl:", backendUrl);
+
       try {
         const response = await axios.get(
           `${backendUrl}building/${this.buildingName}/spaces/`
@@ -107,18 +113,44 @@ export default {
         this.spaces = response.data;
 
         // Verificar si hay espacios
-        if (this.spaces.length > 0) {
-          // Obtener el nombre del edificio desde el primer espacio
-          this.buildingName = this.spaces[0].building.name_complete;
-          console.log("Lista de espacios", this.spaces);
-        } else {
-          // En caso de que no haya espacios, establecer el nombre del edificio como vacío o algún valor predeterminado
-          this.buildingName = "Nombre no disponible";
-        }
-      } catch (error) {
-        console.error("Error al cargar la lista de espacios", error);
-      }
+         if (this.spaces.length > 0) {
+      // Obtener el nombre del edificio desde el primer espacio
+        this.buildingName = this.spaces[0].building.name_complete || "Nombre no disponible";
+      
+      console.log("Lista de espacios", this.spaces);
+      console.log("imagen", this.spaces[0].image);
+      console.log("buildingName", this.spaces[0].building.name_complete)
+    } else {
+      // En caso de que no haya espacios, establecer el nombre del edificio como vacío o algún valor predeterminado
+      this.buildingName = "Nombre no disponible";
+    }
+  } catch (error) {
+    console.error("Error al cargar la lista de espacios", error);
+  }
+    },
+    getSpaceImageUrl(relativePath) {
+      // Construir la URL completa de la imagen utilizando la URL del backend
+      const imageUrl = `${backendUrl}${relativePath}`;
+    console.log('URL de la imagen completa:', imageUrl);
+    return imageUrl;
     },
   },
 };
 </script>
+<style>
+.square-frame {
+  width: 150px; /* Ajusta el ancho según tus necesidades */
+  height: 150px; /* Ajusta la altura según tus necesidades */
+  overflow: hidden;
+  position: relative;
+}
+
+.square-frame img {
+  width: 100%;
+  height: auto;
+}
+
+.rounded-square {
+  border-radius: 10px; /* Ajusta el radio según tus necesidades */
+}
+</style>
