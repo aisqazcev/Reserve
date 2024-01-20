@@ -20,6 +20,7 @@ import App from "./App.vue";
 import router from "./router";
 import Argon from "./plugins/argon-kit";
 import './registerServiceWorker'
+// import store from './store'; 
 
 
 
@@ -35,18 +36,14 @@ import axios from 'axios';
 
 Vue.prototype.$axios = axios;
 
-//Configuración global
-
-// Vue.prototype.$urlApi = {
-//   backendUrl: "http://localhost:8000/",
-//   userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-// }; 
-
 export const backendUrl = "http://localhost:8000/";
 
 Vue.config.productionTip = false;
 Vue.use(Argon);
 new Vue({
   router,
+  // store,
   render: h => h(App)
 }).$mount("#app");
+
+

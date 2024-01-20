@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BookingListView, BookingShowView, BuildingListView, EquipmentManagementView, EquipmentShowView, LoginView, RegisterView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView
+from .views import BookingListView, BookingShowView, BuildingListView, EquipmentManagementView, EquipmentShowView, LoginView, RegisterView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView
 
 app_name="reserve"
 
@@ -22,5 +22,7 @@ urlpatterns = [
 
     path('buildings/', BuildingListView.as_view(), name='building-list'),
     path('register/', RegisterView.as_view(), name='register'),
+    path('building/<str:building_name>/spaces/', SpacesByBuildingView.as_view(), name='spaces_by_building'),
+    #  path('building/<int:building_id>/', spaces_by_building, name='spaces_by_building'),
     
 ]

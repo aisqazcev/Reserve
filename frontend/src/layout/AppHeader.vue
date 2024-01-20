@@ -21,21 +21,14 @@
                     <a slot="title" href="#" class="nav-link" data-toggle="dropdown" role="button">
                         <span class="nav-link-inner--text">Facultades</span>
                     </a>
-                    <!-- Contenido del desplegable con lista de edificios -->
                     <div class="dropdown-menu-inner">
-        <!-- Itera sobre los edificios disponibles -->
-        <router-link v-for="building in buildings" :key="building.id" :to="`/${building.name}`" class="dropdown-item">{{ building.name_complete }}</router-link>
+                        <router-link v-for="building in buildings" :key="building.name" :to="`/building/${building.name}/spaces`" class="dropdown-item">{{ building.name_complete }}</router-link>
     </div>
                 </base-dropdown>
 
                 <!-- Botón Reservar -->
-                <router-link to="/reservar" class="nav-link">
+                <router-link to="/booking" class="nav-link">
                     <span class="nav-link-inner--text">Reservar</span>
-                </router-link>
-
-                <!-- Botón Mi cuenta -->
-                <router-link to="/mi-cuenta" class="nav-link">
-                    <span class="nav-link-inner--text">Mi cuenta</span>
                 </router-link>
 
                 <!-- Botón Mis reservas -->
@@ -106,6 +99,11 @@ export default {
         return {
             buildings: [] 
         };
+    },
+    watch: {
+        '$route.params.buildingName': function (newBuildingName, oldBuildingName) {
+      this.$router.go(); // O utiliza this.$router.push({ path: `/building/${newBuildingName}/spaces` });
+        }
     },
     mounted() {
 

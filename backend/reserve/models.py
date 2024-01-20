@@ -39,8 +39,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name']
 
 class Building(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     name_complete = models.CharField(max_length=255)
+    address = models.TextField(null=False)
+    web = models.URLField(max_length=200)
+    email = models.EmailField(max_length=254)
+    phone = models.CharField(max_length=250)
+    services = models.TextField(null=False)
+    image = models.ImageField(blank=True, null=True) 
 
     def __str__(self):
         return self.name
@@ -57,8 +63,14 @@ def load_building_data():
 
             if not existing_building:
                 Building.objects.create(
-                    name=data.get('name', ''),  
-                    name_complete=data.get('name_complete', '')  
+                    name=data.get('name', ''),
+                    name_complete=data.get('name_complete', ''),
+                    address=data.get('address', ''),
+                    web=data.get('web', ''),
+                    email=data.get('email', ''),
+                    phone=data.get('phone', ''),
+                    services=data.get('services', ''),
+                    image=data.get('image', '')  
                 )
 
 
@@ -73,12 +85,7 @@ class Space(models.Model):
     capacity = models.IntegerField()
     general_info = models.TextField(null=False)
     schedule = models.TextField(null=False)
-    services = models.TextField(null=False)
-    address = models.TextField(null=False)
-    web = models.URLField(max_length=200)
-    email = models.EmailField(max_length=254)
-    phone = models.CharField(max_length=250)
-    image = models.ImageField(blank=True, null=True)  
+    image = models.ImageField(blank=True, null=True) 
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250)

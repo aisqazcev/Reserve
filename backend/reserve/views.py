@@ -268,10 +268,17 @@ class RegisterView(APIView):
             return Response({'detail': 'Registration successful'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#create BuildingListView
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         buildings = Building.objects.all()
         serializer = BuildingSerializer(buildings, many=True)
+
+        return Response(serializer.data)
+    
+class SpacesByBuildingView(APIView):
+    def get(self, request, building_name, *args, **kwargs):
+        building = get_object_or_404(Building, name = building_name)
+        spaces = Space.objects.filter(building=building).select_related('building')
+        serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
