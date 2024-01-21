@@ -15,10 +15,19 @@
           <span></span>
         </div>
         <div class="container shape-container d-flex">
+          <link href="/assets/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet">
           <div class="col px-0">
             <div class="row">
               <div class="col-lg-6">
-                <h1 class="display-3  text-white">{{ building.name }}</h1>
+                <h1 class="display-3  text-white mb-3">{{ building.name }}</h1>
+                <div class="d-flex align-items-center mb-3">
+                <i class="ni ni-pin-3  mr-2" style="font-size: 24px; color:white;"></i>
+                <p class="text-white">{{ building.address }}</p>
+                </div>
+                <p class="text-white">Web: {{ building.web }}</p>
+                <p class="text-white">Email: {{ building.email }}</p>
+                <p class="text-white">Telefono: {{ building.phone }}</p>
+                <p class="text-white">Servicios: {{ building.services }}</p>
               </div>
             </div>
           </div>
