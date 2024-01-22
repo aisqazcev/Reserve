@@ -55,7 +55,7 @@ class Building(models.Model):
 def load_building_data():
     json_file_path = os.path.join(settings.BASE_DIR, 'reserve', 'buildings_name.json')
     
-    with open(json_file_path, 'r') as json_file:
+    with open(json_file_path, 'r', encoding='utf-8') as json_file:
         building_data = json.load(json_file)
         for data in building_data:
             # Verificar si el edificio ya existe antes de crearlo
