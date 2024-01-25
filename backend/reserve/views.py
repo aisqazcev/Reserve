@@ -231,31 +231,90 @@ class EquipmentShowView(APIView):
         return Response(serializer.data)
     
 ##############################
+    
+
+# class LoginView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request, *args, **kwargs):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+#         print(f"Attempting login for username: {username}, password: {password}")
+
+#         try:
+#             custom_user = CustomUser.objects.get(username=username)
+
+#             if custom_user is not None:
+#                 login(request, custom_user)
+#                 return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+#         except CustomUser.DoesNotExist:
+#             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate, login
+
+from django.contrib.auth import authenticate, login
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
-        print(f"Attempting login for username: {username}, password: {password}")
 
-        try:
-            custom_user = CustomUser.objects.get(username=username)
+        user = authenticate(request, username=username, password=password)
 
-            if custom_user is not None:
-                login(request, custom_user)
-                return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user:
+            login(request, user)
+            refresh = RefreshToken.for_user(user)
+            return Response({'token': str(refresh.access_token)}, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        except CustomUser.DoesNotExist:
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import logout
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
 
-
-@method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required, name='dispatch')
-class LogoutView(View):
     def post(self, request, *args, **kwargs):
-        logout(request)
-        return JsonResponse({'message': 'Logout successful'})
+        refresh_token = request.data.get('refresh_token')
+        print(f"Attempting logout for refresh token: {refresh_token}")
+        if refresh_token:
+            try:
+                refresh = RefreshToken(refresh_token)
+                refresh.blacklist()
+                logout(request)
+                return Response({'detail': 'Logout successful'}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'detail': 'Refresh token not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+#registrar un usuario
+    
+# En tu archivo views.py dentro de la aplicación
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import CustomUser
+from .serializers import CustomUserSerializer
+
+class RegisterView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
+

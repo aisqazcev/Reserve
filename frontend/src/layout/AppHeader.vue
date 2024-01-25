@@ -108,6 +108,9 @@ import BaseNav from "@/components/BaseNav";
 import BaseDropdown from "@/components/BaseDropdown";
 import CloseButton from "@/components/CloseButton";
 
+import axios from 'axios';
+import { backendUrl } from "../main.js";
+
 export default {
   components: {
     BaseNav,
@@ -115,10 +118,22 @@ export default {
     BaseDropdown
   },
   methods: {
-    logout() {
-      console.log('Realizar acción de logout');
-      this.$router.push('/');
+    // En tu método logout en el componente Vue
+    async logout() {
+    try {
+        const response = await axios.post(`${backendUrl}logout/`, {
+            refresh_token: localStorage.getItem("refresh_token"),
+        });
+        // Realiza cualquier acción necesaria después del logout
+    } catch (error) {
+        console.error("Error durante el logout:", error);
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+        }
     }
+}
+
+
   }
 };
 </script>

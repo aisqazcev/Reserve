@@ -33,6 +33,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['name']
 
+    
+    def __str__(self):
+        return self.username
+
 # "Sala de estudio"
 class Space(models.Model):
     name = models.CharField(max_length=250)
