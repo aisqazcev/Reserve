@@ -38,6 +38,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = '__all__'
 
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(
+            validated_data['username'],
+            validated_data['name'],
+            validated_data['password']
+        )
+        return user
+
 class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
