@@ -245,8 +245,6 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            print(f"request_auth: ", request.auth)
-            print(f"request: ", request.headers)
             if request.auth:
                 request.auth.delete()
                 logout(request)
