@@ -101,29 +101,18 @@ export default {
   },
   methods: {
     async handleSubmit() {
-      console.log("handleSubmit called");
-      
-      try {
-        const response = await axios.post(`${backendUrl}login/`, this.form);
-        
-        console.log("response", response.status);
-        // Mocking a login request, adjust as needed
-        this.loading = true;
-        setTimeout(() => {
-          // Assuming a successful login, redirect to profile
+
+       axios.post(`${backendUrl}login/`, this.form)
+        .then(response => {
+          const token = response.data.token;
+          localStorage.setItem('token', token);
           this.$router.push("/profile");
-          this.loading = false;
-        }, 2000);
-      } catch (error) {
-        // Handle login error
-        this.errors.login = "Credenciales incorrectas. Por favor, inténtelo de nuevo.";
-        console.error("Login error:", error);
-      }
+        })
+        .catch(error => {
+          console.error('Error en el inicio de sesión:', error);
+        });
     },
+   
   },
 };
 </script>
-
-<style>
-/* Add custom styles if necessary */
-</style>

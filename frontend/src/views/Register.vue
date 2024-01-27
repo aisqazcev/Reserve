@@ -83,8 +83,6 @@
   import axios from 'axios'
   import { backendUrl } from "../main.js";
   
-  axios.defaults.xsrfCookieName = 'csrftoken';
-  axios.defaults.xsrfHeaderName = 'X-CSRFToken';
   
   export default {
     name: 'SignUp', 

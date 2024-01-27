@@ -118,24 +118,24 @@ export default {
     BaseDropdown
   },
   methods: {
-    // En tu método logout en el componente Vue
     async logout() {
-    try {
-        const response = await axios.post(`${backendUrl}logout/`, {
-            refresh_token: localStorage.getItem("refresh_token"),
-        });
-        // Realiza cualquier acción necesaria después del logout
-    } catch (error) {
-        console.error("Error durante el logout:", error);
-        if (error.response) {
-            console.error("Response data:", error.response.data);
-        }
+    console.log("LOGOUT");
+
+    const token = localStorage.getItem('token');
+      if (token) {
+        axios.post(`${backendUrl}logout/`, null, {
+          headers: { Authorization: `Token ${token}` }
+        })
+          .then(response => {
+            localStorage.removeItem('token');
+            this.$router.push("/");
+          })
+          .catch(error => {
+            console.error('Error en el cierre de sesión:', error);
+          });
+      }
     }
-}
-
-
-  }
-};
+  }};
 </script>
 <style>
 </style>
