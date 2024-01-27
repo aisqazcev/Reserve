@@ -101,7 +101,6 @@ export default {
   },
   methods: {
     async handleSubmit() {
-
        axios.post(`${backendUrl}login/`, this.form)
         .then(response => {
           const token = response.data.token;

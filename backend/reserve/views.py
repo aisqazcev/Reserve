@@ -2,16 +2,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
-from django.contrib.auth import login
-from .models import CustomUser 
 from django.contrib.auth import logout
-from django.http import JsonResponse
-from django.views import View
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Booking, Equipment, Space, Room, Desk, Space_item
-from .serializers import BookingSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer
+from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
+from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -224,37 +218,6 @@ class EquipmentShowView(APIView):
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
     
-##############################
-# from rest_framework import status
-# from rest_framework.response import Response
-# from rest_framework.views import APIView
-# from rest_framework_simplejwt.tokens import RefreshToken
-# from django.contrib.auth import authenticate, login
-
-# from rest_framework.authtoken.models import Token
-# class LoginView(APIView):
-#     permission_classes = [AllowAny]
-#     def post(self, request, *args, **kwargs):
-#         username = request.data.get('username')
-#         password = request.data.get('password')
-
-#         user = authenticate(request, username=username, password=password)
-
-#         if user:
-#             token, _ = Token.objects.get_or_create(user=user)
-#             request.session['access_token'] = token.key
-#             response_data = {
-#                 "token": token.key,
-#                 "user": {
-#                     "id": user.id,
-#                     "username": user.username,
-#                 }
-#             }
-#             return Response(response_data, status=status.HTTP_200_OK)
-#         else:
-#             return Response({'detail': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -269,6 +232,8 @@ class LoginView(ObtainAuthToken):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
+
+from rest_framework.authentication import TokenAuthentication
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -287,6 +252,7 @@ class LogoutView(APIView):
 # #registrar un usuario
     
 # En tu archivo views.py dentro de la aplicación
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -302,5 +268,26 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class BuildingListView(APIView):
+    def get(self, request, *args, **kwargs):
+        buildings = Building.objects.all()
+        serializer = BuildingSerializer(buildings, many=True)
+
+        return Response(serializer.data)
+    
+class BuildingDetailstView(APIView):
+    def get(self, request, building_id, *args, **kwargs):
+        building = get_object_or_404(Building, id = building_id)
+        serializer = BuildingSerializer(building)
+
+        return Response(serializer.data)
     
 
+class SpacesByBuildingView(APIView):
+    def get(self, request, building_id, *args, **kwargs):
+        spaces = Space.objects.filter(building_id=building_id)
+        serializer = SpaceSerializer(spaces, many=True)
+
+        return Response(serializer.data)
+    

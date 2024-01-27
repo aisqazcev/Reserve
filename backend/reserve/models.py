@@ -1,13 +1,18 @@
 from enum import Enum
+import json
+import os
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.conf import settings
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
 
 def user_directory_path(instance, filename):
     return 'reserve/{0}/{1}'.format(instance.name, filename)
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, name, password=None, **extra_fields):
@@ -37,19 +42,54 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
-# "Sala de estudio"
-class Space(models.Model):
-    name = models.CharField(max_length=250)
-    building_name = models.CharField(max_length=250)
-    capacity = models.IntegerField()
-    general_info = models.TextField(null=False)
-    schedule = models.TextField(null=False)
-    services = models.TextField(null=False)
+class Building(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    name_complete = models.CharField(max_length=255)
     address = models.TextField(null=False)
     web = models.URLField(max_length=200)
     email = models.EmailField(max_length=254)
     phone = models.CharField(max_length=250)
-    image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)    
+    services = models.TextField(null=False)
+    image = models.ImageField(blank=True, null=True) 
+
+    def __str__(self):
+        return self.name
+
+
+def load_building_data():
+    json_file_path = os.path.join(settings.BASE_DIR, 'reserve', 'buildings_name.json')
+    
+    with open(json_file_path, 'r', encoding='utf-8') as json_file:
+        building_data = json.load(json_file)
+        for data in building_data:
+            # Verificar si el edificio ya existe antes de crearlo
+            existing_building = Building.objects.filter(name=data.get('name')).first()
+
+            if not existing_building:
+                Building.objects.create(
+                    name=data.get('name', ''),
+                    name_complete=data.get('name_complete', ''),
+                    address=data.get('address', ''),
+                    web=data.get('web', ''),
+                    email=data.get('email', ''),
+                    phone=data.get('phone', ''),
+                    services=data.get('services', ''),
+                    image=data.get('image', '')  
+                )
+
+
+@receiver(post_migrate)
+def load_building_data_after_migrate(sender, **kwargs):
+    if sender.name == 'reserve':  
+        load_building_data()
+
+class Space(models.Model):
+    name = models.CharField(max_length=250)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    capacity = models.IntegerField()
+    general_info = models.TextField(null=False)
+    schedule = models.TextField(null=False)
+    image = models.ImageField(blank=True, null=True) 
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250)
