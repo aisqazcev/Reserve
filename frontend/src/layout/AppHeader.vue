@@ -96,11 +96,34 @@ export default {
     CloseButton,
     BaseDropdown
   },
+   data() {
+        return {
+            buildings: []
+        };
+
+    },
+
+    mounted() {
+
+        this.fetchBuildings();
+    },
   methods: {
+    async fetchBuildings() {
+        try {
+
+            const response = await axios.get(`${backendUrl}buildings/`);
+            this.buildings = response.data;
+            console.log("Lista de edificios:", this.buildings);
+        } catch (error) {
+            console.error("Error al cargar la lista de edificios", error);
+        }
+    },
+
     async logout() {
     console.log("LOGOUT");
 
     const token = localStorage.getItem('token');
+    console.log("TOKEN LOGOUT: ", token)
       if (token) {
         axios.post(`${backendUrl}logout/`, null, {
           headers: { Authorization: `Token ${token}` }

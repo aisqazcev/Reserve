@@ -105,7 +105,7 @@ export default {
         .then(response => {
           const token = response.data.token;
           localStorage.setItem('token', token);
-          this.$router.push("/profile");
+          this.$router.push("/landing");
         })
         .catch(error => {
           console.error('Error en el inicio de sesión:', error);

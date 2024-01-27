@@ -1,8 +1,21 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import authentication_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import logout
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from .serializers import CustomUserSerializer
 from rest_framework.response import Response
 from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
 from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
@@ -218,13 +231,6 @@ class EquipmentShowView(APIView):
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
     
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
-
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
@@ -233,32 +239,24 @@ class LoginView(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
 
-from rest_framework.authentication import TokenAuthentication
-
+@authentication_classes([TokenAuthentication])
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
-             request.auth.delete()
-             logout(request)
-
-             return Response(status=status.HTTP_200_OK)
+            print(f"request_auth: ", request.auth)
+            print(f"request: ", request.headers)
+            if request.auth:
+                request.auth.delete()
+                logout(request)
+                return Response(status=status.HTTP_200_OK)
+            else:
+                raise AuthenticationFailed('No token provided')
        
         except Exception as e:
-             print(f"Error during logout: {e}")
-             return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
-
-# #registrar un usuario
-    
-# En tu archivo views.py dentro de la aplicación
-
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import CustomUser
-from .serializers import CustomUserSerializer
-
+            print(f"Error during logout: {e}")
+            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
@@ -266,24 +264,18 @@ class RegisterView(APIView):
             serializer.save()
             return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         buildings = Building.objects.all()
         serializer = BuildingSerializer(buildings, many=True)
 
         return Response(serializer.data)
-    
 class BuildingDetailstView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         building = get_object_or_404(Building, id = building_id)
         serializer = BuildingSerializer(building)
 
         return Response(serializer.data)
-    
-
 class SpacesByBuildingView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         spaces = Space.objects.filter(building_id=building_id)
