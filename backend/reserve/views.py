@@ -280,4 +280,15 @@ class SpacesByBuildingView(APIView):
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
-    
+
+@authentication_classes([TokenAuthentication])
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        data = {
+            'name': user.name if user.name else "Nombre Desconocido",
+            'username': user.get_username() if user.get_username() else "Username Desconocido",
+        }
+        return Response(data)
