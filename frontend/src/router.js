@@ -11,7 +11,7 @@ import Booking from "./views/Booking.vue";
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: "history",
   routes: [
     {
@@ -47,7 +47,8 @@ export default new Router({
         header: AppHeader,
         default: Profile,
         footer: AppFooter
-      }
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/building/:buildingId",
@@ -76,3 +77,17 @@ export default new Router({
     }
   }
 });
+
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth)) {
+    if (!localStorage.getItem('token')) {
+      next({ name: 'login' });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+export default router;

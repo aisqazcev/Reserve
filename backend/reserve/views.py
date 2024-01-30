@@ -82,7 +82,6 @@ class RegisterView(APIView):
 @authentication_classes([TokenAuthentication])
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request, *args, **kwargs):
         user = request.user
         data = {
