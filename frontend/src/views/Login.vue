@@ -25,38 +25,38 @@
                 <small>Introduce tus credenciales</small>
               </div>
               <form @submit.prevent="handleSubmit" role="form">
-                <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Usuario"
-                  addon-left-icon="ni ni-email-83"
-                  v-model="form.username"
-                ></base-input>
-                <span class="text-danger">{{ errors.username }}</span>
+    <base-input
+      alternative
+      class="mb-3"
+      placeholder="Usuario o Correo Electrónico"
+      addon-left-icon="ni ni-email-83"
+      v-model="form.usernameOrEmail"
+    ></base-input>
+    <span class="text-danger">{{ errors.usernameOrEmail || errors.login }}</span>
 
-                <base-input
-                  alternative
-                  type="password"
-                  placeholder="Contraseña"
-                  addon-left-icon="ni ni-lock-circle-open"
-                  v-model="form.password"
-                ></base-input>
-                <span class="text-danger">{{ errors.password }}</span>
+    <base-input
+      alternative
+      type="password"
+      placeholder="Contraseña"
+      addon-left-icon="ni ni-lock-circle-open"
+      v-model="form.password"
+    ></base-input>
+    <span class="text-danger">{{ errors.password || errors.login }}</span>
 
-                <base-checkbox v-model="form.remember">
-                  Recordarme
-                </base-checkbox>
-                <div class="text-center">
-                  <base-button
-                    :disabled="loading"
-                    type="primary"
-                    class="my-4"
-                    @click="handleSubmit"
-                  >
-                    Iniciar
-                  </base-button>
-                </div>
-              </form>
+    <base-checkbox v-model="form.remember">
+      Recordarme
+    </base-checkbox>
+    <div class="text-center">
+      <base-button
+        :disabled="loading"
+        type="primary"
+        class="my-4"
+        @click="handleSubmit"
+      >
+        Iniciar
+      </base-button>
+    </div>
+  </form>
               <span class="text-danger">{{ errors.login }}</span>
             </template>
           </card>
@@ -78,6 +78,8 @@
   </section>
 </template>
 
+
+
 <script>
 import axios from 'axios';
 import { backendUrl } from "../main.js";
@@ -87,13 +89,13 @@ export default {
   data() {
     return {
       form: {
-        username: "",
+        usernameOrEmail: "",  // Usa el mismo nombre que en el formulario
         password: "",
         remember: false,
       },
       loading: false,
       errors: {
-        username: "",
+        usernameOrEmail: "",
         password: "",
         login: "",
       },
@@ -101,17 +103,27 @@ export default {
   },
   methods: {
     async handleSubmit() {
-       axios.post(`${backendUrl}login/`, this.form)
-        .then(response => {
-          const token = response.data.token;
-          localStorage.setItem('token', token);
-          this.$router.push("/landing");
-        })
-        .catch(error => {
-          console.error('Error en el inicio de sesión:', error);
-        });
+      // Usa el mismo nombre que en el formulario
+      axios.post(`${backendUrl}login/`, {
+        username_or_email: this.form.usernameOrEmail,
+        password: this.form.password,
+        remember: this.form.remember,
+      })
+      .then(response => {
+        const token = response.data.token;
+        localStorage.setItem('token', token);
+        this.$router.push("/landing");
+      })
+      .catch(error => {
+        console.error('Error en el inicio de sesión:', error);
+        if (error.response && error.response.status === 400) {
+          this.errors.login = 'Credenciales inválidas';
+          this.errors.usernameOrEmail = error.response.data.username_or_email[0];
+        } else {
+          this.errors.login = 'Error en el inicio de sesión. Por favor, inténtalo de nuevo.';
+        }
+      });
     },
-   
   },
 };
 </script>

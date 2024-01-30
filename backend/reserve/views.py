@@ -15,9 +15,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .serializers import CustomUserSerializer
+from .serializers import CustomUserSerializer, LoginSerializer, PasswordChangeSerializer
 from rest_framework.response import Response
-from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
+from .models import Booking, Building, CustomUser, Equipment, Space, Room, Desk, Space_item
 from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
@@ -30,6 +30,97 @@ from rest_framework.status import (
     HTTP_205_RESET_CONTENT as ST_205,
     HTTP_401_UNAUTHORIZED as ST_401,
 )
+
+
+class LoginView(ObtainAuthToken):
+    serializer_class = LoginSerializer  # Usa el nuevo serializador para el inicio de sesión
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        username_or_email = serializer.validated_data.get('username_or_email', '')
+        password = serializer.validated_data.get('password', '')
+
+        if '@' in username_or_email:
+            user = CustomUser.objects.filter(email=username_or_email).first()
+        else:
+            user = CustomUser.objects.filter(username=username_or_email).first()
+
+        if user and user.check_password(password):
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
+
+        return Response({'detail': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@authentication_classes([TokenAuthentication])
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            if request.auth:
+                request.auth.delete()
+                logout(request)
+                return Response(status=status.HTTP_200_OK)
+            else:
+                raise AuthenticationFailed('No token provided')
+       
+        except Exception as e:
+            print(f"Error during logout: {e}")
+            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+class RegisterView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+@authentication_classes([TokenAuthentication])
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        data = {
+            'name': user.name if user.name else "Nombre Desconocido",
+            'username': user.get_username() if user.get_username() else "Username Desconocido",
+        }
+        return Response(data)
+    
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+
+class PasswordChangeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordChangeSerializer(data=request.data)
+        if serializer.is_valid():
+            current_password = serializer.validated_data['current_password']
+            new_password = serializer.validated_data['new_password']
+            confirm_new_password = serializer.validated_data['confirm_new_password']
+
+            # Verificar la contraseña actual del usuario
+            if not request.user.check_password(current_password):
+                return Response({'detail': 'Contraseña actual incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Verificar que la nueva contraseña y la confirmación coincidan
+            if new_password != confirm_new_password:
+                return Response({'detail': 'Las nuevas contraseñas no coinciden.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Cambiar la contraseña
+            request.user.set_password(new_password)
+            request.user.save()
+
+            return Response({'detail': 'Contraseña cambiada exitosamente.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+##########################################################################################
+
 class SpaceManagementView(APIView):
         
         #show all spaces
@@ -230,38 +321,7 @@ class EquipmentShowView(APIView):
         equipment = get_object_or_404(Equipment, id = equipment_id)
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
-    
-class LoginView(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
-
-@authentication_classes([TokenAuthentication])
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        try:
-            if request.auth:
-                request.auth.delete()
-                logout(request)
-                return Response(status=status.HTTP_200_OK)
-            else:
-                raise AuthenticationFailed('No token provided')
-       
-        except Exception as e:
-            print(f"Error during logout: {e}")
-            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
-class RegisterView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         buildings = Building.objects.all()
@@ -280,4 +340,4 @@ class SpacesByBuildingView(APIView):
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
-    
+

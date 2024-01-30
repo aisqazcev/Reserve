@@ -28,19 +28,22 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(username, name, password, **extra_fields)
+    
+    ###############correcto################
+    
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
     username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True) 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['name']
+    USERNAME_FIELD = 'email'  
+    REQUIRED_FIELDS = ['name', 'username'] 
 
-    
     def __str__(self):
-        return self.username
+        return self.email
 
 class Building(models.Model):
     name = models.CharField(max_length=255, unique=True)
