@@ -111,7 +111,6 @@ export default {
           console.error('Error en el inicio de sesión:', error);
         });
     },
-   
   },
 };
 </script>

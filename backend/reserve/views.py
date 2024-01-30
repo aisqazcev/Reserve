@@ -160,9 +160,12 @@ class DeskShowView(APIView):
 
 
 ##########################################################################################    
-
+@authentication_classes([TokenAuthentication])
 class BookingManagementView(APIView):
     def post(self, request, *args, **kwargs):
+        permission_classes = [IsAuthenticated]
+        
+        request.data['user'] = request.user.id
         serializer = BookingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
