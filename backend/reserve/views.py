@@ -1,18 +1,21 @@
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404, render
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_protect
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import authentication_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
-from .models import CustomUser 
-from django.contrib.auth import logout, login
-from django.views import View
+from django.contrib.auth import logout
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from .serializers import CustomUserSerializer
 from rest_framework.response import Response
 from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
 from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
@@ -228,64 +231,30 @@ class EquipmentShowView(APIView):
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
     
-    
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate, login
-
-from django.contrib.auth import authenticate, login
-
-class LoginView(APIView):
-    permission_classes = [AllowAny]
+class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        user = authenticate(request, username=username, password=password)
-
-        if user:
-            login(request, user)
-            refresh = RefreshToken.for_user(user)
-            return Response({'token': str(refresh.access_token)}, status=status.HTTP_200_OK)
-        else:
-            return Response({'detail': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import logout
-from rest_framework.decorators import authentication_classes, permission_classes
-
-from rest_framework.authentication import TokenAuthentication
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
 
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
-    print("LogoutView")
-    def post(self, request, *args, **kwargs):
-        refresh_token = request.data.get('refresh_token')
-        print(f"Attempting logout for refresh token: {refresh_token}")
-        if refresh_token:
-            try:
-                refresh = RefreshToken(refresh_token)
-                refresh.blacklist()
+
+    def post(self, request):
+        try:
+            if request.auth:
+                request.auth.delete()
                 logout(request)
-                return Response({'detail': 'Logout successful'}, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'detail': 'Refresh token not provided'}, status=status.HTTP_400_BAD_REQUEST)
-
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import CustomUser
-from .serializers import CustomUserSerializer
-
+                return Response(status=status.HTTP_200_OK)
+            else:
+                raise AuthenticationFailed('No token provided')
+       
+        except Exception as e:
+            print(f"Error during logout: {e}")
+            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
@@ -293,24 +262,18 @@ class RegisterView(APIView):
             serializer.save()
             return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         buildings = Building.objects.all()
         serializer = BuildingSerializer(buildings, many=True)
 
         return Response(serializer.data)
-    
 class BuildingDetailstView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         building = get_object_or_404(Building, id = building_id)
         serializer = BuildingSerializer(building)
 
         return Response(serializer.data)
-    
-
 class SpacesByBuildingView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         spaces = Space.objects.filter(building_id=building_id)

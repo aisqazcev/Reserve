@@ -91,14 +91,14 @@ import { backendUrl } from "../main.js";
 
 
 export default {
-    components: {
-        BaseNav,
-        CloseButton,
-        BaseDropdown
-    },
-    data() {
+  components: {
+    BaseNav,
+    CloseButton,
+    BaseDropdown
+  },
+   data() {
         return {
-            buildings: [] 
+            buildings: []
         };
 
     },
@@ -106,41 +106,37 @@ export default {
     mounted() {
 
         this.fetchBuildings();
-       
-    //     if (!this.buildingId) {
-    // console.error('No se pudo obtener buildingId de la ruta.');
-    // return;
-//    this.buildingId = this.$route.params.buildingId || '';
     },
-    methods: {
+  methods: {
     async fetchBuildings() {
         try {
 
-            const response = await axios.get(`${backendUrl}buildings/`); 
+            const response = await axios.get(`${backendUrl}buildings/`);
             this.buildings = response.data;
             console.log("Lista de edificios:", this.buildings);
         } catch (error) {
             console.error("Error al cargar la lista de edificios", error);
         }
     },
-    // En tu método logout en el componente Vue
+
     async logout() {
-    try {
-        const response = await axios.post(`${backendUrl}logout/`, {
-            refresh_token: localStorage.getItem("refresh_token"),
-        });
-        // Realiza cualquier acción necesaria después del logout
-    } catch (error) {
-        console.error("Error durante el logout:", error);
-        if (error.response) {
-            console.error("Response data:", error.response.data);
-        }
+    console.log("LOGOUT");
+
+    const token = localStorage.getItem('token');
+    console.log("TOKEN LOGOUT: ", token)
+      if (token) {
+        axios.post(`${backendUrl}logout/`, null, {
+          headers: { Authorization: `Token ${token}` }
+        })
+          .then(response => {
+            localStorage.removeItem('token');
+            this.$router.push("/");
+          })
+          .catch(error => {
+            console.error('Error en el cierre de sesión:', error);
+          });
+      }
     }
-}
-
-
-},
-
-};
+  }};
 </script>
 
