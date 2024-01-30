@@ -21,21 +21,14 @@
                     <a slot="title" href="#" class="nav-link" data-toggle="dropdown" role="button">
                         <span class="nav-link-inner--text">Facultades</span>
                     </a>
-                    <!-- Contenido del desplegable con lista de edificios -->
                     <div class="dropdown-menu-inner">
-        <!-- Itera sobre los edificios disponibles -->
-        <router-link v-for="building in buildings" :key="building.id" :to="`/${building.name}`" class="dropdown-item">{{ building.name_complete }}</router-link>
+                        <router-link v-for="building in buildings" :key="building.id" :to="`/building/${building.id}`" class="dropdown-item">{{ building.name_complete }}</router-link>
     </div>
                 </base-dropdown>
 
                 <!-- Botón Reservar -->
                 <router-link to="/booking" class="nav-link">
                     <span class="nav-link-inner--text">Reservar</span>
-                </router-link>
-
-                <!-- Botón Mi cuenta -->
-                <router-link to="/mi-cuenta" class="nav-link">
-                    <span class="nav-link-inner--text">Mi cuenta</span>
                 </router-link>
 
                 <!-- Botón Mis reservas -->
@@ -96,37 +89,54 @@ import CloseButton from "@/components/CloseButton";
 import axios from 'axios';
 import { backendUrl } from "../main.js";
 
+
 export default {
-    components: {
-        BaseNav,
-        CloseButton,
-        BaseDropdown
-    },
-    data() {
+  components: {
+    BaseNav,
+    CloseButton,
+    BaseDropdown
+  },
+   data() {
         return {
-            buildings: [] 
+            buildings: []
         };
+
     },
+
     mounted() {
 
         this.fetchBuildings();
     },
-    methods: {
+  methods: {
     async fetchBuildings() {
         try {
 
-            const response = await axios.get(`${backendUrl}buildings/`); 
+            const response = await axios.get(`${backendUrl}buildings/`);
             this.buildings = response.data;
             console.log("Lista de edificios:", this.buildings);
         } catch (error) {
             console.error("Error al cargar la lista de edificios", error);
         }
     },
-    logout() {
-      console.log('Realizar acción de logout');
-      this.$router.push('/');
+
+    async logout() {
+    console.log("LOGOUT");
+
+    const token = localStorage.getItem('token');
+    console.log("TOKEN LOGOUT: ", token)
+      if (token) {
+        axios.post(`${backendUrl}logout/`, null, {
+          headers: { Authorization: `Token ${token}` }
+        })
+          .then(response => {
+            localStorage.removeItem('token');
+            this.$router.push("/");
+          })
+          .catch(error => {
+            console.error('Error en el cierre de sesión:', error);
+          });
+      }
     }
-}
-};
+  }};
 </script>
 

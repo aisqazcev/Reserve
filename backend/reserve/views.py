@@ -1,19 +1,23 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_protect
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import authentication_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth import logout
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
-from .models import CustomUser 
-from django.contrib.auth import logout, login, authenticate
-from django.core.mail import send_mail
-from django.urls import reverse
-from django.views import View
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from .serializers import CustomUserSerializer
 from rest_framework.response import Response
 from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
 from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
@@ -176,21 +180,6 @@ class BookingManagementView(APIView):
             # Loguear el error para análisis posterior
             print(f"Error in BookingManagementView: {e}")
             return Response(data={'error': 'Error interno del servidor'}, status=ST_500)
-    
-    def send_confirmation_email(self, booking_instance):
-        confirmation_url = self.get_confirmation_url(booking_instance)
-        subject = 'Confirmación de reserva'
-        message = f'Por favor, confirme su reserva haciendo clic en el siguiente enlace: {confirmation_url}'
-        from_email = 'susillaPrueba@gmail.com' 
-        to_email = booking_instance.email
-        send_mail(subject, message, from_email, [to_email])
-
-    def get_confirmation_url(self, booking_instance):
-        # booking_id = booking_instance.id
-        # print(f"Booking ID: {booking_id}")
-        # confirmation_path = reverse(f'booking/confirm_booking/{booking_id}')
-        # confirmation_url = f'http://127.0.0.1:8000/{confirmation_path}{booking_id}'
-        return 'http://127.0.0.1:8000/booking/'
        
     def put(self, request, booking_id, *args, **kwargs):
         booking = get_object_or_404(Booking, id = booking_id)
@@ -272,48 +261,52 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        print(f"Attempting login for username: {username}, password: {password}")
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
 
-        custom_user = authenticate(request, username=username, password=password)
+@authentication_classes([TokenAuthentication])
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
         try:
-            custom_user = authenticate(request, username=username, password=password)
-
-            if custom_user is not None:
-                login(request, custom_user)
-                # Generar token de acceso
-                refresh = RefreshToken.for_user(custom_user)
-                access_token = str(refresh.access_token)
-                return Response({'access': access_token, 'detail': 'Login successful'}, status=status.HTTP_200_OK)
+            if request.auth:
+                request.auth.delete()
+                logout(request)
+                return Response(status=status.HTTP_200_OK)
             else:
-                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+                raise AuthenticationFailed('No token provided')
+       
+        except Exception as e:
+            print(f"Error during logout: {e}")
+            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
 
-        except CustomUser.DoesNotExist:
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-@method_decorator(csrf_protect, name='dispatch')
-@method_decorator(login_required, name='dispatch')
-class LogoutView(View):
-    def post(self, request, *args, **kwargs):
-        logout(request)
-        return JsonResponse({'message': 'Logout successful'})
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
-
     def post(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            login(request, user)
-            return Response({'detail': 'Registration successful'}, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#create BuildingListView
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         buildings = Building.objects.all()
         serializer = BuildingSerializer(buildings, many=True)
 
         return Response(serializer.data)
+class BuildingDetailstView(APIView):
+    def get(self, request, building_id, *args, **kwargs):
+        building = get_object_or_404(Building, id = building_id)
+        serializer = BuildingSerializer(building)
+
+        return Response(serializer.data)
+class SpacesByBuildingView(APIView):
+    def get(self, request, building_id, *args, **kwargs):
+        spaces = Space.objects.filter(building_id=building_id)
+        serializer = SpaceSerializer(spaces, many=True)
+
+        return Response(serializer.data)
+    

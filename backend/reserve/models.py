@@ -13,34 +13,44 @@ def user_directory_path(instance, filename):
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
+
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, password=None, **extra_fields):
+    def create_user(self, username, name, password=None, **extra_fields):
         if not username:
             raise ValueError('The username field must be set')
         
-        user = self.model(username=username, **extra_fields)
+        user = self.model(username=username, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
+    def create_superuser(self, username, name, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(username, password, **extra_fields)
+        return self.create_user(username, name, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
     username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['name']
 
+    
+    def __str__(self):
+        return self.username
+
 class Building(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     name_complete = models.CharField(max_length=255)
+    address = models.TextField(null=False)
+    web = models.URLField(max_length=200)
+    email = models.EmailField(max_length=254)
+    phone = models.CharField(max_length=250)
+    services = models.TextField(null=False)
+    image = models.ImageField(blank=True, null=True) 
 
     def __str__(self):
         return self.name
@@ -49,7 +59,7 @@ class Building(models.Model):
 def load_building_data():
     json_file_path = os.path.join(settings.BASE_DIR, 'reserve', 'buildings_name.json')
     
-    with open(json_file_path, 'r') as json_file:
+    with open(json_file_path, 'r', encoding='utf-8') as json_file:
         building_data = json.load(json_file)
         for data in building_data:
             # Verificar si el edificio ya existe antes de crearlo
@@ -57,8 +67,14 @@ def load_building_data():
 
             if not existing_building:
                 Building.objects.create(
-                    name=data.get('name', ''),  
-                    name_complete=data.get('name_complete', '')  
+                    name=data.get('name', ''),
+                    name_complete=data.get('name_complete', ''),
+                    address=data.get('address', ''),
+                    web=data.get('web', ''),
+                    email=data.get('email', ''),
+                    phone=data.get('phone', ''),
+                    services=data.get('services', ''),
+                    image=data.get('image', '')  
                 )
 
 
@@ -73,12 +89,7 @@ class Space(models.Model):
     capacity = models.IntegerField()
     general_info = models.TextField(null=False)
     schedule = models.TextField(null=False)
-    services = models.TextField(null=False)
-    address = models.TextField(null=False)
-    web = models.URLField(max_length=200)
-    email = models.EmailField(max_length=254)
-    phone = models.CharField(max_length=250)
-    image = models.ImageField(blank=True, null=True)  
+    image = models.ImageField(blank=True, null=True) 
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250)

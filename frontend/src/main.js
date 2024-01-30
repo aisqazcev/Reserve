@@ -20,6 +20,8 @@ import App from "./App.vue";
 import router from "./router";
 import Argon from "./plugins/argon-kit";
 import './registerServiceWorker'
+// import store from './store'; 
+
 import VueAxios from 'vue-axios'
 import axios from 'axios';
 
@@ -35,5 +37,8 @@ Vue.use(Argon);
 
 new Vue({
   router,
+  // store,
   render: h => h(App)
 }).$mount("#app");
+
+
