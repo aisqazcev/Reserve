@@ -66,10 +66,9 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-lg-block ml-lg-4">
-                    <a href="https://www.creative-tim.com/product/vue-argon-design-system" target="_blank" rel="noopener"
-                       class="btn btn-neutral btn-icon">
-                <span class="btn-inner--icon">
-                </span>
+                    <a href="http://localhost:8080/profile" rel="noopener" class="btn btn-neutral btn-icon">
+                        <span class="btn-inner--icon">
+                        </span>
                         <span class="nav-link-inner--text">Perfil</span>
                     </a>
                 </li>
@@ -123,7 +122,6 @@ export default {
     console.log("LOGOUT");
 
     const token = localStorage.getItem('token');
-    console.log("TOKEN LOGOUT: ", token)
       if (token) {
         axios.post(`${backendUrl}logout/`, null, {
           headers: { Authorization: `Token ${token}` }
@@ -139,4 +137,3 @@ export default {
     }
   }};
 </script>
-
