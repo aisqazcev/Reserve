@@ -1,20 +1,11 @@
 <template>
     <header class="header-global">
         <base-nav class="navbar-main" transparent type="" effect="light" expand>
-            <router-link slot="brand" class="navbar-brand mr-lg-5" to="/">
-                <img src="img/brand/white.png" alt="logo">
+            <router-link to="/landing" class="nav-link">
+                <i class="fa fa-home fa-2x" style="color: white;"></i>
             </router-link>
 
-            <div class="row" slot="content-header" slot-scope="{closeMenu}">
-                <div class="col-6 collapse-brand">
-                    <a href="https://demos.creative-tim.com/vue-argon-design-system/documentation/">
-                        <img src="img/brand/blue.png">
-                    </a>
-                </div>
-                <div class="col-6 collapse-close">
-                    <close-button @click="closeMenu"></close-button>
-                </div>
-            </div>
+            <div class="separator"></div>
 
             <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
                 <base-dropdown class="nav-item" menu-classes="dropdown-menu-xl">
@@ -23,7 +14,7 @@
                     </a>
                     <div class="dropdown-menu-inner">
                         <router-link v-for="building in buildings" :key="building.id" :to="`/building/${building.id}`" class="dropdown-item">{{ building.name_complete }}</router-link>
-    </div>
+                    </div>
                 </base-dropdown>
 
                 <!-- Botón Reservar -->
@@ -32,7 +23,7 @@
                 </router-link>
 
                 <!-- Botón Mis reservas -->
-                <router-link to="/mis-reservas" class="nav-link">
+                <router-link to="/bookings" class="nav-link">
                     <span class="nav-link-inner--text">Mis reservas</span>
                 </router-link>
             </ul>
@@ -137,3 +128,9 @@ export default {
     }
   }};
 </script>
+
+<style>
+    .separator {
+        margin: 0 50px; 
+    }
+</style>

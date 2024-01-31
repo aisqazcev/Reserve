@@ -109,7 +109,7 @@ export default {
             const response = await axios.post(`${backendUrl}booking/`, this.form, {
                 headers: { Authorization: `Token ${token}` }
             });
-            this.$router.push("/landing");
+            this.$router.push("/bookings");
         } catch (error) {
             console.error('Error al realizar la reserva:', error.response || error);
         }

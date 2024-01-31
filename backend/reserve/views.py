@@ -276,12 +276,17 @@ class BookingManagementView(APIView):
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
     
+@authentication_classes([TokenAuthentication])
 class BookingListView(APIView):
-    def get(self, request, *args, **kwargs):
-        bookings = Booking.objects.all()
-        serializer = BookingSerializer(bookings, many=True)
+    permission_classes = [IsAuthenticated]
 
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        try:
+            bookings = Booking.objects.filter(user=request.user)
+            serializer = BookingSerializer(bookings, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class BookingShowView(APIView):
     def get(self, request, booking_id, *args, **kwargs):
