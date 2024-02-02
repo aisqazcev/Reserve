@@ -1,6 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
+    <div class="shape shape-style-2 shape-default">
       <span></span>
       <span></span>
       <span></span>
@@ -49,13 +49,29 @@
                 ></base-input>
                 <span class="text-danger">{{ errors.end_time }}</span>
 
-                <base-input
-                  alternative
-                  type="email"
-                  placeholder="Email"
-                  v-model="form.email"
-                ></base-input>
-                <span class="text-danger">{{ errors.email }}</span>
+                <div class="form-group">
+                  <label for="spaceItemType">Edificio</label>
+                    <select v-model="form.building" class="form-control" id="buildintType">
+                      <option v-for="building in buildingList" :key="building.id" :value="building.id">{{ building.name }}</option>
+                    </select>
+                </div>
+                <span class="text-danger">{{ errors.space_item_type }}</span>
+
+                <div class="form-group" v-if="form.building">
+                  <label for="spaceType">Espacio</label>
+                  <select v-model="form.space" class="form-control" id="spaceType" @change="fetchSpaces">
+                    <option v-for="space in spaceList" :key="space.id" :value="space.id">{{ space.name }}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="spaceItemType">Tipo de Espacio</label>
+                  <select v-model="form.space_item_type" class="form-control" id="spaceItemType">
+                    <option value="room">Sala</option>
+                    <option value="desk">Escritorio</option>
+                  </select>
+                </div>
+                <span class="text-danger">{{ errors.space_item_type }}</span>
 
                 <div class="text-center">
                   <base-button
@@ -71,7 +87,6 @@
               <span class="text-danger">{{ errors.booking }}</span>
             </template>
           </card>
-          <!-- Otras secciones de la página, si es necesario -->
         </div>
       </div>
     </div>
@@ -90,19 +105,47 @@ export default {
         date: "",
         start_time: "",
         end_time: "",
-        email: "",
       },
+      buildingList: [],
+      spaceList: [], 
       loading: false,
       errors: {
         date: "",
         start_time: "",
         end_time: "",
-        email: "",
         booking: "",
       },
     };
   },
+  mounted() {
+    this.fetchBuildingList();
+  },
+  watch: {
+  'form.building': {
+    immediate: true,
+    handler: 'fetchSpaces',
+  },
+},
   methods: {
+    async fetchBuildingList() {
+      try {
+        const response = await axios.get(`${backendUrl}buildings/`)
+        this.buildingList = response.data;
+        this.fetchSpaces();
+      } catch (error) {
+        console.error('Error fetching building list:', error);
+      }
+    },
+    async fetchSpaces() {
+      if (this.form.building) {
+        try {
+          const response = await axios.get(`${backendUrl}building/${this.form.building}/spaces/`);
+          this.spaceList = response.data;
+        } catch (error) {
+          console.error('Error fetching space list:', error);
+        }
+      }
+    },
     async booking() {
         const token = localStorage.getItem('token');
         try {

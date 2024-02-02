@@ -1,14 +1,10 @@
 <template>
 <section class="section-shaped section-lg my-0 d-flex justify-content-center">
-    <div class="shape shape-style-1 shape-default">
+    <div class="shape shape-style-3 shape-default">
+      <span style="visibility: hidden;"></span>
       <span></span>
       <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+      <span style="background-color: #787CFF;"></span>
     </div>
     <div class="table-container">
     <table class="table">

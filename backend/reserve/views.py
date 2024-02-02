@@ -253,10 +253,21 @@ class DeskShowView(APIView):
 ##########################################################################################    
 @authentication_classes([TokenAuthentication])
 class BookingManagementView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
-        permission_classes = [IsAuthenticated]
-        
+        space_item_type = request.data.get('space_item_type')
+        space_item_id = request.data.get('space_item_id')
+
+        space_item_model = Room if space_item_type == 'room' else Desk
+
+        try:
+            space_item_instance = space_item_model.objects.get(id=space_item_id)
+        except space_item_model.DoesNotExist:
+            return Response(data={'error': 'Espacio no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
         request.data['user'] = request.user.id
+        request.data['space_item'] = space_item_instance.id
+        
         serializer = BookingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -335,7 +346,7 @@ class BuildingListView(APIView):
         buildings = Building.objects.all()
         serializer = BuildingSerializer(buildings, many=True)
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 class BuildingDetailstView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         building = get_object_or_404(Building, id = building_id)
