@@ -45,6 +45,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+class Campus(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    address = models.TextField(null=False)
+
 class Building(models.Model):
     name = models.CharField(max_length=255, unique=True)
     name_complete = models.CharField(max_length=255)
@@ -53,7 +57,8 @@ class Building(models.Model):
     email = models.EmailField(max_length=254)
     phone = models.CharField(max_length=250)
     services = models.TextField(null=False)
-    image = models.ImageField(blank=True, null=True) 
+    image = models.ImageField(blank=True, null=True)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE, related_name='buildings')
 
     def __str__(self):
         return self.name
@@ -81,10 +86,10 @@ def load_building_data():
                 )
 
 
-@receiver(post_migrate)
-def load_building_data_after_migrate(sender, **kwargs):
-    if sender.name == 'reserve':  
-        load_building_data()
+# @receiver(post_migrate)
+# def load_building_data_after_migrate(sender, **kwargs):
+#      if sender.name == 'reserve':  
+#          load_building_data()
 
 class Space(models.Model):
     name = models.CharField(max_length=250)
@@ -121,7 +126,8 @@ class Desk(Space_item):
 
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # space_item = models.ForeignKey(Space_item, blank=True, null=True, on_delete=models.CASCADE)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
     date = models.DateField() 
     start_time = models.TimeField()
     end_time = models.TimeField()

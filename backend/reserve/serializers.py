@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Booking, Building, Equipment, Space, Space_item, Room, Desk, CustomUser
+from .models import Booking, Building, Campus, Equipment, Space, Space_item, Room, Desk, CustomUser
 
 #create code for serializers here of the models
 
@@ -56,8 +56,10 @@ class DeskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Desk
         fields = '__all__'
-
-
+class CampusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campus
+        fields = '__all__'
 class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building

@@ -15,9 +15,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .serializers import CustomUserSerializer, LoginSerializer, PasswordChangeSerializer
+from .serializers import CampusSerializer, CustomUserSerializer, LoginSerializer, PasswordChangeSerializer
 from rest_framework.response import Response
-from .models import Booking, Building, CustomUser, Equipment, Space, Room, Desk, Space_item
+from .models import Booking, Building, Campus, CustomUser, Equipment, Space, Room, Desk, Space_item
 from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
@@ -255,18 +255,8 @@ class DeskShowView(APIView):
 class BookingManagementView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
-        space_item_type = request.data.get('space_item_type')
-        space_item_id = request.data.get('space_item_id')
-
-        space_item_model = Room if space_item_type == 'room' else Desk
-
-        try:
-            space_item_instance = space_item_model.objects.get(id=space_item_id)
-        except space_item_model.DoesNotExist:
-            return Response(data={'error': 'Espacio no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
         request.data['user'] = request.user.id
-        request.data['space_item'] = space_item_instance.id
         
         serializer = BookingSerializer(data=request.data)
         if serializer.is_valid():
@@ -295,6 +285,7 @@ class BookingListView(APIView):
         try:
             bookings = Booking.objects.filter(user=request.user)
             serializer = BookingSerializer(bookings, many=True)
+            
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -340,7 +331,20 @@ class EquipmentShowView(APIView):
         equipment = get_object_or_404(Equipment, id = equipment_id)
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
-        
+
+class CampusListView(APIView):
+    def get(self, request, *args, **kwargs):
+        campus_list = Campus.objects.all()
+        serializer = CampusSerializer(campus_list, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class CampusDetailstView(APIView):
+    def get(self, request, campus_id, *args, **kwargs):
+        campus = get_object_or_404(Campus, id = campus_id)
+        serializer = CampusSerializer(campus)
+
+        return Response(serializer.data)
+
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         buildings = Building.objects.all()
@@ -353,10 +357,39 @@ class BuildingDetailstView(APIView):
         serializer = BuildingSerializer(building)
 
         return Response(serializer.data)
+    
+class BuildingByCampusView(APIView):
+    def get(self, request, campus_id, *args, **kwargs):
+        buildings = Building.objects.filter(campus_id=campus_id)
+        serializer = BuildingSerializer(buildings, many=True)
+
+        return Response(serializer.data)
+    
 class SpacesByBuildingView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         spaces = Space.objects.filter(building_id=building_id)
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
+    
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def search_spaces(request):
+    campus_id = request.GET.get('campus', None)
+    building_id = request.GET.get('building', None)
+
+    spaces = Space.objects.all()
+
+    if campus_id:
+        spaces = spaces.filter(building__campus__id=campus_id)
+    if building_id:
+        spaces = spaces.filter(building__id=building_id)
+
+    serialized_spaces = SpaceSerializer(spaces, many=True)
+    print(f"Spaces: ", serialized_spaces)
+    return Response(serialized_spaces.data)
+
 

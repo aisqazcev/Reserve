@@ -50,28 +50,27 @@
                 <span class="text-danger">{{ errors.end_time }}</span>
 
                 <div class="form-group">
-                  <label for="spaceItemType">Edificio</label>
-                    <select v-model="form.building" class="form-control" id="buildintType">
-                      <option v-for="building in buildingList" :key="building.id" :value="building.id">{{ building.name }}</option>
+                  <label for="campusType">Campus</label>
+                    <select v-model="form.campus" class="form-control" id="campusType">
+                      <option v-for="campus in campusList" :key="campus.id" :value="campus.id">{{ campus.name }}</option>
                     </select>
                 </div>
-                <span class="text-danger">{{ errors.space_item_type }}</span>
 
-                <div class="form-group" v-if="form.building">
-                  <label for="spaceType">Espacio</label>
-                  <select v-model="form.space" class="form-control" id="spaceType" @change="fetchSpaces">
-                    <option v-for="space in spaceList" :key="space.id" :value="space.id">{{ space.name }}</option>
+                <div class="form-group" v-if="form.campus">
+                  <label for="buildingType">Edificio</label>
+                  <select v-model="form.building" class="form-control" id="spaceType" @change="fetchBuilding">
+                    <option v-for="building in buildingList" :key="building.id" :value="building.id">{{ building.name }}</option>
                   </select>
                 </div>
 
-                <div class="form-group">
+                <!-- <div class="form-group">
                   <label for="spaceItemType">Tipo de Espacio</label>
                   <select v-model="form.space_item_type" class="form-control" id="spaceItemType">
                     <option value="room">Sala</option>
                     <option value="desk">Escritorio</option>
                   </select>
                 </div>
-                <span class="text-danger">{{ errors.space_item_type }}</span>
+                <span class="text-danger">{{ errors.space_item_type }}</span> -->
 
                 <div class="text-center">
                   <base-button
@@ -105,58 +104,78 @@ export default {
         date: "",
         start_time: "",
         end_time: "",
+        campus: "",
+        facultad: "",
       },
+      campusList: [],
       buildingList: [],
-      spaceList: [], 
       loading: false,
       errors: {
         date: "",
         start_time: "",
         end_time: "",
+        campus: "",
+        facultad: "",
         booking: "",
       },
     };
   },
   mounted() {
-    this.fetchBuildingList();
+    this.fetchCampusList();
   },
   watch: {
-  'form.building': {
+  'form.campus': {
     immediate: true,
-    handler: 'fetchSpaces',
+    handler: 'fetchBuilding',
   },
 },
   methods: {
-    async fetchBuildingList() {
+    async fetchCampusList() {
       try {
-        const response = await axios.get(`${backendUrl}buildings/`)
-        this.buildingList = response.data;
-        this.fetchSpaces();
+        const response = await axios.get(`${backendUrl}campus/`)
+        this.campusList = response.data;
       } catch (error) {
-        console.error('Error fetching building list:', error);
+        console.error('Error fetching campus list:', error);
       }
     },
-    async fetchSpaces() {
-      if (this.form.building) {
+    async fetchBuilding() {
+      if (this.form.campus) {
         try {
-          const response = await axios.get(`${backendUrl}building/${this.form.building}/spaces/`);
-          this.spaceList = response.data;
+          const response = await axios.get(`${backendUrl}campus/${this.form.campus}/buildings/`);
+          this.buildingList = response.data;
         } catch (error) {
-          console.error('Error fetching space list:', error);
+          console.error('Error fetching building list:', error);
         }
       }
     },
-    async booking() {
-        const token = localStorage.getItem('token');
-        try {
-            const response = await axios.post(`${backendUrl}booking/`, this.form, {
-                headers: { Authorization: `Token ${token}` }
-            });
-            this.$router.push("/bookings");
-        } catch (error) {
-            console.error('Error al realizar la reserva:', error.response || error);
-        }
-    },
+     async booking() {
+         const token = localStorage.getItem('token');
+         try {
+             const response = await axios.post(`${backendUrl}booking/`, this.form, {
+                 headers: { Authorization: `Token ${token}` }
+             });
+             this.$router.push("/bookings");
+         } catch (error) {
+             console.error('Error al realizar la reserva:', error.response || error);
+         }
+     },
+
+    // async Search() {
+    //     try {
+    //     axios.get(`${backendUrl}search_spaces/`, {
+    //         params: {
+    //             campus: this.form.campus,
+    //             building: this.form.building,
+    //         },
+    //     }).then(response => {
+    //       console.log("datos", response.data);
+    //       this.$router.push("/filteredSpaces");
+    //       });
+            
+    //     } catch (error) {
+    //         console.error('Error al realizar la búsqueda:', error.response || error);
+    //     }
+    // }
   },
 };
 </script>

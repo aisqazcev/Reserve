@@ -14,6 +14,8 @@
             <th>Fecha</th>
             <th>Inicio</th>
             <th>Duración</th>
+            <th>Campus</th>
+            <th>Facultad</th>
             <th class="text-right">Acciones</th>
         </tr>
     </thead>
@@ -23,6 +25,8 @@
             <td>{{item.date}}</td>
             <td>{{item.start_time}}</td>
             <td>{{item.end_time}}</td>
+            <td>{{item.campus}}</td>
+            <td>{{item.building}}</td>
             <td class="td-actions text-right">
               <button type="button" rel="tooltip" class="btn btn-info btn-icon btn-sm" data-original-title="" title="">
                 <i class="ni ni-circle-08 pt-1"></i>
@@ -62,6 +66,8 @@ export default {
         })
         .then(response => {
           this.booking = response.data
+          console.log("datos: ", response.data)
+          console.log("campus: ", response.data.campus)
         })
         .catch(error => {
           console.error('Error en la obtención de reservas:', error);
