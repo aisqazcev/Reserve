@@ -72,9 +72,11 @@
                     >
                   </div> -->
                   <!--TODO Redireccionar a la página de detalles de la sala -->
-                  <base-button tag="a" href="#" type="primary" class="mt-4">
-                    Ver detalles
-                  </base-button>
+                  <router-link :to="`/${space.id}/desk`">
+                    <base-button type="primary" class="mt-4">
+                      Ver detalles
+                    </base-button>
+                  </router-link>
                 </card>
               </div>
               <!-- Fin del bucle v-for -->

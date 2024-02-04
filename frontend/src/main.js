@@ -21,6 +21,9 @@ import router from "./router";
 import Argon from "./plugins/argon-kit";
 import './registerServiceWorker'
 // import store from './store'; 
+import Modal from './components/Modal.vue';
+
+
 
 
 
@@ -37,6 +40,8 @@ import axios from 'axios';
 Vue.prototype.$axios = axios;
 
 export const backendUrl = "http://localhost:8000/";
+
+Vue.component('modal', Modal);
 
 Vue.config.productionTip = false;
 Vue.use(Argon);

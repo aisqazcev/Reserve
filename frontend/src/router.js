@@ -9,6 +9,7 @@ import Profile from "./views/Profile.vue";
 import SpacesByBuilding from './views/SpacesByBuilding.vue';
 import Booking from "./views/Booking.vue";
 import Bookings from "./views/MyBookings.vue";
+import Desk from "./views/SpaceList.vue";
 
 Vue.use(Router);
 
@@ -75,6 +76,14 @@ const router = new Router({
       components: {
         header: AppHeader,
         default: Bookings,
+      }
+    },
+    {
+      path: "/:spaceId/desk",
+      name: "desk",
+      components: {
+        header: AppHeader,
+        default: Desk,
         footer: AppFooter,
       },
     },
