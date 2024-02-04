@@ -253,7 +253,7 @@ class RoomManagementView(APIView):
 class RoomListView(APIView):
     def get(self, request, *args, **kwargs):
         rooms = Room.objects.all()
-        serializer = RoomSerializer(rooms, many=True)
+        serializer = SpaceSerializer(rooms, many=True)
 
         return Response(serializer.data)
 
@@ -292,8 +292,8 @@ class DeskManagementView(APIView):
 
 
 class DeskListView(APIView):
-    def get(self, request, *args, **kwargs):
-        desks = Desk.objects.all()
+    def get(self, request, space_id, *args, **kwargs):
+        desks = Desk.objects.filter(space_id = space_id)
         serializer = DeskSerializer(desks, many=True)
 
         return Response(serializer.data)

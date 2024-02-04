@@ -10,7 +10,7 @@ urlpatterns = [
     path('space/<int:space_id>/', SpaceShowView.as_view()),
     path('room/', RoomListView.as_view()),
     path('room/<int:room_id>/', RoomShowView.as_view()),
-    path('desk/', DeskListView.as_view()),
+    path('<int:space_id>/desk/', DeskListView.as_view()),
     path('desk/<int:desk_id>/', DeskShowView.as_view()),
     path('location/', SpaceManagementView.as_view()),
     path('location/<int:location_id>/', SpaceShowView.as_view()),
