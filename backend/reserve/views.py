@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import TokenAuthentication
@@ -15,11 +16,17 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .serializers import CustomUserSerializer, LoginSerializer, PasswordChangeSerializer
+from .serializers import (
+    CampusSerializer,
+    CustomUserSerializer,
+    LoginSerializer,
+    PasswordChangeSerializer,
+)
 from rest_framework.response import Response
 from .models import (
     Booking,
     Building,
+    Campus,
     CustomUser,
     Equipment,
     Space,
@@ -387,12 +394,43 @@ class EquipmentShowView(APIView):
         return Response(serializer.data)
 
 
+# class BuildingListView(APIView):
+#     def get(self, request, *args, **kwargs):
+#         buildings = Building.objects.all()
+#         serializer = BuildingSerializer(buildings, many=True)
+
+#         return Response(serializer.data)
+
+
+class CampusListView(APIView):
+    def get(self, request, *args, **kwargs):
+        campuses = Campus.objects.all()
+        serializer = CampusSerializer(campuses, many=True)
+        return Response(serializer.data)
+
+
+class CampusDetailView(APIView):
+    def get(self, request, campus_id, *args, **kwargs):
+        campus = get_object_or_404(Campus, id=campus_id)
+        serializer = CampusSerializer(campus)
+        return Response({'id': campus.id, 'name': campus.campus_name})
+
+
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
-        buildings = Building.objects.all()
-        serializer = BuildingSerializer(buildings, many=True)
+        campus_name = request.query_params.get("campus", None)
 
-        return Response(serializer.data)
+        if campus_name:
+            buildings = Building.objects.filter(campus__campus_name=campus_name).select_related('campus')
+        else:
+            buildings = Building.objects.all().select_related('campus')
+
+        # Serializa los datos incluyendo el nombre del campus
+        serializer = BuildingSerializer(buildings, many=True)
+        serialized_data = serializer.data
+
+        # Si estás utilizando DRF y Django >= 3.1, JsonResponse es preferible
+        return JsonResponse(serialized_data, safe=False)
 
 
 class BuildingDetailstView(APIView):
