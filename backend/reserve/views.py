@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import TokenAuthentication
@@ -15,10 +16,33 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .serializers import CustomUserSerializer
+from .serializers import (
+    CampusSerializer,
+    CustomUserSerializer,
+    LoginSerializer,
+    PasswordChangeSerializer,
+)
 from rest_framework.response import Response
-from .models import Booking, Building, Equipment, Space, Room, Desk, Space_item
-from .serializers import BookingSerializer, CustomUserSerializer, EquipmentSerializer, SpaceSerializer, RoomSerializer, DeskSerializer, BuildingSerializer
+from .models import (
+    Booking,
+    Building,
+    Campus,
+    CustomUser,
+    Equipment,
+    Space,
+    Room,
+    Desk,
+    Space_item,
+)
+from .serializers import (
+    BookingSerializer,
+    CustomUserSerializer,
+    EquipmentSerializer,
+    SpaceSerializer,
+    RoomSerializer,
+    DeskSerializer,
+    BuildingSerializer,
+)
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
@@ -30,41 +54,164 @@ from rest_framework.status import (
     HTTP_205_RESET_CONTENT as ST_205,
     HTTP_401_UNAUTHORIZED as ST_401,
 )
+
+
+class LoginView(ObtainAuthToken):
+    serializer_class = (
+        LoginSerializer  # Usa el nuevo serializador para el inicio de sesión
+    )
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        username_or_email = serializer.validated_data.get("username_or_email", "")
+        password = serializer.validated_data.get("password", "")
+
+        if "@" in username_or_email:
+            user = CustomUser.objects.filter(email=username_or_email).first()
+        else:
+            user = CustomUser.objects.filter(username=username_or_email).first()
+
+        if user and user.check_password(password):
+            token, created = Token.objects.get_or_create(user=user)
+            return Response(
+                {"token": token.key, "user_id": user.pk, "username": user.username}
+            )
+
+        return Response(
+            {"detail": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+@authentication_classes([TokenAuthentication])
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            if request.auth:
+                request.auth.delete()
+                logout(request)
+                return Response(status=status.HTTP_200_OK)
+            else:
+                raise AuthenticationFailed("No token provided")
+
+        except Exception as e:
+            print(f"Error during logout: {e}")
+            return Response(
+                {"detail": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class RegisterView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"detail": "Usuario registrado exitosamente"},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@authentication_classes([TokenAuthentication])
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        data = {
+            "name": user.name if user.name else "Nombre Desconocido",
+            "username": (
+                user.get_username() if user.get_username() else "Username Desconocido"
+            ),
+        }
+        return Response(data)
+
+
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+
+
+@authentication_classes([TokenAuthentication])
+class PasswordChangeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordChangeSerializer(data=request.data)
+        if serializer.is_valid():
+            current_password = serializer.validated_data["current_password"]
+            new_password = serializer.validated_data["new_password"]
+            confirm_new_password = serializer.validated_data["confirm_new_password"]
+
+            if not request.user.check_password(current_password):
+                return Response(
+                    {"detail": "Contraseña actual incorrecta."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if new_password != confirm_new_password:
+                return Response(
+                    {"detail": "Las nuevas contraseñas no coinciden."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            request.user.set_password(new_password)
+            request.user.save()
+
+            return Response(
+                {"detail": "Contraseña cambiada exitosamente."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+##########################################################################################
+
+
 class SpaceManagementView(APIView):
-        
-        #show all spaces
-        def get(self, request, *args, **kwargs):
-            spaces = Space.objects.all()
-            serializer = SpaceSerializer(spaces, many=True)
-    
-            return Response(serializer.data)
-        
-        def post(self, request, *args, **kwargs):
-            serializer = SpaceSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(data=serializer.data, status=ST_201)
-            return Response(data=serializer.errors, status=ST_409)
-        
-        def put(self, request, space_id, *args, **kwargs):
-            space = get_object_or_404(Space, id = space_id)
-            serializer = SpaceSerializer(space, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(data=serializer.data, status=ST_200)
-            return Response(data=serializer.errors, status=ST_409)
-        
-        def delete(self, request, space_id, *args, **kwargs):
-            space = get_object_or_404(Space, id = space_id)
-            space.delete()
-            return Response(data={"message": "Space deleted successfully"}, status=ST_200)
-   
+
+    # show all spaces
+    def get(self, request, *args, **kwargs):
+        spaces = Space.objects.all()
+        serializer = SpaceSerializer(spaces, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        serializer = SpaceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_201)
+        return Response(data=serializer.errors, status=ST_409)
+
+    def put(self, request, space_id, *args, **kwargs):
+        space = get_object_or_404(Space, id=space_id)
+        serializer = SpaceSerializer(space, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=ST_200)
+        return Response(data=serializer.errors, status=ST_409)
+
+    def delete(self, request, space_id, *args, **kwargs):
+        space = get_object_or_404(Space, id=space_id)
+        space.delete()
+        return Response(data={"message": "Space deleted successfully"}, status=ST_200)
+
+
 class SpaceShowView(APIView):
     def get(self, request, space_id, *args, **kwargs):
-        space = get_object_or_404(Space, id = space_id)
+        space = get_object_or_404(Space, id=space_id)
         serializer = SpaceSerializer(space)
 
-        return Response(serializer.data)    
+        return Response(serializer.data)
+
 
 ##########################################################################################
 
@@ -75,15 +222,18 @@ class SpaceItemListView(APIView):
         serializer = SpaceSerializer(space_items, many=True)
 
         return Response(serializer.data)
-    
+
+
 class SpaceShowView(APIView):
     def get(self, request, space_id, *args, **kwargs):
-        space = get_object_or_404(Space, id = space_id)
+        space = get_object_or_404(Space, id=space_id)
         serializer = SpaceSerializer(space)
 
         return Response(serializer.data)
-    
+
+
 ##########################################################################################
+
 
 class RoomManagementView(APIView):
     def post(self, request, *args, **kwargs):
@@ -92,20 +242,21 @@ class RoomManagementView(APIView):
             serializer.save()
             return Response(data=serializer.data, status=ST_201)
         return Response(data=serializer.errors, status=ST_409)
-    
+
     def put(self, request, room_id, *args, **kwargs):
-        room = get_object_or_404(Room, id = room_id)
+        room = get_object_or_404(Room, id=room_id)
         serializer = RoomSerializer(room, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data, status=ST_200)
         return Response(data=serializer.errors, status=ST_409)
-    
+
     def delete(self, request, room_id, *args, **kwargs):
-        room = get_object_or_404(Room, id = room_id)
+        room = get_object_or_404(Room, id=room_id)
         room.delete()
         return Response(data={"message": "Room deleted successfully"}, status=ST_200)
-        
+
+
 class RoomListView(APIView):
     def get(self, request, *args, **kwargs):
         rooms = Room.objects.all()
@@ -113,15 +264,17 @@ class RoomListView(APIView):
 
         return Response(serializer.data)
 
+
 class RoomShowView(APIView):
     def get(self, request, room_id, *args, **kwargs):
-        room = get_object_or_404(Room, id = room_id)
+        room = get_object_or_404(Room, id=room_id)
         serializer = RoomSerializer(room)
 
         return Response(serializer.data)
 
 
 ##########################################################################################
+
 
 class DeskManagementView(APIView):
     def post(self, request, *args, **kwargs):
@@ -130,36 +283,39 @@ class DeskManagementView(APIView):
             serializer.save()
             return Response(data=serializer.data, status=ST_201)
         return Response(data=serializer.errors, status=ST_409)
-    
+
     def put(self, request, desk_id, *args, **kwargs):
-        desk = get_object_or_404(Desk, id = desk_id)
+        desk = get_object_or_404(Desk, id=desk_id)
         serializer = DeskSerializer(desk, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data, status=ST_200)
         return Response(data=serializer.errors, status=ST_409)
-    
+
     def delete(self, request, desk_id, *args, **kwargs):
-        desk = get_object_or_404(Desk, id = desk_id)
+        desk = get_object_or_404(Desk, id=desk_id)
         desk.delete()
         return Response(data={"message": "Desk deleted successfully"}, status=ST_200)
-    
+
+
 class DeskListView(APIView):
     def get(self, request, *args, **kwargs):
         desks = Desk.objects.all()
         serializer = DeskSerializer(desks, many=True)
 
         return Response(serializer.data)
-    
+
+
 class DeskShowView(APIView):
     def get(self, request, desk_id, *args, **kwargs):
-        desk = get_object_or_404(Desk, id = desk_id)
+        desk = get_object_or_404(Desk, id=desk_id)
         serializer = DeskSerializer(desk)
 
         return Response(serializer.data)
 
 
-##########################################################################################    
+##########################################################################################
+
 
 class BookingManagementView(APIView):
     def post(self, request, *args, **kwargs):
@@ -168,20 +324,21 @@ class BookingManagementView(APIView):
             serializer.save()
             return Response(data=serializer.data, status=ST_201)
         return Response(data=serializer.errors, status=ST_409)
-    
+
     def put(self, request, booking_id, *args, **kwargs):
-        booking = get_object_or_404(Booking, id = booking_id)
+        booking = get_object_or_404(Booking, id=booking_id)
         serializer = BookingSerializer(booking, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data, status=ST_200)
         return Response(data=serializer.errors, status=ST_409)
-    
+
     def delete(self, request, booking_id, *args, **kwargs):
-        booking = get_object_or_404(Booking, id = booking_id)
+        booking = get_object_or_404(Booking, id=booking_id)
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
-    
+
+
 class BookingListView(APIView):
     def get(self, request, *args, **kwargs):
         bookings = Booking.objects.all()
@@ -189,13 +346,15 @@ class BookingListView(APIView):
 
         return Response(serializer.data)
 
+
 class BookingShowView(APIView):
     def get(self, request, booking_id, *args, **kwargs):
-        booking = get_object_or_404(Booking, id = booking_id)
+        booking = get_object_or_404(Booking, id=booking_id)
         serializer = BookingSerializer(booking)
 
         return Response(serializer.data)
-    
+
+
 ##########################################################################################
 class EquipmentManagementView(APIView):
 
@@ -213,7 +372,7 @@ class EquipmentManagementView(APIView):
         return Response(data=serializer.errors, status=ST_409)
 
     def put(self, request, equipment_id, *args, **kwargs):
-        equipment = get_object_or_404(Equipment, id = equipment_id)
+        equipment = get_object_or_404(Equipment, id=equipment_id)
         serializer = EquipmentSerializer(equipment, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -221,63 +380,70 @@ class EquipmentManagementView(APIView):
         return Response(data=serializer.errors, status=ST_409)
 
     def delete(self, request, equipment_id, *args, **kwargs):
-        equipment = get_object_or_404(Equipment, id = equipment_id)
+        equipment = get_object_or_404(Equipment, id=equipment_id)
         equipment.delete()
-        return Response(data={"message": "Equipment deleted successfully"}, status=ST_200)
+        return Response(
+            data={"message": "Equipment deleted successfully"}, status=ST_200
+        )
+
 
 class EquipmentShowView(APIView):
     def get(self, request, equipment_id, *args, **kwargs):
-        equipment = get_object_or_404(Equipment, id = equipment_id)
+        equipment = get_object_or_404(Equipment, id=equipment_id)
         serializer = EquipmentSerializer(equipment)
         return Response(serializer.data)
-    
-class LoginView(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key, 'user_id': user.pk, 'username': user.username})
 
-@authentication_classes([TokenAuthentication])
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        try:
-            if request.auth:
-                request.auth.delete()
-                logout(request)
-                return Response(status=status.HTTP_200_OK)
-            else:
-                raise AuthenticationFailed('No token provided')
-       
-        except Exception as e:
-            print(f"Error during logout: {e}")
-            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_400_BAD_REQUEST)
-class RegisterView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'detail': 'Usuario registrado exitosamente'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class BuildingListView(APIView):
+#     def get(self, request, *args, **kwargs):
+#         buildings = Building.objects.all()
+#         serializer = BuildingSerializer(buildings, many=True)
+
+#         return Response(serializer.data)
+
+
+class CampusListView(APIView):
+    def get(self, request, *args, **kwargs):
+        campuses = Campus.objects.all()
+        serializer = CampusSerializer(campuses, many=True)
+        return Response(serializer.data)
+
+
+class CampusDetailView(APIView):
+    def get(self, request, campus_id, *args, **kwargs):
+        campus = get_object_or_404(Campus, id=campus_id)
+        serializer = CampusSerializer(campus)
+        return Response({'id': campus.id, 'name': campus.campus_name})
+
+
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
-        buildings = Building.objects.all()
-        serializer = BuildingSerializer(buildings, many=True)
+        campus_name = request.query_params.get("campus", None)
 
-        return Response(serializer.data)
+        if campus_name:
+            buildings = Building.objects.filter(campus__campus_name=campus_name).select_related('campus')
+        else:
+            buildings = Building.objects.all().select_related('campus')
+
+        # Serializa los datos incluyendo el nombre del campus
+        serializer = BuildingSerializer(buildings, many=True)
+        serialized_data = serializer.data
+
+        # Si estás utilizando DRF y Django >= 3.1, JsonResponse es preferible
+        return JsonResponse(serialized_data, safe=False)
+
+
 class BuildingDetailstView(APIView):
     def get(self, request, building_id, *args, **kwargs):
-        building = get_object_or_404(Building, id = building_id)
+        building = get_object_or_404(Building, id=building_id)
         serializer = BuildingSerializer(building)
 
         return Response(serializer.data)
+
+
 class SpacesByBuildingView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         spaces = Space.objects.filter(building_id=building_id)
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
-    

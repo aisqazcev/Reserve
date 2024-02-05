@@ -28,19 +28,28 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(username, name, password, **extra_fields)
+    
+    ###############correcto################
+    
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
     username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True) 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['name']
+    USERNAME_FIELD = 'email'  
+    REQUIRED_FIELDS = ['name', 'username'] 
 
-    
     def __str__(self):
-        return self.username
+        return self.email
+    
+class Campus(models.Model):
+    campus_name = models.CharField(max_length=250, unique=True)
+
+    def __str__(self):
+        return self.campus_name
 
 class Building(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -50,37 +59,42 @@ class Building(models.Model):
     email = models.EmailField(max_length=254)
     phone = models.CharField(max_length=250)
     services = models.TextField(null=False)
-    image = models.ImageField(blank=True, null=True) 
+    image = models.ImageField(blank=True, null=True)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
-
 def load_building_data():
     json_file_path = os.path.join(settings.BASE_DIR, 'reserve', 'buildings_name.json')
-    
+
     with open(json_file_path, 'r', encoding='utf-8') as json_file:
-        building_data = json.load(json_file)
-        for data in building_data:
-            # Verificar si el edificio ya existe antes de crearlo
-            existing_building = Building.objects.filter(name=data.get('name')).first()
+        buildings_data = json.load(json_file)
+
+        for building_data in buildings_data:
+            campus_name = building_data.get('campus', '')
+
+            unique_campus, _ = Campus.objects.get_or_create(campus_name=campus_name)
+
+            existing_building = Building.objects.filter(name=building_data.get('name')).first()
 
             if not existing_building:
                 Building.objects.create(
-                    name=data.get('name', ''),
-                    name_complete=data.get('name_complete', ''),
-                    address=data.get('address', ''),
-                    web=data.get('web', ''),
-                    email=data.get('email', ''),
-                    phone=data.get('phone', ''),
-                    services=data.get('services', ''),
-                    image=data.get('image', '')  
+                    name=building_data.get('name', ''),
+                    name_complete=building_data.get('name_complete', ''),
+                    address=building_data.get('address', ''),
+                    web=building_data.get('web', ''),
+                    email=building_data.get('email', ''),
+                    phone=building_data.get('phone', ''),
+                    services=building_data.get('services', ''),
+                    image=building_data.get('image', ''),
+                    campus=unique_campus
                 )
 
-
+        
 @receiver(post_migrate)
 def load_building_data_after_migrate(sender, **kwargs):
-    if sender.name == 'reserve':  
+    if sender.name == 'reserve':
         load_building_data()
 
 class Space(models.Model):
