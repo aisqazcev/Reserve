@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from .models import Booking, Building, Campus, Equipment, Space, Space_item, Room, Desk, CustomUser
 
-#create code for serializers here of the models
-
 class LoginSerializer(serializers.Serializer):
     username_or_email = serializers.CharField()
     password = serializers.CharField(write_only=True)

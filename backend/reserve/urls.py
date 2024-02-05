@@ -26,7 +26,7 @@ urlpatterns = [
 
     path('campuses/', CampusListView.as_view(), name='campus-list'), 
     path('campus/<int:campus_id>/', BuildingListView.as_view(), name='campus-details'),   
-
+    
     path('buildings/', BuildingListView.as_view(), name='building-list'),
     path('building/<int:building_id>/', BuildingDetailstView.as_view(), name='building-details'),
     path('building/<int:building_id>/spaces/', SpacesByBuildingView.as_view(), name='spaces_by_building'),

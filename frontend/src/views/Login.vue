@@ -32,7 +32,7 @@
       addon-left-icon="ni ni-email-83"
       v-model="form.usernameOrEmail"
     ></base-input>
-    <span class="text-danger">{{ errors.usernameOrEmail || errors.login }}</span>
+    <span class="text-danger">{{ errors.usernameOrEmail}}</span>
 
     <base-input
       alternative
@@ -41,7 +41,7 @@
       addon-left-icon="ni ni-lock-circle-open"
       v-model="form.password"
     ></base-input>
-    <span class="text-danger">{{ errors.password || errors.login }}</span>
+    <span class="text-danger">{{ errors.password}}</span>
 
     <base-checkbox v-model="form.remember">
       Recordarme
@@ -89,7 +89,7 @@ export default {
   data() {
     return {
       form: {
-        usernameOrEmail: "",  // Usa el mismo nombre que en el formulario
+        usernameOrEmail: "",  
         password: "",
         remember: false,
       },
@@ -103,7 +103,7 @@ export default {
   },
   methods: {
     async handleSubmit() {
-      // Usa el mismo nombre que en el formulario
+      
       axios.post(`${backendUrl}login/`, {
         username_or_email: this.form.usernameOrEmail,
         password: this.form.password,
@@ -120,7 +120,7 @@ export default {
           this.errors.login = 'Credenciales inválidas';
           this.errors.usernameOrEmail = error.response.data.username_or_email[0];
         } else {
-          this.errors.login = 'Error en el inicio de sesión. Por favor, inténtalo de nuevo.';
+          this.errors.login = 'Credenciales inválidas';
         }
       });
     },
