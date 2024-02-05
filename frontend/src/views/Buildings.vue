@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="position-relative">
+      <!-- shape Hero -->
       <section class="section-shaped my-0">
         <div class="shape shape-style-3 shape-default shape-skew">
           <span></span>
@@ -21,12 +22,15 @@
           <div class="col px-0">
             <h1 class="mb-4">Lista de facultades</h1>
             <p class="mb-3" style="color: azure;">Filtra por campus:</p>
+            <!-- Selector de campus -->
             <b-form-select
               v-model="selectedCampus"
               :options="campusOptions"
               placeholder="Seleccionar Campus"
               class="mb-3 custom-select"
             ></b-form-select>
+
+            <!-- Lista de edificios -->
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
               <b-card
                 v-for="building in filteredBuildings"
@@ -65,10 +69,12 @@
                   </b-col>
                 </b-row>
               </b-card>
+              <!-- Fin del bucle v-for -->
             </div>
           </div>
         </div>
       </section>
+      <!-- 1st Hero Variation -->
     </div>
   </div>
 </template>
