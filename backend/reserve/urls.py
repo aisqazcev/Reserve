@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusDetailstView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, search_spaces
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, search_spaces
 
 app_name="reserve"
 
@@ -23,10 +23,8 @@ urlpatterns = [
     path('profile/', UserView.as_view(), name='get_user_data'),
     path('change-password/', PasswordChangeView.as_view(), name='change-password'),
 
-    path('campus/', CampusListView.as_view(), name='campus-list'),
-    path('campus/<int:campus_id>/', CampusDetailstView.as_view(), name='campus-details'),
-    path('campus/<int:campus_id>/buildings/', BuildingByCampusView.as_view(), name='building_by_campus'),
-
+    path('campuses/', CampusListView.as_view(), name='campus-list'), 
+    path('campus/<int:campus_id>/', BuildingListView.as_view(), name='campus-details'),   
 
     path('buildings/', BuildingListView.as_view(), name='building-list'),
     path('building/<int:building_id>/', BuildingDetailstView.as_view(), name='building-details'),

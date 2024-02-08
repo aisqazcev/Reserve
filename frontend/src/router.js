@@ -8,8 +8,8 @@ import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
 import SpacesByBuilding from './views/SpacesByBuilding.vue';
 import Booking from "./views/Booking.vue";
-import Bookings from "./views/MyBookings.vue";
 import Desk from "./views/SpaceList.vue";
+import Buildings from "./views/Buildings.vue";
 
 Vue.use(Router);
 
@@ -51,6 +51,15 @@ const router = new Router({
         footer: AppFooter
       },
       meta: { requiresAuth: true }
+    },
+    {
+      path: "/buildings",
+      name: "Buildings",
+      components: {
+        header: AppHeader,
+        default: Buildings,
+        footer: AppFooter
+      }
     },
     {
       path: "/building/:buildingId",

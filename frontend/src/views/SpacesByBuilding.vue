@@ -16,26 +16,52 @@
           <span></span>
         </div>
         <div class="container shape-container d-flex">
-          <link href="/assets/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+          <link
+            href="/assets/vendor/font-awesome/css/font-awesome.min.css"
+            rel="stylesheet"
+          />
           <div class="col px-0">
             <div class="row">
               <div class="col-lg-6">
-                <h1 class="display-3  text-white mb-2">{{ building.name_complete }}</h1>
+                <h1 class="display-3  text-white mb-2">
+                  {{ building.name_complete }}
+                </h1>
+                <img
+                  :src="
+                    building.image
+                      ? getBuildingImageUrl(building.image)
+                      : '/img/alternative.jpg'
+                  "
+                  class="img-fluid shadow-lg mb-4 rounded-square"
+                  alt="Imagen del espacio"
+                />
                 <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-square-pin mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.address }}</p>
+                  <i
+                    class="ni ni-square-pin mr-2"
+                    style="font-size: 24px; color:white;"
+                  ></i>
+                  <p class="text-white mb-0">{{ building.address }}</p>
                 </div>
                 <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-world-2 mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.web }}</p>
+                  <i
+                    class="ni ni-world-2 mr-2"
+                    style="font-size: 24px; color:white;"
+                  ></i>
+                  <p class="text-white mb-0">{{ building.web }}</p>
                 </div>
                 <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-email-83 mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.email }}</p>
+                  <i
+                    class="ni ni-email-83 mr-2"
+                    style="font-size: 24px; color:white;"
+                  ></i>
+                  <p class="text-white mb-0">{{ building.email }}</p>
                 </div>
                 <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-mobile-button mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.phone }}</p>
+                  <i
+                    class="ni ni-mobile-button mr-2"
+                    style="font-size: 24px; color:white;"
+                  ></i>
+                  <p class="text-white mb-0">{{ building.phone }}</p>
                 </div>
                 <p class="text-white">Servicios: {{ building.services }}</p>
               </div>
@@ -51,11 +77,19 @@
           <div class="col-lg-12">
             <div class="row row-grid">
               <!-- Utiliza v-for para iterar sobre cada espacio -->
-              <div v-for="space in spaces" :key="space.id" class="col-lg-4 col-md-6 mb-4">
+              <div
+                v-for="space in spaces"
+                :key="space.id"
+                class="col-lg-4 col-md-6 mb-4"
+              >
                 <card class="border-0" hover shadow body-classes="py-5">
                   <div class="square-frame">
                     <img
-                    :src="space.image ? getSpaceImageUrl(space.image)  : '/img/alternative.jpg'"
+                      :src="
+                        space.image
+                          ? getSpaceImageUrl(space.image)
+                          : '/img/alternative.jpg'
+                      "
                       class="img-fluid shadow-lg mb-4 rounded-square"
                       alt="Imagen del espacio"
                     />
@@ -101,7 +135,7 @@ export default {
     };
   },
   mounted() {
-    this.buildingId = this.$route.params.buildingId || '';
+    this.buildingId = this.$route.params.buildingId || "";
     // Luego, llamar a fetchSpaces
     this.fetchSpaces();
   },
@@ -130,24 +164,29 @@ export default {
         });
     },
     getSpaceImageUrl(relativePath) {
-      // Construir la URL completa de la imagen utilizando la URL del backend
+      relativePath = relativePath.replace(/^\/*/, "");
       const imageUrl = `${backendUrl}${relativePath}`;
-    console.log('URL de la imagen completa:', imageUrl);
-    return imageUrl;
+      return imageUrl;
     },
-  }, 
+    getBuildingImageUrl(relativePath) {
+      relativePath = relativePath.replace(/^\/*/, "");
+      relativePath = relativePath.replace(/^media\//, "");
+      const imageUrl = `${backendUrl}${relativePath}`;
+      return imageUrl;
+    },
+  },
   computed: {
-      get() {
-        return this.$route.params.buildingId;
-      },    
+    get() {
+      return this.$route.params.buildingId;
+    },
   },
   watch: {
-    '$route'(to, from) {
-    if (to.params && to.params.buildingId) {
-      this.buildingId = to.params.buildingId;
-      this.fetchSpaces();
-    }
-},
+    $route(to, from) {
+      if (to.params && to.params.buildingId) {
+        this.buildingId = to.params.buildingId;
+        this.fetchSpaces();
+      }
+    },
   },
 };
 </script>
