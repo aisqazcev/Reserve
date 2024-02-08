@@ -23,12 +23,10 @@
           <span class="nav-link-inner--text">Facultades</span>
         </router-link>
 
-        <!-- Botón Reservar -->
         <router-link to="/booking" class="nav-link">
           <span class="nav-link-inner--text">Reservar</span>
         </router-link>
 
-        <!-- Botón Mis reservas -->
         <router-link to="/mis-reservas" class="nav-link">
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
@@ -123,13 +121,9 @@ export default {
     };
   },
 
-  mounted() {
-   
-  },
+  mounted() {},
   methods: {
-        async logout() {
-      console.log("LOGOUT");
-
+    async logout() {
       const token = localStorage.getItem("token");
       if (token) {
         axios
