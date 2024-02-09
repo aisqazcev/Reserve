@@ -132,7 +132,6 @@ export default {
   methods: {
     fetchUserData() {
       const token = localStorage.getItem("token");
-      console.log("token: ", token);
       if (token) {
         axios
           .get(`${backendUrl}profile/`, {
@@ -140,7 +139,6 @@ export default {
           })
           .then((response) => {
             this.userData = response.data;
-            console.log("useData: ", this.userData);
           })
           .catch((error) => {
             console.error("Error en el cierre de sesión:", error);
@@ -158,7 +156,6 @@ export default {
     },
     changePassword() {
       const token = localStorage.getItem("token");
-      console.log("Token:", token);
       axios
         .post(
           `${backendUrl}change-password/`,
@@ -175,7 +172,6 @@ export default {
         )
         .then((response) => {
           this.showChangePasswordModal = false;
-          console.log(response.data.detail);
         })
         .catch((error) => {
           console.error("Error al cambiar la contraseña:", error);

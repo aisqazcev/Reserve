@@ -80,56 +80,60 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
 import { backendUrl } from "../main.js";
 
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.xsrfHeaderName = "X-CSRFToken";
 
 export default {
-  name: 'SignUp', 
-  data(){
-    return{
+  name: "SignUp",
+  data() {
+    return {
       form: {
-        username: '',
-        password: '',
-        password2: '',
-        name: '', 
-        email: '',
+        username: "",
+        password: "",
+        password2: "",
+        name: "",
+        email: "",
       },
       errors: [],
       loading: false,
-    }
+    };
   },
-  methods:{
-    async register(){
-      this.errors = []
+  methods: {
+    async register() {
+      this.errors = [];
       this.loading = true;
 
-      if(this.form.username === ''){
-        this.errors.push('The username is missing')
+      if (this.form.username === "") {
+        this.errors.push("The username is missing");
       }
-      if(this.form.password === '' || this.form.password2 === ''){
-        this.errors.push('The password is missing')
+      if (this.form.password === "" || this.form.password2 === "") {
+        this.errors.push("The password is missing");
       }
-      if(this.form.password2 !== this.form.password){
-        this.errors.push('The passwords don\'t match')
+      if (this.form.password2 !== this.form.password) {
+        this.errors.push("The passwords don't match");
       }
-      if(!this.errors.length){
+      if (!this.errors.length) {
         try {
-          const response = await axios.post(`${backendUrl}register/`, this.form);
-          
+          const response = await axios.post(
+            `${backendUrl}register/`,
+            this.form
+          );
+
           this.loading = true;
           setTimeout(() => {
             this.$router.push("/");
             this.loading = false;
           }, 2000);
         } catch (error) {
-          this.errors.register = "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
+          this.errors.register =
+            "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
           console.error("Register error:", error);
         }
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>

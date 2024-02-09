@@ -51,9 +51,7 @@ from rest_framework.status import (
 
 
 class LoginView(ObtainAuthToken):
-    serializer_class = (
-        LoginSerializer  # Usa el nuevo serializador para el inicio de sesión
-    )
+    serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -94,7 +92,6 @@ class LogoutView(APIView):
                 raise AuthenticationFailed("No token provided")
 
         except Exception as e:
-            print(f"Error during logout: {e}")
             return Response(
                 {"detail": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -125,12 +122,6 @@ class UserView(APIView):
             ),
         }
         return Response(data)
-
-
-from rest_framework import generics, permissions
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
 
 
 @authentication_classes([TokenAuthentication])
@@ -166,12 +157,8 @@ class PasswordChangeView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-##########################################################################################
-
-
 class SpaceManagementView(APIView):
 
-    # show all spaces
     def get(self, request, *args, **kwargs):
         spaces = Space.objects.all()
         serializer = SpaceSerializer(spaces, many=True)
@@ -207,9 +194,6 @@ class SpaceShowView(APIView):
         return Response(serializer.data)
 
 
-##########################################################################################
-
-
 class SpaceItemListView(APIView):
     def get(self, request, *args, **kwargs):
         space_items = Space_item.objects.all()
@@ -224,9 +208,6 @@ class SpaceShowView(APIView):
         serializer = SpaceSerializer(space)
 
         return Response(serializer.data)
-
-
-##########################################################################################
 
 
 class RoomManagementView(APIView):
@@ -267,9 +248,6 @@ class RoomShowView(APIView):
         return Response(serializer.data)
 
 
-##########################################################################################
-
-
 class DeskManagementView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = DeskSerializer(data=request.data)
@@ -306,7 +284,6 @@ class DeskShowView(APIView):
         serializer = DeskSerializer(desk)
 
         return Response(serializer.data)
-
 
 
 @authentication_classes([TokenAuthentication])
@@ -356,7 +333,6 @@ class BookingShowView(APIView):
         return Response(serializer.data)
 
 
-##########################################################################################
 class EquipmentManagementView(APIView):
 
     def get(self, request, *args, **kwargs):
@@ -405,22 +381,22 @@ class CampusDetailView(APIView):
     def get(self, request, campus_id, *args, **kwargs):
         campus = get_object_or_404(Campus, id=campus_id)
         serializer = CampusSerializer(campus)
-        return Response({'id': campus.id, 'name': campus.campus_name})
+        return Response({"id": campus.id, "name": campus.campus_name})
 
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
         campus_name = request.query_params.get("campus", None)
 
         if campus_name:
-            buildings = Building.objects.filter(campus__campus_name=campus_name).select_related('campus')
+            buildings = Building.objects.filter(
+                campus__campus_name=campus_name
+            ).select_related("campus")
         else:
-            buildings = Building.objects.all().select_related('campus')
+            buildings = Building.objects.all().select_related("campus")
 
-        # Serializa los datos incluyendo el nombre del campus
         serializer = BuildingSerializer(buildings, many=True)
         serialized_data = serializer.data
 
-        # Si estás utilizando DRF y Django >= 3.1, JsonResponse es preferible
         return JsonResponse(serialized_data, safe=False)
 
 class BuildingDetailstView(APIView):
