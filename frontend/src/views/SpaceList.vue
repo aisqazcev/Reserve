@@ -24,12 +24,33 @@
             </div>
             <div class="col-md-4 mb-3">
               <div class="form-group">
-                <label for="duracion">Duración (minutos):</label>
-                <input type="number" id="duration" class="form-control" />
+                <label for="duracion">Duración:</label>
+                <select
+                  id="duration"
+                  class="form-control"
+                  @change="handleDurationChange"
+                >
+                  <option value="15">0:15</option>
+                  <option value="30">0:30</option>
+                  <option value="45">0:45</option>
+                  <option value="60">1:00</option>
+                  <option value="75">1:15</option>
+                  <option value="90">1:30</option>
+                  <option value="105">1:45</option>
+                  <option value="120">2:00</option>
+                  <option value="135">2:15</option>
+                  <option value="150">2:30</option>
+                  <option value="165">2:45</option>
+                  <option value="180">3:00</option>
+                </select>
               </div>
             </div>
+
             <div class="col-md-12">
-              <button class="btn btn-primary btn-block" @click="buscarDisponibilidad">
+              <button
+                class="btn btn-primary btn-block"
+                @click="buscarDisponibilidad"
+              >
                 Buscar Disponibilidad
               </button>
             </div>
@@ -63,9 +84,6 @@
   </section>
 </template>
 
-
-
-
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
@@ -80,6 +98,9 @@ export default {
     this.listSpaceItems();
   },
   methods: {
+    handleDurationChange(event) {
+      console.log("Duración seleccionada:", event.target.value);
+    },
     listSpaceItems() {
       const token = localStorage.getItem("token");
       const spaceId = this.$route.params.spaceId;
@@ -110,24 +131,23 @@ export default {
 
       // Hacer la solicitud al backend
       axios
-  .get(`${backendUrl}find-available-seats/`, {
-    params: {
-      start_time: `${date} ${start_time}`,
-      duration: duration,
-    },
-  })
-  .then((response) => {
-    // Actualizar la vista con los resultados recibidos
-    this.spacesItems = response.data.available_seats.map((id) => ({
-      id: id,
-      name: "",
-      seat_status: "AVAILABLE",
-    }));
-  })
-  .catch((error) => {
-    console.error("Error al buscar disponibilidad:", error);
-  });
-
+        .get(`${backendUrl}find-available-seats/`, {
+          params: {
+            start_time: `${date} ${start_time}`,
+            duration: duration,
+          },
+        })
+        .then((response) => {
+          // Actualizar la vista con los resultados recibidos
+          this.spacesItems = response.data.available_seats.map((id) => ({
+            id: id,
+            name: "",
+            seat_status: "AVAILABLE",
+          }));
+        })
+        .catch((error) => {
+          console.error("Error al buscar disponibilidad:", error);
+        });
     },
   },
 };

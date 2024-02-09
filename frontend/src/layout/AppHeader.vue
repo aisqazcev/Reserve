@@ -28,7 +28,7 @@
         </router-link>
 
 
-        <router-link to="/booking" class="nav-link">
+        <router-link to="/bookings" class="nav-link">
 
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
