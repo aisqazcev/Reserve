@@ -9,7 +9,22 @@
     <div class="container mt-3">
       <div class="row">
         <div class="col-md-4 mb-3">
-          <button class="btn btn-primary btn-block">
+          <div class="form-group">
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="date" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="horaInicio">Hora de inicio:</label>
+            <input type="time" id="start_time" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="duracion">Duración (minutos):</label>
+            <input type="number" id="duration" class="form-control" />
+          </div>
+
+          <button class="btn btn-primary btn-block" @click="buscarDisponibilidad">
             Buscar Disponibilidad
           </button>
         </div>
@@ -39,7 +54,6 @@
     </div>
   </section>
 </template>
-
 
 <script>
 import axios from "axios";
@@ -73,6 +87,15 @@ export default {
       } else {
         console.error("No se encontró el token de autenticación.");
       }
+    },
+    buscarDisponibilidad() {
+      var date = document.getElementById('date').value;
+      var start_time = document.getElementById('start_time').value;
+      var duration = document.getElementById('duration').value;
+
+      console.log("Fecha:", date);
+      console.log("Hora de inicio:", start_time);
+      console.log("Duración:", duration);
     },
   },
 };

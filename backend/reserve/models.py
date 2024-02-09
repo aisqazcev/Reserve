@@ -51,10 +51,6 @@ class Campus(models.Model):
     def __str__(self):
         return self.campus_name
 
-class Campus(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    address = models.TextField(null=False)
-
 class Building(models.Model):
     name = models.CharField(max_length=255, unique=True)
     name_complete = models.CharField(max_length=255)
@@ -70,29 +66,31 @@ class Building(models.Model):
         return self.name
 
 def load_building_data():
-    json_file_path = os.path.join(settings.BASE_DIR, 'reserve', 'buildings_name.json')
+    json_file_path = os.path.join(settings.BASE_DIR, "reserve", "buildings_name.json")
 
-    with open(json_file_path, 'r', encoding='utf-8') as json_file:
+    with open(json_file_path, "r", encoding="utf-8") as json_file:
         buildings_data = json.load(json_file)
 
         for building_data in buildings_data:
-            campus_name = building_data.get('campus', '')
+            campus_name = building_data.get("campus", "")
 
             unique_campus, _ = Campus.objects.get_or_create(campus_name=campus_name)
 
-            existing_building = Building.objects.filter(name=building_data.get('name')).first()
+            existing_building = Building.objects.filter(
+                name=building_data.get("name")
+            ).first()
 
             if not existing_building:
                 Building.objects.create(
-                    name=building_data.get('name', ''),
-                    name_complete=building_data.get('name_complete', ''),
-                    address=building_data.get('address', ''),
-                    web=building_data.get('web', ''),
-                    email=building_data.get('email', ''),
-                    phone=building_data.get('phone', ''),
-                    services=building_data.get('services', ''),
-                    image=building_data.get('image', ''),
-                    campus=unique_campus
+                    name=building_data.get("name", ""),
+                    name_complete=building_data.get("name_complete", ""),
+                    address=building_data.get("address", ""),
+                    web=building_data.get("web", ""),
+                    email=building_data.get("email", ""),
+                    phone=building_data.get("phone", ""),
+                    services=building_data.get("services", ""),
+                    image=building_data.get("image", ""),
+                    campus=unique_campus,
                 )
 
         

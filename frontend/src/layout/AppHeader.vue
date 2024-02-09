@@ -1,30 +1,27 @@
 <template>
-    <header class="header-global">
-        <base-nav class="navbar-main" transparent type="" effect="light" expand>
-            <router-link to="/landing" class="nav-link">
-                <i class="fa fa-home fa-2x" style="color: white;"></i>
-            </router-link>
+  <header class="header-global">
+    <base-nav class="navbar-main" transparent type="" effect="light" expand>
+      <router-link to="/landing" class="nav-link">
+        <i class="fa fa-home fa-2x" style="color: white;"></i>
+      </router-link>
 
-            <div class="separator"></div>
+      <div class="row" slot="content-header" slot-scope="{ closeMenu }">
+        <div class="col-6 collapse-brand">
+          <a
+            href="https://demos.creative-tim.com/vue-argon-design-system/documentation/"
+          >
+            <img src="img/brand/blue.png" />
+          </a>
+        </div>
+        <div class="col-6 collapse-close">
+          <close-button @click="closeMenu"></close-button>
+        </div>
+      </div>
 
-
-            <div class="row" slot="content-header" slot-scope="{ closeMenu }">
-              <div class="col-6 collapse-brand">
-                <a
-                  href="https://demos.creative-tim.com/vue-argon-design-system/documentation/"
-                >
-                  <img src="img/brand/blue.png" />
-                </a>
-              </div>
-              <div class="col-6 collapse-close">
-                <close-button @click="closeMenu"></close-button>
-              </div>
-            </div>
-
-            <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
-              <router-link :to="{ name: 'Buildings' }" class="nav-link">
-                <span class="nav-link-inner--text">Facultades</span>
-              </router-link>
+      <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
+        <router-link :to="{ name: 'Buildings' }" class="nav-link">
+          <span class="nav-link-inner--text">Facultades</span>
+        </router-link>
 
         <!-- Botón Reservar -->
         <router-link to="/booking" class="nav-link">
@@ -32,7 +29,7 @@
         </router-link>
 
         <!-- Botón Mis reservas -->
-        <router-link to="/mis-reservas" class="nav-link">
+        <router-link to="/booking" class="nav-link">
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
       </ul>
@@ -126,11 +123,9 @@ export default {
     };
   },
 
-  mounted() {
-   
-  },
+  mounted() {},
   methods: {
-        async logout() {
+    async logout() {
       console.log("LOGOUT");
 
       const token = localStorage.getItem("token");
@@ -153,7 +148,7 @@ export default {
 </script>
 
 <style>
-    .separator {
-        margin: 0 50px; 
-    }
+.separator {
+  margin: 0 50px;
+}
 </style>

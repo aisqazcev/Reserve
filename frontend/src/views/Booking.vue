@@ -52,7 +52,7 @@
                 <div class="form-group">
                   <label for="campusType">Campus</label>
                     <select v-model="form.campus" class="form-control" id="campusType">
-                      <option v-for="campus in campusList" :key="campus.id" :value="campus.id">{{ campus.name }}</option>
+                      <option v-for="campus in campusList" :key="campus.id" :value="campus.name">{{ campus.name }}</option>
                     </select>
                 </div>
 
@@ -132,7 +132,7 @@ export default {
   methods: {
     async fetchCampusList() {
       try {
-        const response = await axios.get(`${backendUrl}campus/`)
+        const response = await axios.get(`${backendUrl}campuses/`)
         this.campusList = response.data;
       } catch (error) {
         console.error('Error fetching campus list:', error);
@@ -141,7 +141,7 @@ export default {
     async fetchBuilding() {
       if (this.form.campus) {
         try {
-          const response = await axios.get(`${backendUrl}campus/${this.form.campus}/buildings/`);
+          const response = await axios.get(`${backendUrl}campus/${this.form.campus}`);
           this.buildingList = response.data;
         } catch (error) {
           console.error('Error fetching building list:', error);
