@@ -7,6 +7,14 @@
       <span style="background-color: #787CFF;"></span>
     </div>
     <div class="container mt-3">
+      <h2 class="card-title">{{ spaceDetails.name }} de {{ building.name }}</h2>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Detalles del Espacio</h5>
+          <p><strong>Nombre:</strong> {{ spaceDetails.name }}</p>
+          <p><strong>Ubicación:</strong> {{ spaceDetails.location }}</p>
+        </div>
+      </div>
       <div class="card">
         <div class="card-body">
           <div class="row">
@@ -92,10 +100,14 @@ export default {
   data() {
     return {
       spacesItems: [],
+      spaceDetails: {},
+      building: {},
+      campus: {},
     };
   },
   mounted() {
     this.listSpaceItems();
+    this.getSpaceDetails();
   },
   methods: {
     handleDurationChange(event) {
@@ -120,6 +132,40 @@ export default {
         console.error("No se encontró el token de autenticación.");
       }
     },
+    getSpaceDetails() {
+      const token = localStorage.getItem("token");
+      const spaceId = this.$route.params.spaceId;
+      if (token) {
+        axios
+          .get(`${backendUrl}spaces/${spaceId}/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.spaceDetails = response.data;
+            console.log("Detalles del espacio: ", response.data);
+
+            const buildingId = response.data.building;
+            axios
+              .get(`${backendUrl}building/${buildingId}/`)
+              .then((buildingResponse) => {
+                this.building = buildingResponse.data;
+                console.log("Detalles del edificio: ", buildingResponse.data);
+              })
+              .catch((error) => {
+                console.error(
+                  "Error al obtener los detalles del edificio:",
+                  error
+                );
+              });
+          })
+          .catch((error) => {
+            console.error("Error al obtener los detalles del espacio:", error);
+          });
+      } else {
+        console.error("No se encontró el token de autenticación.");
+      }
+    },
+
     buscarDisponibilidad() {
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;

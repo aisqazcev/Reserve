@@ -89,7 +89,7 @@ const router = new Router({
       }
     },
     {
-      path: "/:spaceId/desk",
+      path: "/space/:spaceId",
       name: "desk",
       components: {
         header: AppHeader,
