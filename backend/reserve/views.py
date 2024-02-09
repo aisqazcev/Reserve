@@ -11,6 +11,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+
 
 
 from .models import (
@@ -331,6 +334,49 @@ class BookingShowView(APIView):
         serializer = BookingSerializer(booking)
 
         return Response(serializer.data)
+    
+def find_available_seats(request):
+    if request.method == 'GET':
+   
+        start_time_str = request.GET.get('start_time')
+        duration_str = request.GET.get('duration')
+
+        if not start_time_str or not duration_str:
+            return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
+
+        try:
+
+            start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M')
+
+
+            duration = timedelta(minutes=int(duration_str))
+            end_time = start_time + duration
+            print(f"Start time: {start_time}, End time: {end_time}")
+
+    
+            overlapping_bookings = Booking.objects.filter(date=start_time.date()).filter(
+                start_time__lt=end_time, end_time__gt=start_time
+            )
+
+      
+            all_seats = Desk.objects.all()
+
+            available_seats = []
+            for seat in all_seats:
+                is_available = True
+                for booking in overlapping_bookings:
+                    if seat.id == booking.desk.id:
+                        is_available = False
+                        break
+                if is_available:
+                    available_seats.append(seat)
+
+            available_seats_ids = [seat.id for seat in available_seats]
+
+            return JsonResponse({'available_seats': available_seats_ids})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 class EquipmentManagementView(APIView):

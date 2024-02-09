@@ -7,29 +7,37 @@
       <span style="background-color: #787CFF;"></span>
     </div>
     <div class="container mt-3">
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <div class="form-group">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="date" class="form-control" />
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="form-group">
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="date" class="form-control" />
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-group">
+                <label for="horaInicio">Hora de inicio:</label>
+                <input type="time" id="start_time" class="form-control" />
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-group">
+                <label for="duracion">Duración (minutos):</label>
+                <input type="number" id="duration" class="form-control" />
+              </div>
+            </div>
+            <div class="col-md-12">
+              <button class="btn btn-primary btn-block" @click="buscarDisponibilidad">
+                Buscar Disponibilidad
+              </button>
+            </div>
           </div>
-
-          <div class="form-group">
-            <label for="horaInicio">Hora de inicio:</label>
-            <input type="time" id="start_time" class="form-control" />
-          </div>
-
-          <div class="form-group">
-            <label for="duracion">Duración (minutos):</label>
-            <input type="number" id="duration" class="form-control" />
-          </div>
-
-          <button class="btn btn-primary btn-block" @click="buscarDisponibilidad">
-            Buscar Disponibilidad
-          </button>
         </div>
       </div>
-      <div class="row">
+
+      <div class="row mt-3">
         <div class="col">
           <div class="table-container">
             <table class="table">
@@ -54,6 +62,9 @@
     </div>
   </section>
 </template>
+
+
+
 
 <script>
 import axios from "axios";
@@ -89,13 +100,34 @@ export default {
       }
     },
     buscarDisponibilidad() {
-      var date = document.getElementById('date').value;
-      var start_time = document.getElementById('start_time').value;
-      var duration = document.getElementById('duration').value;
+      const date = document.getElementById("date").value;
+      const start_time = document.getElementById("start_time").value;
+      const duration = document.getElementById("duration").value;
 
       console.log("Fecha:", date);
       console.log("Hora de inicio:", start_time);
       console.log("Duración:", duration);
+
+      // Hacer la solicitud al backend
+      axios
+  .get(`${backendUrl}find-available-seats/`, {
+    params: {
+      start_time: `${date} ${start_time}`,
+      duration: duration,
+    },
+  })
+  .then((response) => {
+    // Actualizar la vista con los resultados recibidos
+    this.spacesItems = response.data.available_seats.map((id) => ({
+      id: id,
+      name: "",
+      seat_status: "AVAILABLE",
+    }));
+  })
+  .catch((error) => {
+    console.error("Error al buscar disponibilidad:", error);
+  });
+
     },
   },
 };

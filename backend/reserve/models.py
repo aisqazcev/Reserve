@@ -145,5 +145,5 @@ class Booking(models.Model):
     space = models.ForeignKey(Space, on_delete=models.CASCADE)
     desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
     date = models.DateField() 
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.DateTimeField()  
+    end_time = models.DateTimeField()  
