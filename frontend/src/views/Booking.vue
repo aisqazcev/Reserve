@@ -20,71 +20,85 @@
             body-classes="px-lg-5 py-lg-5"
             class="border-0"
           >
-            <template>
-              <div class="text-center text-muted mb-4">
-                <small>Reserva tu espacio</small>
-              </div>
-              <form @submit.prevent="booking" role="form">
-                <base-input
-                  alternative
-                  type="date"
-                  placeholder="Fecha"
-                  v-model="form.date"
-                ></base-input>
-                <span class="text-danger">{{ errors.date }}</span>
+            <div class="text-center text-muted mb-4">
+              <small>Buscar Disponibilidad de Espacios</small>
+            </div>
+            <form @submit.prevent="buscarDisponibilidad" role="form">
+              <base-input
+                alternative
+                type="date"
+                placeholder="Fecha"
+                v-model="selectedDate"
+              ></base-input>
 
-                <base-input
-                  alternative
-                  type="time"
-                  placeholder="Hora de inicio"
-                  v-model="form.start_time"
-                ></base-input>
-                <span class="text-danger">{{ errors.start_time }}</span>
+              <base-input
+                alternative
+                type="time"
+                placeholder="Hora"
+                v-model="selectedTime"
+              ></base-input>
 
-                <base-input
-                  alternative
-                  type="time"
-                  placeholder="Hora de fin"
-                  v-model="form.end_time"
-                ></base-input>
-                <span class="text-danger">{{ errors.end_time }}</span>
+              <base-input
+                alternative
+                type="number"
+                placeholder="Duración (minutos)"
+                v-model="selectedDuration"
+                min="1"
+              ></base-input>
 
-                <div class="form-group">
-                  <label for="campusType">Campus</label>
-                    <select v-model="form.campus" class="form-control" id="campusType">
-                      <option v-for="campus in campusList" :key="campus.id" :value="campus.name">{{ campus.name }}</option>
-                    </select>
-                </div>
-
-                <div class="form-group" v-if="form.campus">
-                  <label for="buildingType">Edificio</label>
-                  <select v-model="form.building" class="form-control" id="spaceType" @change="fetchBuilding">
-                    <option v-for="building in buildingList" :key="building.id" :value="building.id">{{ building.name }}</option>
-                  </select>
-                </div>
-
-                <!-- <div class="form-group">
-                  <label for="spaceItemType">Tipo de Espacio</label>
-                  <select v-model="form.space_item_type" class="form-control" id="spaceItemType">
-                    <option value="room">Sala</option>
-                    <option value="desk">Escritorio</option>
-                  </select>
-                </div>
-                <span class="text-danger">{{ errors.space_item_type }}</span> -->
-
-                <div class="text-center">
-                  <base-button
-                    :disabled="loading"
-                    type="primary"
-                    class="my-4"
-                    @click="booking"
+              <div class="form-group">
+                <label for="campusType">Campus</label>
+                <select
+                  v-model="selectedCampus"
+                  class="form-control"
+                  id="campusType"
+                >
+                  <option :value="null">Cualquier campus</option>
+                  <option
+                    v-for="campus in campuses"
+                    :key="campus.id"
+                    :value="campus.id"
+                    >{{ campus.campus_name }}</option
                   >
-                    Reservar
-                  </base-button>
-                </div>
-              </form>
-              <span class="text-danger">{{ errors.booking }}</span>
-            </template>
+                </select>
+              </div>
+
+              <div class="form-group" v-if="selectedCampus !== null">
+                <label for="buildingType">Facultad</label>
+                <select
+                  v-model="selectedBuilding"
+                  class="form-control"
+                  id="buildingType"
+                >
+                  <option :value="null">Seleccionar Facultad</option>
+                  <option
+                    v-for="building in filteredBuildings"
+                    :key="building.id"
+                    :value="building.id"
+                    >{{ building.name }}</option
+                  >
+                </select>
+              </div>
+
+              <div class="text-center">
+                <base-button
+                  :disabled="loading"
+                  type="primary"
+                  class="my-4"
+                  @click="buscarDisponibilidad"
+                >
+                  Buscar Disponibilidad
+                </base-button>
+              </div>
+            </form>
+            <div v-if="spaces.length > 0">
+              <h3>Salas Disponibles</h3>
+              <ul>
+                <li v-for="space in spaces" :key="space.id">
+                  {{ space.name }}
+                </li>
+              </ul>
+            </div>
           </card>
         </div>
       </div>
@@ -93,89 +107,79 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 import { backendUrl } from "../main.js";
 
 export default {
   name: "booking",
   data() {
     return {
-      form: {
-        date: "",
-        start_time: "",
-        end_time: "",
-        campus: "",
-        facultad: "",
-      },
-      campusList: [],
-      buildingList: [],
-      loading: false,
-      errors: {
-        date: "",
-        start_time: "",
-        end_time: "",
-        campus: "",
-        facultad: "",
-        booking: "",
-      },
+      selectedDate: "",
+      selectedTime: "",
+      selectedCampus: null,
+      selectedBuilding: null,
+      selectedDuration: 60,
+      campuses: [],
+      buildings: [],
+      spaces: [],
     };
   },
+  computed: {
+    filteredBuildings() {
+      if (this.selectedCampus) {
+        // Filtrar los edificios por el ID del campus seleccionado
+        return this.buildings.filter(
+          (building) => building.campus === this.selectedCampus
+        );
+      }
+      // Si no se ha seleccionado un campus, devolver todos los edificios
+      return this.buildings;
+    },
+  },
   mounted() {
-    this.fetchCampusList();
+    this.loadCampuses();
+    this.loadBuildings(); // Cargar todos los edificios al inicio
   },
-  watch: {
-  'form.campus': {
-    immediate: true,
-    handler: 'fetchBuilding',
-  },
-},
   methods: {
-    async fetchCampusList() {
-      try {
-        const response = await axios.get(`${backendUrl}campuses/`)
-        this.campusList = response.data;
-      } catch (error) {
-        console.error('Error fetching campus list:', error);
-      }
+    async loadCampuses() {
+      axios
+        .get(`${backendUrl}campuses/`)
+        .then((response) => {
+          this.campuses = response.data;
+        })
+        .catch((error) => {
+          console.error("Error fetching campuses:", error);
+        });
     },
-    async fetchBuilding() {
-      if (this.form.campus) {
-        try {
-          const response = await axios.get(`${backendUrl}campus/${this.form.campus}`);
-          this.buildingList = response.data;
-        } catch (error) {
-          console.error('Error fetching building list:', error);
-        }
-      }
+    async loadBuildings() {
+      axios
+        .get(`${backendUrl}buildings/`)
+        .then((response) => {
+          // Asignar todos los edificios a la propiedad buildings
+          this.buildings = response.data;
+        })
+        .catch((error) => {
+          console.error("Error fetching buildings:", error);
+        });
     },
-     async booking() {
-         const token = localStorage.getItem('token');
-         try {
-             const response = await axios.post(`${backendUrl}booking/`, this.form, {
-                 headers: { Authorization: `Token ${token}` }
-             });
-             this.$router.push("/bookings");
-         } catch (error) {
-             console.error('Error al realizar la reserva:', error.response || error);
-         }
-     },
-
-    // async Search() {
-    //     try {
-    //     axios.get(`${backendUrl}search_spaces/`, {
-    //         params: {
-    //             campus: this.form.campus,
-    //             building: this.form.building,
-    //         },
-    //     }).then(response => {
-    //       console.log("datos", response.data);
-    //       this.$router.push("/filteredSpaces");
-    //       });
-            
-    //     } catch (error) {
-    //         console.error('Error al realizar la búsqueda:', error.response || error);
-    //     }
-    // }
+    buscarDisponibilidad() {
+      axios
+        .get(`${backendUrl}find-available-spaces/`, {
+          params: {
+            date: this.selectedDate,
+            start_time: this.selectedTime,
+            duration: this.selectedDuration,
+            campus_id: this.selectedCampus,
+            building_id: this.selectedBuilding,
+          },
+        })
+        .then((response) => {
+          this.spaces = response.data;
+        })
+        .catch((error) => {
+          console.error("Error al buscar disponibilidad:", error);
+        });
+    },
   },
 };
 </script>

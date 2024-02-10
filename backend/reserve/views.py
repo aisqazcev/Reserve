@@ -314,6 +314,7 @@ class BookingManagementView(APIView):
         booking = get_object_or_404(Booking, id=booking_id)
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
+    
 @authentication_classes([TokenAuthentication])
 class BookingListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -435,7 +436,7 @@ class BuildingListView(APIView):
 
         if campus_name:
             buildings = Building.objects.filter(
-                campus__campus_name=campus_name
+                campus__campus_name=campus_name 
             ).select_related("campus")
         else:
             buildings = Building.objects.all().select_related("campus")
@@ -465,22 +466,29 @@ class SpacesByBuildingView(APIView):
 
         return Response(serializer.data)
     
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 @api_view(['GET'])
-def search_spaces(request):
-    campus_id = request.GET.get('campus', None)
-    building_id = request.GET.get('building', None)
+def find_available_spaces(request):
+    date = request.GET.get('date')
+    time = request.GET.get('time')
+    campus_id = request.GET.get('campus_id')
+    building_id = request.GET.get('building_id')
 
-    spaces = Space.objects.all()
+    # Filtrar las salas disponibles en el campus y edificio especificados
+    available_spaces = Space.objects.filter(building__campus_id=campus_id, building_id=building_id)
 
-    if campus_id:
-        spaces = spaces.filter(building__campus__id=campus_id)
-    if building_id:
-        spaces = spaces.filter(building__id=building_id)
+    # Filtrar las salas que tienen escritorios disponibles en la fecha y hora especificadas
+    available_spaces_with_desks = []
+    for space in available_spaces:
+        desks = Desk.objects.filter(space_id=space.id)
+        
+        occupied_desks = Booking.objects.filter(space=space, date=date, start_time__time=time).count()
+        total_desks = len(desks)
+        if occupied_desks < total_desks:
+            available_spaces_with_desks.append(space)
 
-    serialized_spaces = SpaceSerializer(spaces, many=True)
-    print(f"Spaces: ", serialized_spaces)
+    # Serializar y devolver las salas disponibles
+    serialized_spaces = SpaceSerializer(available_spaces_with_desks, many=True)
     return Response(serialized_spaces.data)
+
