@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
 from django.http import JsonResponse
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 
 
@@ -187,6 +188,27 @@ class SpaceManagementView(APIView):
         space = get_object_or_404(Space, id=space_id)
         space.delete()
         return Response(data={"message": "Space deleted successfully"}, status=ST_200)
+    
+def occupation_actual(request):
+        try:
+            now = timezone.now()
+            start_time_filter = now - timezone.timedelta(hours=3)
+            end_time_filter = now + timezone.timedelta(hours=3)
+            overlapping_bookings = Booking.objects.filter(
+                start_time__lte=end_time_filter,
+                end_time__gte=start_time_filter
+            )
+            total_seats = Desk.objects.filter(space_id__in=Space.objects.values('id')).count()
+            print(f"Total de sitios: ", total_seats)
+            occupied_seats = overlapping_bookings.values('desk__id').distinct().count()
+            print(f"Sitios ocupados: ", occupied_seats)
+            occupancy_percentage = (occupied_seats / total_seats) * 100
+            print("Ocupacion %", occupancy_percentage)
+
+            return JsonResponse({'occupationPercentage': occupancy_percentage})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)    
 
 
 class SpaceShowView(APIView):
@@ -346,8 +368,8 @@ def find_available_seats(request):
             return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
 
         try:
-
-            start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M')
+            start_time_str = start_time_str.rstrip('Z').split('.')[0]
+            start_time = datetime.fromisoformat(start_time_str)
 
 
             duration = timedelta(minutes=int(duration_str))
