@@ -72,16 +72,15 @@ class RoomSerializer(serializers.ModelSerializer):
 class DeskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Desk
-        fields = "__all__"
 
+        fields = '__all__'
+class CampusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campus
+        fields = '__all__'
 
 class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
         fields = "__all__"
 
-
-class CampusSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Campus
-        fields = "__all__"

@@ -11,6 +11,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+
 
 
 from .models import (
@@ -235,7 +238,7 @@ class RoomManagementView(APIView):
 class RoomListView(APIView):
     def get(self, request, *args, **kwargs):
         rooms = Room.objects.all()
-        serializer = RoomSerializer(rooms, many=True)
+        serializer = SpaceSerializer(rooms, many=True)
 
         return Response(serializer.data)
 
@@ -271,8 +274,8 @@ class DeskManagementView(APIView):
 
 
 class DeskListView(APIView):
-    def get(self, request, *args, **kwargs):
-        desks = Desk.objects.all()
+    def get(self, request, space_id, *args, **kwargs):
+        desks = Desk.objects.filter(space_id = space_id)
         serializer = DeskSerializer(desks, many=True)
 
         return Response(serializer.data)
@@ -286,8 +289,13 @@ class DeskShowView(APIView):
         return Response(serializer.data)
 
 
+@authentication_classes([TokenAuthentication])
 class BookingManagementView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
+
+        request.data['user'] = request.user.id
+        
         serializer = BookingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -306,14 +314,19 @@ class BookingManagementView(APIView):
         booking = get_object_or_404(Booking, id=booking_id)
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
-
-
+    
+@authentication_classes([TokenAuthentication])
 class BookingListView(APIView):
-    def get(self, request, *args, **kwargs):
-        bookings = Booking.objects.all()
-        serializer = BookingSerializer(bookings, many=True)
+    permission_classes = [IsAuthenticated]
 
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        try:
+            bookings = Booking.objects.filter(user=request.user)
+            serializer = BookingSerializer(bookings, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class BookingShowView(APIView):
@@ -322,6 +335,49 @@ class BookingShowView(APIView):
         serializer = BookingSerializer(booking)
 
         return Response(serializer.data)
+    
+def find_available_seats(request):
+    if request.method == 'GET':
+   
+        start_time_str = request.GET.get('start_time')
+        duration_str = request.GET.get('duration')
+
+        if not start_time_str or not duration_str:
+            return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
+
+        try:
+
+            start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M')
+
+
+            duration = timedelta(minutes=int(duration_str))
+            end_time = start_time + duration
+            print(f"Start time: {start_time}, End time: {end_time}")
+
+    
+            overlapping_bookings = Booking.objects.filter(date=start_time.date()).filter(
+                start_time__lt=end_time, end_time__gt=start_time
+            )
+
+      
+            all_seats = Desk.objects.all()
+
+            available_seats = []
+            for seat in all_seats:
+                is_available = True
+                for booking in overlapping_bookings:
+                    if seat.id == booking.desk.id:
+                        is_available = False
+                        break
+                if is_available:
+                    available_seats.append(seat)
+
+            available_seats_ids = [seat.id for seat in available_seats]
+
+            return JsonResponse({'available_seats': available_seats_ids})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 class EquipmentManagementView(APIView):
@@ -367,14 +423,12 @@ class CampusListView(APIView):
         campuses = Campus.objects.all()
         serializer = CampusSerializer(campuses, many=True)
         return Response(serializer.data)
-
-
+    
 class CampusDetailView(APIView):
     def get(self, request, campus_id, *args, **kwargs):
         campus = get_object_or_404(Campus, id=campus_id)
         serializer = CampusSerializer(campus)
         return Response({"id": campus.id, "name": campus.campus_name})
-
 
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
@@ -382,7 +436,7 @@ class BuildingListView(APIView):
 
         if campus_name:
             buildings = Building.objects.filter(
-                campus__campus_name=campus_name
+                campus__campus_name=campus_name 
             ).select_related("campus")
         else:
             buildings = Building.objects.all().select_related("campus")
@@ -392,14 +446,18 @@ class BuildingListView(APIView):
 
         return JsonResponse(serialized_data, safe=False)
 
-
 class BuildingDetailstView(APIView):
     def get(self, request, building_id, *args, **kwargs):
         building = get_object_or_404(Building, id=building_id)
         serializer = BuildingSerializer(building)
 
         return Response(serializer.data)
+class BuildingByCampusView(APIView):
+    def get(self, request, campus_id, *args, **kwargs):
+        buildings = Building.objects.filter(campus_id=campus_id)
+        serializer = BuildingSerializer(buildings, many=True)
 
+        return Response(serializer.data)
 
 class SpacesByBuildingView(APIView):
     def get(self, request, building_id, *args, **kwargs):
@@ -407,3 +465,30 @@ class SpacesByBuildingView(APIView):
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
+    
+from rest_framework.decorators import api_view
+
+@api_view(['GET'])
+def find_available_spaces(request):
+    date = request.GET.get('date')
+    time = request.GET.get('time')
+    campus_id = request.GET.get('campus_id')
+    building_id = request.GET.get('building_id')
+
+    # Filtrar las salas disponibles en el campus y edificio especificados
+    available_spaces = Space.objects.filter(building__campus_id=campus_id, building_id=building_id)
+
+    # Filtrar las salas que tienen escritorios disponibles en la fecha y hora especificadas
+    available_spaces_with_desks = []
+    for space in available_spaces:
+        desks = Desk.objects.filter(space_id=space.id)
+        
+        occupied_desks = Booking.objects.filter(space=space, date=date, start_time__time=time).count()
+        total_desks = len(desks)
+        if occupied_desks < total_desks:
+            available_spaces_with_desks.append(space)
+
+    # Serializar y devolver las salas disponibles
+    serialized_spaces = SpaceSerializer(available_spaces_with_desks, many=True)
+    return Response(serialized_spaces.data)
+

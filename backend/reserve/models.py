@@ -67,7 +67,6 @@ class Building(models.Model):
     def __str__(self):
         return self.name
 
-
 def load_building_data():
     json_file_path = os.path.join(settings.BASE_DIR, "reserve", "buildings_name.json")
 
@@ -141,9 +140,10 @@ class Desk(Space_item):
 
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    space_item_id = models.ForeignKey(
-        Space_item, blank=True, null=True, on_delete=models.CASCADE
-    )
-    date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE)
+    space = models.ForeignKey(Space, on_delete=models.CASCADE)
+    desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
+    date = models.DateField() 
+    start_time = models.DateTimeField()  
+    end_time = models.DateTimeField()  

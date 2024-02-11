@@ -1,0 +1,212 @@
+<template>
+  <section class="section-shaped section-lg my-0 d-flex justify-content-center">
+    <div class="shape shape-style-3 shape-default">
+      <span style="visibility: hidden;"></span>
+      <span></span>
+      <span></span>
+      <span style="background-color: #787CFF;"></span>
+    </div>
+    <div class="container mt-3">
+      <h2 class="card-title">{{ spaceDetails.name }} de {{ building.name }}</h2>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Detalles del Espacio</h5>
+          <p><strong>Nombre:</strong> {{ spaceDetails.name }}</p>
+          <p><strong>Ubicación:</strong> {{ spaceDetails.location }}</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="form-group">
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="date" class="form-control" />
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-group">
+                <label for="horaInicio">Hora de inicio:</label>
+                <input type="time" id="start_time" class="form-control" />
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-group">
+                <label for="duracion">Duración:</label>
+                <select
+                  id="duration"
+                  class="form-control"
+                  @change="handleDurationChange"
+                >
+                  <option value="15">0:15</option>
+                  <option value="30">0:30</option>
+                  <option value="45">0:45</option>
+                  <option value="60">1:00</option>
+                  <option value="75">1:15</option>
+                  <option value="90">1:30</option>
+                  <option value="105">1:45</option>
+                  <option value="120">2:00</option>
+                  <option value="135">2:15</option>
+                  <option value="150">2:30</option>
+                  <option value="165">2:45</option>
+                  <option value="180">3:00</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <button
+                class="btn btn-primary btn-block"
+                @click="buscarDisponibilidad"
+              >
+                Buscar Disponibilidad
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>id</th>
+                  <th>Nombre</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in spacesItems" :key="index">
+                  <td>{{ item.id }}</td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.seat_status }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script>
+import axios from "axios";
+import { backendUrl } from "../main.js";
+
+export default {
+  data() {
+    return {
+      spacesItems: [],
+      spaceDetails: {},
+      building: {},
+      campus: {},
+    };
+  },
+  mounted() {
+    this.listSpaceItems();
+    this.getSpaceDetails();
+  },
+  methods: {
+    handleDurationChange(event) {
+      console.log("Duración seleccionada:", event.target.value);
+    },
+    listSpaceItems() {
+      const token = localStorage.getItem("token");
+      const spaceId = this.$route.params.spaceId;
+      if (token) {
+        axios
+          .get(`${backendUrl}${spaceId}/desk/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.spacesItems = response.data;
+            console.log("datos: ", response.data);
+          })
+          .catch((error) => {
+            console.error("Error en la obtención de items de espacio:", error);
+          });
+      } else {
+        console.error("No se encontró el token de autenticación.");
+      }
+    },
+    getSpaceDetails() {
+      const token = localStorage.getItem("token");
+      const spaceId = this.$route.params.spaceId;
+      if (token) {
+        axios
+          .get(`${backendUrl}spaces/${spaceId}/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.spaceDetails = response.data;
+            console.log("Detalles del espacio: ", response.data);
+
+            const buildingId = response.data.building;
+            axios
+              .get(`${backendUrl}building/${buildingId}/`)
+              .then((buildingResponse) => {
+                this.building = buildingResponse.data;
+                console.log("Detalles del edificio: ", buildingResponse.data);
+              })
+              .catch((error) => {
+                console.error(
+                  "Error al obtener los detalles del edificio:",
+                  error
+                );
+              });
+          })
+          .catch((error) => {
+            console.error("Error al obtener los detalles del espacio:", error);
+          });
+      } else {
+        console.error("No se encontró el token de autenticación.");
+      }
+    },
+
+    buscarDisponibilidad() {
+      const date = document.getElementById("date").value;
+      const start_time = document.getElementById("start_time").value;
+      const duration = document.getElementById("duration").value;
+
+      console.log("Fecha:", date);
+      console.log("Hora de inicio:", start_time);
+      console.log("Duración:", duration);
+
+      // Hacer la solicitud al backend
+      axios
+        .get(`${backendUrl}find-available-seats/`, {
+          params: {
+            start_time: `${date} ${start_time}`,
+            duration: duration,
+          },
+        })
+        .then((response) => {
+          // Actualizar la vista con los resultados recibidos
+          this.spacesItems = response.data.available_seats.map((id) => ({
+            id: id,
+            name: "",
+            seat_status: "AVAILABLE",
+          }));
+        })
+        .catch((error) => {
+          console.error("Error al buscar disponibilidad:", error);
+        });
+    },
+  },
+};
+</script>
+
+<style>
+.table-container {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-container table {
+  background-color: transparent;
+}
+</style>

@@ -92,9 +92,12 @@
                   </div>
                   <h5 :class="space.name">{{ space.name }}</h5>
                   <p class="description mt-3">{{ space.general_info }}</p>
-                  <base-button tag="a" href="#" type="primary" class="mt-4">
-                    Ver detalles
-                  </base-button>
+
+                  <router-link :to="`/space/${space.id}`">
+                    <base-button type="primary" class="mt-4">
+                      Ver detalles
+                    </base-button>
+                  </router-link>
                 </card>
               </div>
             </div>

@@ -1,8 +1,8 @@
 <template>
   <header class="header-global">
     <base-nav class="navbar-main" transparent type="" effect="light" expand>
-      <router-link slot="brand" class="navbar-brand mr-lg-5" to="/">
-        <img src="img/brand/white.png" alt="logo" />
+      <router-link to="/landing" class="nav-link">
+        <i class="fa fa-home fa-2x" style="color: white;"></i>
       </router-link>
 
       <div class="row" slot="content-header" slot-scope="{ closeMenu }">
@@ -27,7 +27,9 @@
           <span class="nav-link-inner--text">Reservar</span>
         </router-link>
 
-        <router-link to="/mis-reservas" class="nav-link">
+
+        <router-link to="/bookings" class="nav-link">
+
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
       </ul>
@@ -142,3 +144,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.separator {
+  margin: 0 50px;
+}
+</style>
