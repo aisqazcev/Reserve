@@ -189,16 +189,18 @@ class SpaceManagementView(APIView):
         space.delete()
         return Response(data={"message": "Space deleted successfully"}, status=ST_200)
     
-def occupation_actual(request):
+def occupation_actual(request, space_id):
         try:
             now = timezone.now()
+            space = get_object_or_404(Space, id=space_id)
             start_time_filter = now - timezone.timedelta(hours=3)
             end_time_filter = now + timezone.timedelta(hours=3)
             overlapping_bookings = Booking.objects.filter(
                 start_time__lte=end_time_filter,
-                end_time__gte=start_time_filter
+                end_time__gte=start_time_filter,
+                space=space
             )
-            total_seats = Desk.objects.filter(space_id__in=Space.objects.values('id')).count()
+            total_seats = space.capacity
             print(f"Total de sitios: ", total_seats)
             occupied_seats = overlapping_bookings.values('desk__id').distinct().count()
             print(f"Sitios ocupados: ", occupied_seats)

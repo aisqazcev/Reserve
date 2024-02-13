@@ -14,10 +14,6 @@
           <span></span>
         </div>
         <div class="container shape-container d-flex">
-          <link
-            href="/assets/vendor/font-awesome/css/font-awesome.min.css"
-            rel="stylesheet"
-          />
           <div class="row align-items-center">
             <h1 class="mb-4" style="color: #051551;">
               {{ building.name_complete }}
@@ -48,28 +44,36 @@
                         class="ni ni-square-pin mr-2"
                         style="font-size: 24px; color:#08217E"
                       ></i>
-                      <p class="text-black mb-0"><b>{{ building.address }}</b></p>
+                      <p class="text-black mb-0">
+                        <b>{{ building.address }}</b>
+                      </p>
                     </div>
                     <div class="d-flex mb-4">
                       <i
                         class="ni ni-world-2 mr-2"
                         style="font-size: 24px; color:#08217E;"
                       ></i>
-                      <p class="text-black mb-0"><b>{{ building.web }}</b></p>
+                      <p class="text-black mb-0">
+                        <b>{{ building.web }}</b>
+                      </p>
                     </div>
                     <div class="d-flex mb-4">
                       <i
                         class="ni ni-email-83 mr-2"
                         style="font-size: 24px; color:#08217E;"
                       ></i>
-                      <p class="text-black mb-0"><b>{{ building.email }}</b></p>
+                      <p class="text-black mb-0">
+                        <b>{{ building.email }}</b>
+                      </p>
                     </div>
                     <div class="d-flex">
                       <i
                         class="ni ni-mobile-button mr-2"
                         style="font-size: 24px; color:#08217E;"
                       ></i>
-                      <p class="text-black mb-0"><b>{{ building.phone }}</b></p>
+                      <p class="text-black mb-0">
+                        <b>{{ building.phone }}</b>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -104,9 +108,10 @@
                   <h5 :class="space.name">{{ space.name }}</h5>
                   <div class="progress-label mt-4">
                     <span
-                      >Ocupación actual <strong>{{ occupation }}%</strong></span
+                      >Ocupación actual <strong>{{ space.occupation }}%</strong></span
                     >
                   </div>
+                  
                   <div class="progress mt-4" style="height: 8px;">
                     <div
                       role="progressbar"
@@ -114,7 +119,7 @@
                       aria-valuemin="0"
                       aria-valuemax="100"
                       class="progress-bar bg-primary"
-                      :style="{ width: occupation + '%' }"
+                      :style="{ width: space.occupation + '%' }"
                     ></div>
                   </div>
 
@@ -137,6 +142,7 @@
 import axios from "axios";
 import { backendUrl } from "../main.js";
 import Card from "../components/Card.vue";
+import "@fortawesome/fontawesome-free/css/all.css";
 
 export default {
   components: { Card },
@@ -146,12 +152,14 @@ export default {
       spaces: [],
       buildingId: null,
       freeSeats: null,
+      occupation: 0,
     };
   },
   mounted() {
     this.buildingId = this.$route.params.buildingId || "";
-    this.fetchSpaces();
-    this.fetchOccupation();
+    this.fetchSpaces();  
+    // this.fetchOccupation();
+    
   },
   methods: {
     async fetchSpaces() {
@@ -168,6 +176,7 @@ export default {
         .get(`${backendUrl}building/${this.buildingId}/spaces/`)
         .then((response) => {
           this.spaces = response.data;
+          this.fetchOccupation()
         })
         .catch((error) => {
           console.error("Error fetching spaces:", error);
@@ -186,11 +195,26 @@ export default {
     },
     async fetchOccupation() {
       try {
-        const response = await axios.get(`${backendUrl}occupation-actual/`);
+    console.log("hola");
+    console.log("Spaces: ", this.spaces);
+
+    for (const spaceIndex in this.spaces) {
+      console.log("adios");
+      console.log(spaceIndex);
+
+      if (this.spaces[spaceIndex]) {
+        const spaceId = this.spaces[spaceIndex].id;
+        const response = await axios.get(`${backendUrl}occupation-actual/${spaceId}`);
         const occupationPercentage = response.data.occupationPercentage;
         console.log("Ocupacion", response.data);
         console.log("Ocupacion %", occupationPercentage);
         this.occupation = occupationPercentage;
+
+        this.$set(this.spaces, spaceIndex, { ...this.spaces[spaceIndex], occupation: occupationPercentage });
+      } else {
+        console.error(`El espacio en el índice ${spaceIndex} no está definido.`);
+      }
+    }
       } catch (error) {
         console.error("Error al obtener la ocupación:", error);
       }
@@ -227,4 +251,5 @@ export default {
 .rounded-square {
   border-radius: 5px;
 }
+
 </style>
