@@ -14,56 +14,71 @@
           <span></span>
         </div>
         <div class="container shape-container d-flex">
-          <link
-            href="/assets/vendor/font-awesome/css/font-awesome.min.css"
-            rel="stylesheet"
-          />
-          <div class="col px-0">
-            <div class="row">
-              <div class="col-lg-6">
-                <h1 class="display-3  text-white mb-2">
-                  {{ building.name_complete }}
-                </h1>
-                <img
-                  :src="
-                    building.image
-                      ? getBuildingImageUrl(building.image)
-                      : '/img/alternative.jpg'
-                  "
-                  class="img-fluid shadow-lg mb-4 rounded-square"
-                  alt="Imagen del espacio"
-                />
-                <div class="d-flex align-items-center mb-3">
-                  <i
-                    class="ni ni-square-pin mr-2"
-                    style="font-size: 24px; color:white;"
-                  ></i>
-                  <p class="text-white mb-0">{{ building.address }}</p>
+          <div class="row align-items-center">
+            <h1 class="mb-4" style="color: #051551;">
+              {{ building.name_complete }}
+            </h1>
+            <card
+              class="row align-items-center"
+              style="background-color: rgba(159, 216, 197, 0.5); max-width: fit-content;"
+            >
+              <div class="row">
+                <div class="col-md-5">
+                  <img
+                    :src="
+                      building.image
+                        ? getBuildingImageUrl(building.image)
+                        : '/img/alternative.jpg'
+                    "
+                    class="img-fluid shadow-lg mb-4 rounded-square"
+                    alt="Imagen del espacio"
+                  />
                 </div>
-                <div class="d-flex align-items-center mb-3">
-                  <i
-                    class="ni ni-world-2 mr-2"
-                    style="font-size: 24px; color:white;"
-                  ></i>
-                  <p class="text-white mb-0">{{ building.web }}</p>
+                <div class="col-md-7">
+                  <div class="d-flex flex-column ">
+                    <h2 class="mb-4" style="color: #08217E;">
+                      Información y contacto
+                    </h2>
+                    <div class="d-flex mb-4">
+                      <i
+                        class="ni ni-square-pin mr-2"
+                        style="font-size: 24px; color:#08217E"
+                      ></i>
+                      <p class="text-black mb-0">
+                        <b>{{ building.address }}</b>
+                      </p>
+                    </div>
+                    <div class="d-flex mb-4">
+                      <i
+                        class="ni ni-world-2 mr-2"
+                        style="font-size: 24px; color:#08217E;"
+                      ></i>
+                      <p class="text-black mb-0">
+                        <b>{{ building.web }}</b>
+                      </p>
+                    </div>
+                    <div class="d-flex mb-4">
+                      <i
+                        class="ni ni-email-83 mr-2"
+                        style="font-size: 24px; color:#08217E;"
+                      ></i>
+                      <p class="text-black mb-0">
+                        <b>{{ building.email }}</b>
+                      </p>
+                    </div>
+                    <div class="d-flex">
+                      <i
+                        class="ni ni-mobile-button mr-2"
+                        style="font-size: 24px; color:#08217E;"
+                      ></i>
+                      <p class="text-black mb-0">
+                        <b>{{ building.phone }}</b>
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div class="d-flex align-items-center mb-3">
-                  <i
-                    class="ni ni-email-83 mr-2"
-                    style="font-size: 24px; color:white;"
-                  ></i>
-                  <p class="text-white mb-0">{{ building.email }}</p>
-                </div>
-                <div class="d-flex align-items-center mb-3">
-                  <i
-                    class="ni ni-mobile-button mr-2"
-                    style="font-size: 24px; color:white;"
-                  ></i>
-                  <p class="text-white mb-0">{{ building.phone }}</p>
-                </div>
-                <p class="text-white">Servicios: {{ building.services }}</p>
               </div>
-            </div>
+            </card>
           </div>
         </div>
       </section>
@@ -91,7 +106,22 @@
                     />
                   </div>
                   <h5 :class="space.name">{{ space.name }}</h5>
-                  <p class="description mt-3">{{ space.general_info }}</p>
+                  <div class="progress-label mt-4">
+                    <span
+                      >Ocupación actual <strong>{{ space.occupation }}%</strong></span
+                    >
+                  </div>
+                  
+                  <div class="progress mt-4" style="height: 8px;">
+                    <div
+                      role="progressbar"
+                      aria-valuenow="occupation"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      class="progress-bar bg-primary"
+                      :style="{ width: space.occupation + '%' }"
+                    ></div>
+                  </div>
 
                   <router-link :to="`/space/${space.id}`">
                     <base-button type="primary" class="mt-4">
@@ -111,18 +141,25 @@
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
+import Card from "../components/Card.vue";
+import "@fortawesome/fontawesome-free/css/all.css";
 
 export default {
+  components: { Card },
   data() {
     return {
       building: {},
       spaces: [],
       buildingId: null,
+      freeSeats: null,
+      occupation: 0,
     };
   },
   mounted() {
     this.buildingId = this.$route.params.buildingId || "";
-    this.fetchSpaces();
+    this.fetchSpaces();  
+    // this.fetchOccupation();
+    
   },
   methods: {
     async fetchSpaces() {
@@ -139,6 +176,7 @@ export default {
         .get(`${backendUrl}building/${this.buildingId}/spaces/`)
         .then((response) => {
           this.spaces = response.data;
+          this.fetchOccupation()
         })
         .catch((error) => {
           console.error("Error fetching spaces:", error);
@@ -154,6 +192,32 @@ export default {
       relativePath = relativePath.replace(/^media\//, "");
       const imageUrl = `${backendUrl}${relativePath}`;
       return imageUrl;
+    },
+    async fetchOccupation() {
+      try {
+    console.log("hola");
+    console.log("Spaces: ", this.spaces);
+
+    for (const spaceIndex in this.spaces) {
+      console.log("adios");
+      console.log(spaceIndex);
+
+      if (this.spaces[spaceIndex]) {
+        const spaceId = this.spaces[spaceIndex].id;
+        const response = await axios.get(`${backendUrl}occupation-actual/${spaceId}`);
+        const occupationPercentage = response.data.occupationPercentage;
+        console.log("Ocupacion", response.data);
+        console.log("Ocupacion %", occupationPercentage);
+        this.occupation = occupationPercentage;
+
+        this.$set(this.spaces, spaceIndex, { ...this.spaces[spaceIndex], occupation: occupationPercentage });
+      } else {
+        console.error(`El espacio en el índice ${spaceIndex} no está definido.`);
+      }
+    }
+      } catch (error) {
+        console.error("Error al obtener la ocupación:", error);
+      }
     },
   },
   computed: {
@@ -185,6 +249,7 @@ export default {
 }
 
 .rounded-square {
-  border-radius: 10px;
+  border-radius: 5px;
 }
+
 </style>
