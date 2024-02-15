@@ -8,13 +8,27 @@
     </div>
     <div class="container mt-3">
       <h2 class="card-title">{{ spaceDetails.name }} de {{ building.name }}</h2>
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Detalles del Espacio</h5>
-          <p><strong>Nombre:</strong> {{ spaceDetails.name }}</p>
-          <p><strong>Ubicación:</strong> {{ spaceDetails.location }}</p>
+      <card
+              class="row align-items-center"
+              style="background-color: rgba(159, 216, 197, 0.5); max-width: fit-content;"
+            >
+        <div class="row">
+          <div class="col-md-5">
+            <img
+              :src="spaceDetails.image ? getSpaceImageUrl(spaceDetails.image) : '/img/alternative.jpg'"
+              class="img-fluid shadow-lg mb-4 rounded-square"
+              alt="Imagen del espacio"
+            />
+          </div>
+          <div class="col-md-7">
+            <div class="card-body">
+              <h5 class="card-title">Detalles del Espacio</h5>
+              <p><strong>Nombre:</strong> {{ spaceDetails.name }}</p>
+              <p><strong>Ubicación:</strong> {{ spaceDetails.location }}</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </card>
       <div class="card">
         <div class="card-body">
           <div class="row">
@@ -53,7 +67,6 @@
                 </select>
               </div>
             </div>
-
             <div class="col-md-12">
               <dt>
                 <div
@@ -112,31 +125,8 @@
             </table>
           </div>
         </div>
-      </div>
-      <!-- Modal para mostrar la reserva exitosa -->
-<div class="modal" :class="{ 'show': showModal }">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Reserva Exitosa</h5>
-        <button type="button" class="close" @click="closeModal">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>Fecha: {{ reservationDate }}</p>
-        <p>Hora de inicio: {{ reservationStartTime }}</p>
-        <p>Asiento: {{ reservedSeat }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="closeModal">Cerrar</button>
-      </div>
+      </div>  
     </div>
-  </div>
-</div>
-
-    </div>
-
   </section>
 </template>
 
@@ -144,9 +134,10 @@
 import axios from "axios";
 import { backendUrl } from "../main.js";
 import "@fortawesome/fontawesome-free/css/all.css";
-
+import Card from "../components/Card.vue";
 
 export default {
+  components: { Card },
   data() {
     return {
       spacesItems: [],
@@ -159,6 +150,7 @@ export default {
       reservationDate: "",
       reservationStartTime: "",
       reservedSeat: "",
+      showNoResultsMessage: false,
     };
   },
   mounted() {
@@ -167,13 +159,13 @@ export default {
   },
   methods: {
     openModal() {
-    this.showModal = true;
-  },
-  closeModal() {
-    this.showModal = false;
-  },
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
+    },
     handleDurationChange(event) {
-      console.log("Duración seleccionada:", event.target.value);
+
     },
     listSpaceItems() {
       const token = localStorage.getItem("token");
@@ -186,7 +178,6 @@ export default {
           .then((response) => {
             this.spacesItems = response.data;
             this.originalSpacesItems = response.data;
-            console.log("datos: ", response.data);
           })
           .catch((error) => {
             console.error("Error en la obtención de items de espacio:", error);
@@ -205,14 +196,14 @@ export default {
           })
           .then((response) => {
             this.spaceDetails = response.data;
-            console.log("Detalles del espacio: ", response.data);
+           
 
             const buildingId = response.data.building;
             axios
               .get(`${backendUrl}building/${buildingId}/`)
               .then((buildingResponse) => {
                 this.building = buildingResponse.data;
-                console.log("Detalles del edificio: ", buildingResponse.data);
+                
               })
               .catch((error) => {
                 console.error(
@@ -232,12 +223,10 @@ export default {
     isPastDate(dateString) {
       const selectedDate = new Date(dateString);
       const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0); // Ajustar la fecha actual a medianoche
-
+      currentDate.setHours(0, 0, 0, 0); 
       return selectedDate < currentDate;
     },
 
-    // Método para verificar si una hora es anterior a la hora actual
     isPastTime(timeString) {
       const currentTime = new Date();
       const [hours, minutes] = timeString.split(":");
@@ -248,16 +237,12 @@ export default {
     },
 
     buscarDisponibilidad() {
+      this.errorMessage = "";
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
       const duration = document.getElementById("duration").value;
-      const spaceId = this.$route.params.spaceId; // Obtener el ID de la sala actual
-
-      console.log("Fecha:", date);
-      console.log("Hora de inicio:", start_time);
-      console.log("Duración:", duration);
-      console.log("ID de la sala:", spaceId);
-
+      const spaceId = this.$route.params.spaceId; 
+      
       if (this.isPastDate(date)) {
         this.errorMessage = "No se puede seleccionar una fecha pasada.";
         return;
@@ -289,9 +274,9 @@ export default {
             seat_status: "AVAILABLE",
           }));
           if (this.spacesItems.length === 0) {
-            this.showNoResultsMessage = true; // Activar la bandera para mostrar el mensaje de no resultados
+            this.showNoResultsMessage = true; 
           } else {
-            this.showNoResultsMessage = false; // Desactivar la bandera si hay resultados
+            this.showNoResultsMessage = false; 
           }
         })
         .catch((error) => {
@@ -349,7 +334,7 @@ export default {
               desk: deskId,
               date: date,
               start_time: `${date} ${start_time}`,
-              duration: formattedDuration, 
+              duration: formattedDuration,
               end_time: formattedEndTime,
               space_id: spaceId,
             },
@@ -358,18 +343,10 @@ export default {
             }
           )
           .then((response) => {
-            console.log("Reserva exitosa:", response.data);
-            
-            this.reservationDate = date;
-        this.reservationStartTime = start_time;
-        this.reservedSeat = deskId;
-        this.$nextTick(() => { // Espera hasta que se hayan aplicado los cambios en el DOM
-          this.openModal(); // Abre el modal después de que Vue.js haya actualizado la vista
-        });
-        this.spacesItems = this.spacesItems.filter(
-          (item) => item.id !== deskId
-        );
-      })
+            this.spacesItems = this.spacesItems.filter(
+              (item) => item.id !== deskId
+            );
+          })
           .catch((error) => {
             this.errorMessage = "Error al reservar el escritorio.";
           });
@@ -391,4 +368,20 @@ export default {
 .table-container table {
   background-color: transparent;
 }
+.square-frame {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  position: relative;
+}
+
+.square-frame img {
+  width: 100%;
+  height: auto;
+}
+
+.rounded-square {
+  border-radius: 5px;
+}
+
 </style>
