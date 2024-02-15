@@ -112,6 +112,19 @@ class Space(models.Model):
     schedule = models.TextField(null=False)
     image = models.ImageField(blank=True, null=True)
 
+    # def calculate_occupation(self):
+    #     # Obtener todos los objetos Desk en este espacio
+    #     desks_in_space = Desk.objects.filter(space_id=self)
+
+    #     # Contar el número de escritorios reservados
+    #     reserved_desks_count = desks_in_space.filter(seat_status=SeatStatus.RESERVED.value).count()
+
+    #     # Calcular la ocupación en base al total de escritorios y los reservados
+    #     total_desks = desks_in_space.count()
+    #     occupation_percentage = (reserved_desks_count / total_desks) * 100 if total_desks > 0 else 0
+
+    #     return occupation_percentage
+
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250)

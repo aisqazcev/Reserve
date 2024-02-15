@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces
+from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces, occupation_actual
 
 app_name="reserve"
 
@@ -37,7 +37,8 @@ urlpatterns = [
     # path('search_spaces/', search_spaces, name='search_spaces'),
 
     path('find-available-seats/', find_available_seats, name='find_available_seats'),
-    path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
 
+    path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
+    path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),
 
 ]
