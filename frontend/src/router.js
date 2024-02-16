@@ -8,10 +8,13 @@ import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
 import SpacesByBuilding from './views/SpacesByBuilding.vue';
 import Booking from "./views/Booking.vue";
+import Bookings from "./views/MyBookings.vue";
+import Desk from "./views/SpaceList.vue";
+import Buildings from "./views/Buildings.vue";
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: "history",
   routes: [
     {
@@ -47,6 +50,16 @@ export default new Router({
         header: AppHeader,
         default: Profile,
         footer: AppFooter
+      },
+      meta: { requiresAuth: true }
+    },
+    {
+      path: "/buildings",
+      name: "Buildings",
+      components: {
+        header: AppHeader,
+        default: Buildings,
+        footer: AppFooter
       }
     },
     {
@@ -67,6 +80,23 @@ export default new Router({
         footer: AppFooter,
       },
     },
+    {
+      path: "/bookings",
+      name: "bookings",
+      components: {
+        header: AppHeader,
+        default: Bookings,
+      }
+    },
+    {
+      path: "/space/:spaceId",
+      name: "desk",
+      components: {
+        header: AppHeader,
+        default: Desk,
+        footer: AppFooter,
+      },
+    },
   ],
   scrollBehavior: to => {
     if (to.hash) {
@@ -76,3 +106,17 @@ export default new Router({
     }
   }
 });
+
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth)) {
+    if (!localStorage.getItem('token')) {
+      next({ name: 'login' });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+export default router;

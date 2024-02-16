@@ -1,117 +1,163 @@
 <template>
-  <div>
-    <div class="position-relative">
-      <!-- shape Hero -->
-      <section class="section-shaped my-0">
-        <div class="shape shape-style-3 shape-default shape-skew">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+  <section class="section-shaped section-lg my-0 d-flex justify-content-center">
+    <div class="shape shape-style-3 shape-default">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="container mt-3">
+      <h1 class="mb-4" style="color: #051551;">
+        {{ building.name_complete }}
+      </h1>
+      <card class="mb-3">
+        <div class="row">
+          <div class="col-md-5">
+            <img
+              :src="
+                building.image
+                  ? getBuildingImageUrl(building.image)
+                  : '/img/alternative.jpg'
+              "
+              class="img-fluid shadow-lg mb-4 rounded-square"
+              alt="Imagen del espacio"
+            />
+          </div>
+          <div class="col-md-7">
+            <div class="card-body">
+              <h3 class="card-title" style="color: #08217E;">
+                Información y contacto
+              </h3>
+              
+                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-square-pin mr-2"
+                    style="font-size: 24px; color:#08217E"
+                  ></i>
+                  <strong>{{ building.address }}</strong>
+                </div>
 
-          <span></span>
-        </div>
-        <div class="container shape-container d-flex">
-          <link href="/assets/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-          <div class="col px-0">
-            <div class="row">
-              <div class="col-lg-6">
-                <h1 class="display-3  text-white mb-2">{{ building.name_complete }}</h1>
-                <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-square-pin mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.address }}</p>
+                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-world-2 mr-2"
+                    style="font-size: 24px; color:#08217E;"
+                  ></i>
+                  <strong>{{ building.web }}</strong>
                 </div>
-                <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-world-2 mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.web }}</p>
+
+                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-email-83 mr-2"
+                    style="font-size: 24px; color:#08217E;"
+                  ></i>
+                  <strong>{{ building.email }}</strong>
                 </div>
-                <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-email-83 mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.email }}</p>
+
+                <div class="d-flex align-items-center"  style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-mobile-button mr-2 "
+                    style="font-size: 24px; color:#08217E;"
+                  ></i>
+                  <strong>{{ building.phone }}</strong>
                 </div>
-                <div class="d-flex align-items-center mb-3">
-                <i class="ni ni-mobile-button mr-2" style="font-size: 24px; color:white;"></i>
-                <p class="text-white mb-0">{{ building.phone }}</p>
-                </div>
-                <p class="text-white">Servicios: {{ building.services }}</p>
-              </div>
+              
             </div>
           </div>
         </div>
-      </section>
-      <!-- 1st Hero Variation -->
-    </div>
-    <section class="section section-lg pt-lg-0 mt--200">
+      </card>
+
+      <div class="mb-5"></div>
+
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-12">
             <div class="row row-grid">
-              <!-- Utiliza v-for para iterar sobre cada espacio -->
-              <div v-for="space in spaces" :key="space.id" class="col-lg-4 col-md-6 mb-4">
+              <div
+                v-for="space in spaces"
+                :key="space.id"
+                class="col-lg-4 col-md-6 mb-4"
+              >
                 <card class="border-0" hover shadow body-classes="py-5">
                   <div class="square-frame">
                     <img
-                    :src="space.image ? getSpaceImageUrl(space.image)  : '/img/alternative.jpg'"
+                      :src="
+                        space.image
+                          ? getSpaceImageUrl(space.image)
+                          : '/img/alternative.jpg'
+                      "
                       class="img-fluid shadow-lg mb-4 rounded-square"
                       alt="Imagen del espacio"
                     />
                   </div>
                   <h5 :class="space.name">{{ space.name }}</h5>
-                  <p class="description mt-3">{{ space.general_info }}</p>
-                  <!-- <div>
-                    TODO Utiliza v-for para iterar sobre INFO de cada SALA 
-                    <badge
-                      v-for="badge in space.badges"
-                      :type="badge.type"
-                      :rounded="badge.rounded"
-                      >{{ badge.label }}</badge
+                  <div class="progress-label mt-4">
+                    <span
+                      >Ocupación actual
+                      <strong>{{ space.occupation }}%</strong></span
                     >
-                  </div> -->
-                  <!--TODO Redireccionar a la página de detalles de la sala -->
-                  <base-button tag="a" href="#" type="primary" class="mt-4">
-                    Ver detalles
-                  </base-button>
+                  </div>
+
+                  <div class="progress mt-4" style="height: 8px;">
+                    <div
+                      role="progressbar"
+                      aria-valuenow="occupation"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      class="progress-bar bg-primary"
+                      :style="{ width: space.occupation + '%' }"
+                    ></div>
+                  </div>
+
+                  <router-link :to="`/space/${space.id}`">
+                    <base-button type="primary" class="mt-4">
+                      Ver detalles
+                    </base-button>
+                  </router-link>
                 </card>
               </div>
-              <!-- Fin del bucle v-for -->
             </div>
           </div>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
+import Card from "../components/Card.vue";
+import "@fortawesome/fontawesome-free/css/all.css";
 
 export default {
+  components: { Card },
   data() {
     return {
       building: {},
       spaces: [],
       buildingId: null,
+      freeSeats: null,
+      occupation: 0,
+      campus:{}
     };
   },
   mounted() {
-    this.buildingId = this.$route.params.buildingId || '';
-    // Luego, llamar a fetchSpaces
+    this.buildingId = this.$route.params.buildingId || "";
     this.fetchSpaces();
+    
   },
   methods: {
-    async fetchSpaces() {
-      console.log("backendUrl:", backendUrl);
 
+    async fetchSpaces() {
       await axios
         .get(`${backendUrl}building/${this.buildingId}/`)
         .then((response) => {
           this.building = response.data;
-          console.log("building", this.building);
         })
         .catch((error) => {
           console.error("Error fetching building details:", error);
@@ -121,38 +167,69 @@ export default {
         .get(`${backendUrl}building/${this.buildingId}/spaces/`)
         .then((response) => {
           this.spaces = response.data;
-          console.log("spaces", this.spaces);
+          this.fetchOccupation();
         })
         .catch((error) => {
           console.error("Error fetching spaces:", error);
         });
     },
     getSpaceImageUrl(relativePath) {
-      // Construir la URL completa de la imagen utilizando la URL del backend
+      relativePath = relativePath.replace(/^\/*/, "");
       const imageUrl = `${backendUrl}${relativePath}`;
-    console.log('URL de la imagen completa:', imageUrl);
-    return imageUrl;
+      return imageUrl;
     },
-  }, 
+    getBuildingImageUrl(relativePath) {
+      relativePath = relativePath.replace(/^\/*/, "");
+      relativePath = relativePath.replace(/^media\//, "");
+      const imageUrl = `${backendUrl}${relativePath}`;
+      return imageUrl;
+    },
+    async fetchOccupation() {
+      try {
+        for (const spaceIndex in this.spaces) {
+          if (this.spaces[spaceIndex]) {
+            const spaceId = this.spaces[spaceIndex].id;
+            const response = await axios.get(
+              `${backendUrl}occupation-actual/${spaceId}`
+            );
+            const occupationPercentage = response.data.occupationPercentage;
+
+            this.occupation = occupationPercentage;
+
+            this.$set(this.spaces, spaceIndex, {
+              ...this.spaces[spaceIndex],
+              occupation: occupationPercentage,
+            });
+          } else {
+            console.error(
+              `El espacio en el índice ${spaceIndex} no está definido.`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error al obtener la ocupación:", error);
+      }
+    },
+  },
   computed: {
-      get() {
-        return this.$route.params.buildingId;
-      },    
+    get() {
+      return this.$route.params.buildingId;
+    },
   },
   watch: {
-    '$route'(to, from) {
-    if (to.params && to.params.buildingId) {
-      this.buildingId = to.params.buildingId;
-      this.fetchSpaces();
-    }
-},
+    $route(to, from) {
+      if (to.params && to.params.buildingId) {
+        this.buildingId = to.params.buildingId;
+        this.fetchSpaces();
+      }
+    },
   },
 };
 </script>
 <style>
 .square-frame {
-  width: 150px; /* Ajusta el ancho según tus necesidades */
-  height: 150px; /* Ajusta la altura según tus necesidades */
+  width: 150px;
+  height: 150px;
   overflow: hidden;
   position: relative;
 }
@@ -163,6 +240,6 @@ export default {
 }
 
 .rounded-square {
-  border-radius: 10px; /* Ajusta el radio según tus necesidades */
+  border-radius: 5px;
 }
 </style>

@@ -28,11 +28,11 @@
                 <base-input
                   alternative
                   class="mb-3"
-                  placeholder="Usuario"
+                  placeholder="Usuario o Correo Electrónico"
                   addon-left-icon="ni ni-email-83"
-                  v-model="form.username"
+                  v-model="form.usernameOrEmail"
                 ></base-input>
-                <span class="text-danger">{{ errors.username }}</span>
+                <span class="text-danger">{{ errors.usernameOrEmail }}</span>
 
                 <base-input
                   alternative
@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 import { backendUrl } from "../main.js";
 
 export default {
@@ -87,13 +87,13 @@ export default {
   data() {
     return {
       form: {
-        username: "",
+        usernameOrEmail: "",
         password: "",
         remember: false,
       },
       loading: false,
       errors: {
-        username: "",
+        usernameOrEmail: "",
         password: "",
         login: "",
       },
@@ -101,17 +101,29 @@ export default {
   },
   methods: {
     async handleSubmit() {
-       axios.post(`${backendUrl}login/`, this.form)
-        .then(response => {
+      axios
+        .post(`${backendUrl}login/`, {
+          username_or_email: this.form.usernameOrEmail,
+          password: this.form.password,
+          remember: this.form.remember,
+        })
+        .then((response) => {
           const token = response.data.token;
-          localStorage.setItem('token', token);
+          localStorage.setItem("token", token);
           this.$router.push("/landing");
         })
-        .catch(error => {
-          console.error('Error en el inicio de sesión:', error);
+        .catch((error) => {
+          console.error("Error en el inicio de sesión:", error);
+          if (error.response && error.response.status === 400) {
+            this.errors.login = "Credenciales inválidas";
+            this.errors.usernameOrEmail =
+              error.response.data.username_or_email[0];
+          } else {
+            this.errors.login =
+              "Error en el inicio de sesión. Por favor, inténtalo de nuevo.";
+          }
         });
     },
-   
   },
 };
 </script>

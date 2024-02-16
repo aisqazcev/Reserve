@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Booking, Building, Equipment, Space, Space_item, Room, Desk, CustomUser
+from .models import Booking, Building, Campus, Equipment, Space, Space_item, Room, Desk, CustomUser
 
 admin.site.register(Booking)
 admin.site.register(Space)
@@ -9,3 +9,4 @@ admin.site.register(Desk)
 admin.site.register(Equipment)
 admin.site.register(CustomUser)
 admin.site.register(Building)
+admin.site.register(Campus)
