@@ -1,89 +1,78 @@
 <template>
-  <div>
-    <div class="position-relative">
-      <section class="section-shaped my-0">
-        <div class="shape shape-style-3 shape-default shape-skew">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div class="container shape-container d-flex">
-          <div class="row align-items-center">
-            <h1 class="mb-4" style="color: #051551;">
-              {{ building.name_complete }}
-            </h1>
-            <card
-              class="row align-items-center"
-              style="background-color: rgba(159, 216, 197, 0.5); max-width: fit-content;"
-            >
-              <div class="row">
-                <div class="col-md-5">
-                  <img
-                    :src="
-                      building.image
-                        ? getBuildingImageUrl(building.image)
-                        : '/img/alternative.jpg'
-                    "
-                    class="img-fluid shadow-lg mb-4 rounded-square"
-                    alt="Imagen del espacio"
-                  />
+  <section class="section-shaped section-lg my-0 d-flex justify-content-center">
+    <div class="shape shape-style-3 shape-default">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="container mt-3">
+      <h1 class="mb-4" style="color: #051551;">
+        {{ building.name_complete }}
+      </h1>
+      <card class="mb-3">
+        <div class="row">
+          <div class="col-md-5">
+            <img
+              :src="
+                building.image
+                  ? getBuildingImageUrl(building.image)
+                  : '/img/alternative.jpg'
+              "
+              class="img-fluid shadow-lg mb-4 rounded-square"
+              alt="Imagen del espacio"
+            />
+          </div>
+          <div class="col-md-7">
+            <div class="card-body">
+              <h3 class="card-title" style="color: #08217E;">
+                Información y contacto
+              </h3>
+              
+                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-square-pin mr-2"
+                    style="font-size: 24px; color:#08217E"
+                  ></i>
+                  <strong>{{ building.address }}</strong>
                 </div>
-                <div class="col-md-7">
-                  <div class="d-flex flex-column ">
-                    <h2 class="mb-4" style="color: #08217E;">
-                      Información y contacto
-                    </h2>
-                    <div class="d-flex mb-4">
-                      <i
-                        class="ni ni-square-pin mr-2"
-                        style="font-size: 24px; color:#08217E"
-                      ></i>
-                      <p class="text-black mb-0">
-                        <b>{{ building.address }}</b>
-                      </p>
-                    </div>
-                    <div class="d-flex mb-4">
-                      <i
-                        class="ni ni-world-2 mr-2"
-                        style="font-size: 24px; color:#08217E;"
-                      ></i>
-                      <p class="text-black mb-0">
-                        <b>{{ building.web }}</b>
-                      </p>
-                    </div>
-                    <div class="d-flex mb-4">
-                      <i
-                        class="ni ni-email-83 mr-2"
-                        style="font-size: 24px; color:#08217E;"
-                      ></i>
-                      <p class="text-black mb-0">
-                        <b>{{ building.email }}</b>
-                      </p>
-                    </div>
-                    <div class="d-flex">
-                      <i
-                        class="ni ni-mobile-button mr-2"
-                        style="font-size: 24px; color:#08217E;"
-                      ></i>
-                      <p class="text-black mb-0">
-                        <b>{{ building.phone }}</b>
-                      </p>
-                    </div>
-                  </div>
+
+                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-world-2 mr-2"
+                    style="font-size: 24px; color:#08217E;"
+                  ></i>
+                  <strong>{{ building.web }}</strong>
                 </div>
-              </div>
-            </card>
+
+                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-email-83 mr-2"
+                    style="font-size: 24px; color:#08217E;"
+                  ></i>
+                  <strong>{{ building.email }}</strong>
+                </div>
+
+                <div class="d-flex align-items-center"  style="margin-bottom: 20px;">
+                  <i
+                    class="ni ni-mobile-button mr-2 "
+                    style="font-size: 24px; color:#08217E;"
+                  ></i>
+                  <strong>{{ building.phone }}</strong>
+                </div>
+              
+            </div>
           </div>
         </div>
-      </section>
-    </div>
-    <section class="section section-lg pt-lg-0 mt--200">
+      </card>
+
+      <div class="mb-5"></div>
+
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-12">
@@ -108,10 +97,11 @@
                   <h5 :class="space.name">{{ space.name }}</h5>
                   <div class="progress-label mt-4">
                     <span
-                      >Ocupación actual <strong>{{ space.occupation }}%</strong></span
+                      >Ocupación actual
+                      <strong>{{ space.occupation }}%</strong></span
                     >
                   </div>
-                  
+
                   <div class="progress mt-4" style="height: 8px;">
                     <div
                       role="progressbar"
@@ -134,8 +124,8 @@
           </div>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script>
@@ -153,15 +143,16 @@ export default {
       buildingId: null,
       freeSeats: null,
       occupation: 0,
+      campus:{}
     };
   },
   mounted() {
     this.buildingId = this.$route.params.buildingId || "";
-    this.fetchSpaces();  
-    // this.fetchOccupation();
+    this.fetchSpaces();
     
   },
   methods: {
+
     async fetchSpaces() {
       await axios
         .get(`${backendUrl}building/${this.buildingId}/`)
@@ -176,7 +167,7 @@ export default {
         .get(`${backendUrl}building/${this.buildingId}/spaces/`)
         .then((response) => {
           this.spaces = response.data;
-          this.fetchOccupation()
+          this.fetchOccupation();
         })
         .catch((error) => {
           console.error("Error fetching spaces:", error);
@@ -195,26 +186,26 @@ export default {
     },
     async fetchOccupation() {
       try {
-    console.log("hola");
-    console.log("Spaces: ", this.spaces);
+        for (const spaceIndex in this.spaces) {
+          if (this.spaces[spaceIndex]) {
+            const spaceId = this.spaces[spaceIndex].id;
+            const response = await axios.get(
+              `${backendUrl}occupation-actual/${spaceId}`
+            );
+            const occupationPercentage = response.data.occupationPercentage;
 
-    for (const spaceIndex in this.spaces) {
-      console.log("adios");
-      console.log(spaceIndex);
+            this.occupation = occupationPercentage;
 
-      if (this.spaces[spaceIndex]) {
-        const spaceId = this.spaces[spaceIndex].id;
-        const response = await axios.get(`${backendUrl}occupation-actual/${spaceId}`);
-        const occupationPercentage = response.data.occupationPercentage;
-        console.log("Ocupacion", response.data);
-        console.log("Ocupacion %", occupationPercentage);
-        this.occupation = occupationPercentage;
-
-        this.$set(this.spaces, spaceIndex, { ...this.spaces[spaceIndex], occupation: occupationPercentage });
-      } else {
-        console.error(`El espacio en el índice ${spaceIndex} no está definido.`);
-      }
-    }
+            this.$set(this.spaces, spaceIndex, {
+              ...this.spaces[spaceIndex],
+              occupation: occupationPercentage,
+            });
+          } else {
+            console.error(
+              `El espacio en el índice ${spaceIndex} no está definido.`
+            );
+          }
+        }
       } catch (error) {
         console.error("Error al obtener la ocupación:", error);
       }
@@ -251,5 +242,4 @@ export default {
 .rounded-square {
   border-radius: 5px;
 }
-
 </style>

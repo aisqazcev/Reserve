@@ -1,3 +1,4 @@
+from datetime import timedelta
 from enum import Enum
 import json
 import os
@@ -10,6 +11,7 @@ from django.db import models
 from django.conf import settings
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from django.forms import ValidationError
 
 
 def user_directory_path(instance, filename):
@@ -110,20 +112,6 @@ class Space(models.Model):
     schedule = models.TextField(null=False)
     image = models.ImageField(blank=True, null=True)
 
-    # def calculate_occupation(self):
-    #     # Obtener todos los objetos Desk en este espacio
-    #     desks_in_space = Desk.objects.filter(space_id=self)
-
-    #     # Contar el número de escritorios reservados
-    #     reserved_desks_count = desks_in_space.filter(seat_status=SeatStatus.RESERVED.value).count()
-
-    #     # Calcular la ocupación en base al total de escritorios y los reservados
-    #     total_desks = desks_in_space.count()
-    #     occupation_percentage = (reserved_desks_count / total_desks) * 100 if total_desks > 0 else 0
-
-    #     return occupation_percentage
-
-
 class Equipment(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(null=False)
@@ -153,10 +141,31 @@ class Desk(Space_item):
 
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
-    building = models.ForeignKey(Building, on_delete=models.CASCADE)
-    space = models.ForeignKey(Space, on_delete=models.CASCADE)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE, editable = False)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, editable = False)
+    space = models.ForeignKey(Space, on_delete=models.CASCADE, editable = False)
     desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
     date = models.DateField() 
-    start_time = models.DateTimeField()  
-    end_time = models.DateTimeField()  
+    start_time = models.DateTimeField() 
+    duration = models.DurationField()
+    end_time = models.DateTimeField()
+
+
+    def clean(self):
+        # Determinar el campus, edificio y espacio basado en el escritorio seleccionado
+        if self.desk_id:
+            desk = Desk.objects.select_related('space_id__building__campus').get(pk=self.desk_id)
+            self.space = desk.space_id
+            self.building = desk.space_id.building
+            self.campus = desk.space_id.building.campus
+
+
+            # Validar que la fecha esté dentro del horario de funcionamiento del espacio
+        # if not self.space.is_open_at(self.date, self.start_time, self.end_time):
+        #     raise ValidationError(_("El espacio no está disponible en este horario."))
+            
+    def save(self, *args, **kwargs):
+         
+        self.end_time = self.start_time + self.duration
+        self.full_clean()
+        super().save(*args, **kwargs)

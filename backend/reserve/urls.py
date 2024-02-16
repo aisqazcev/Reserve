@@ -37,7 +37,8 @@ urlpatterns = [
     # path('search_spaces/', search_spaces, name='search_spaces'),
 
     path('find-available-seats/', find_available_seats, name='find_available_seats'),
-    
+
     path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
     path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),
+
 ]

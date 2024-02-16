@@ -201,11 +201,9 @@ def occupation_actual(request, space_id):
                 space=space
             )
             total_seats = space.capacity
-            print(f"Total de sitios: ", total_seats)
             occupied_seats = overlapping_bookings.values('desk__id').distinct().count()
-            print(f"Sitios ocupados: ", occupied_seats)
             occupancy_percentage = (occupied_seats / total_seats) * 100
-            print("Ocupacion %", occupancy_percentage)
+         
 
             return JsonResponse({'occupationPercentage': occupancy_percentage})
 
@@ -376,9 +374,7 @@ def find_available_seats(request):
 
             duration = timedelta(minutes=int(duration_str))
             end_time = start_time + duration
-            print(f"Start time: {start_time}, End time: {end_time}")
-
-    
+ 
             overlapping_bookings = Booking.objects.filter(date=start_time.date()).filter(
                 start_time__lt=end_time, end_time__gt=start_time
             )

@@ -7,14 +7,62 @@
       <span style="background-color: #787CFF;"></span>
     </div>
     <div class="container mt-3">
-      <h2 class="card-title">{{ spaceDetails.name }} de {{ building.name }}</h2>
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Detalles del Espacio</h5>
-          <p><strong>Nombre:</strong> {{ spaceDetails.name }}</p>
-          <p><strong>Ubicación:</strong> {{ spaceDetails.location }}</p>
+      <h1 class="mb-4" style="color: #051551;">
+        {{ building.name_complete }}
+        <i class="ni ni-bold-right" style="font-size: 24px; color:#051551"> </i>
+        {{ spaceDetails.name }}
+      </h1>
+      <card class="mb-3">
+        <div class="row">
+          <div class="col-md-5">
+            <img
+              :src="
+                spaceDetails.image
+                  ? getSpaceImageUrl(spaceDetails.image)
+                  : '/img/alternative.jpg'
+              "
+              class="img-fluid shadow-lg mb-4 rounded-square"
+              alt="Imagen del espacio"
+            />
+          </div>
+          <div class="col-md-7">
+            <div class="card-body">
+              <h3 class="card-title" style="color: #08217E;">
+                Detalles del Espacio
+              </h3>
+
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="ni ni-chart-bar-32 mr-2"
+                  style="font-size: 24px; color:#08217E"
+                >
+                </i>
+                <strong>Capacidad: {{ spaceDetails.capacity }} </strong>
+              </div>
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <strong>Equipamiento: {{ spaceDetails.equipment }}</strong>
+              </div>
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="fas fa-info-circle mr-2"
+                  style="font-size: 24px; color:#08217E"
+                ></i>
+                <light>{{ spaceDetails.general_info }}</light>
+              </div>
+              
+            </div>
+          </div>
         </div>
-      </div>
+      </card>
       <div class="card">
         <div class="card-body">
           <div class="row">
@@ -53,8 +101,24 @@
                 </select>
               </div>
             </div>
-
             <div class="col-md-12">
+              <dt>
+                <div
+                  v-if="showNoResultsMessage"
+                  class="alert alert-info"
+                  role="alert"
+                >
+                  No hay resultados para la búsqueda.
+                </div>
+                <div
+                  v-if="errorMessage"
+                  class="alert alert-warning error-message"
+                  role="alert"
+                >
+                  <i class="fas fa-exclamation-triangle"></i>
+                  {{ errorMessage }}
+                </div>
+              </dt>
               <button
                 class="btn btn-primary btn-block"
                 @click="buscarDisponibilidad"
@@ -82,6 +146,14 @@
                   <td>{{ item.id }}</td>
                   <td>{{ item.name }}</td>
                   <td>{{ item.seat_status }}</td>
+                  <td>
+                    <button
+                      class="btn btn-primary"
+                      @click="reservarDesk(item.id)"
+                    >
+                      Reservar
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -95,14 +167,24 @@
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
+import "@fortawesome/fontawesome-free/css/all.css";
+import Card from "../components/Card.vue";
 
 export default {
+  components: { Card },
   data() {
     return {
       spacesItems: [],
       spaceDetails: {},
       building: {},
       campus: {},
+      originalSpacesItems: [],
+      errorMessage: "",
+      showModal: false,
+      reservationDate: "",
+      reservationStartTime: "",
+      reservedSeat: "",
+      showNoResultsMessage: false,
     };
   },
   mounted() {
@@ -110,9 +192,13 @@ export default {
     this.getSpaceDetails();
   },
   methods: {
-    handleDurationChange(event) {
-      console.log("Duración seleccionada:", event.target.value);
+    openModal() {
+      this.showModal = true;
     },
+    closeModal() {
+      this.showModal = false;
+    },
+    handleDurationChange(event) {},
     listSpaceItems() {
       const token = localStorage.getItem("token");
       const spaceId = this.$route.params.spaceId;
@@ -123,7 +209,7 @@ export default {
           })
           .then((response) => {
             this.spacesItems = response.data;
-            console.log("datos: ", response.data);
+            this.originalSpacesItems = response.data;
           })
           .catch((error) => {
             console.error("Error en la obtención de items de espacio:", error);
@@ -142,14 +228,12 @@ export default {
           })
           .then((response) => {
             this.spaceDetails = response.data;
-            console.log("Detalles del espacio: ", response.data);
 
             const buildingId = response.data.building;
             axios
               .get(`${backendUrl}building/${buildingId}/`)
               .then((buildingResponse) => {
                 this.building = buildingResponse.data;
-                console.log("Detalles del edificio: ", buildingResponse.data);
               })
               .catch((error) => {
                 console.error(
@@ -166,40 +250,155 @@ export default {
       }
     },
 
+    isPastDate(dateString) {
+      const selectedDate = new Date(dateString);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      return selectedDate < currentDate;
+    },
+
+    isPastTime(timeString) {
+      const currentTime = new Date();
+      const [hours, minutes] = timeString.split(":");
+      const selectedTime = new Date();
+      selectedTime.setHours(hours, minutes, 0, 0);
+
+      return selectedTime < currentTime;
+    },
+
     buscarDisponibilidad() {
+      this.errorMessage = "";
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
       const duration = document.getElementById("duration").value;
+      const spaceId = this.$route.params.spaceId;
 
-      console.log("Fecha:", date);
-      console.log("Hora de inicio:", start_time);
-      console.log("Duración:", duration);
+      if (this.isPastDate(date)) {
+        this.errorMessage = "No se puede seleccionar una fecha pasada.";
+        return;
+      }
 
-      // Hacer la solicitud al backend
+      if (date === this.getCurrentDate() && this.isPastTime(start_time)) {
+        this.errorMessage =
+          "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
+        return;
+      }
+
       axios
         .get(`${backendUrl}find-available-seats/`, {
           params: {
             start_time: `${date} ${start_time}`,
             duration: duration,
+            space_id: spaceId,
+            date: date,
           },
         })
         .then((response) => {
-          // Actualizar la vista con los resultados recibidos
-          this.spacesItems = response.data.available_seats.map((id) => ({
-            id: id,
-            name: "",
+          const availableSeats = response.data.available_seats;
+          const filteredSeats = this.originalSpacesItems.filter((seat) =>
+            availableSeats.includes(seat.id)
+          );
+
+          this.spacesItems = filteredSeats.map((seat) => ({
+            ...seat,
             seat_status: "AVAILABLE",
           }));
+          if (this.spacesItems.length === 0) {
+            this.showNoResultsMessage = true;
+          } else {
+            this.showNoResultsMessage = false;
+          }
         })
         .catch((error) => {
           console.error("Error al buscar disponibilidad:", error);
         });
+    },
+    getCurrentDate() {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
+
+    reservarDesk(deskId) {
+      const date = document.getElementById("date").value;
+      const start_time = document.getElementById("start_time").value;
+      const durationMinutes = parseInt(
+        document.getElementById("duration").value
+      ); // Duración en minutos
+      const spaceId = this.$route.params.spaceId; // Obtener el ID de la sala actual
+
+      const startTimeSplit = start_time.split(":");
+      const startHour = parseInt(startTimeSplit[0]);
+      const startMinute = parseInt(startTimeSplit[1]);
+      const endMinute = startMinute + durationMinutes;
+      const endHour = startHour + Math.floor(endMinute / 60);
+      const endMinuteAdjusted = endMinute % 60;
+
+      // Convertir duración de minutos a horas y minutos
+      const durationHours = Math.floor(durationMinutes / 60);
+      const durationMinutesRemainder = durationMinutes % 60;
+
+      // Formatear la duración como hh:mm:ss
+      const formattedDuration = `${durationHours
+        .toString()
+        .padStart(2, "0")}:${durationMinutesRemainder
+        .toString()
+        .padStart(2, "0")}:00`;
+
+      const end_time =
+        new Date(`${date} ${start_time}`).getTime() +
+        durationMinutes * 60 * 1000;
+      const formattedEndTime = new Date(end_time)
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
+
+      const token = localStorage.getItem("token");
+      if (token) {
+        axios
+          .post(
+            `${backendUrl}booking/`,
+            {
+              desk: deskId,
+              date: date,
+              start_time: `${date} ${start_time}`,
+              duration: formattedDuration,
+              end_time: formattedEndTime,
+              space_id: spaceId,
+            },
+            {
+              headers: { Authorization: `Token ${token}` },
+            }
+          )
+          .then((response) => {
+            this.spacesItems = this.spacesItems.filter(
+              (item) => item.id !== deskId
+            );
+          })
+          .catch((error) => {
+            this.errorMessage = "Error al reservar el escritorio.";
+          });
+      } else {
+        this.errorMessage = "No se encontró el token de autenticación.";
+      }
     },
   },
 };
 </script>
 
 <style>
+.card {
+  background-color: rgba(
+    159,
+    216,
+    197,
+    0.5
+  ); /* Ajusta el color de fondo según tu preferencia */
+  /* Otros estilos de la tarjeta */
+}
+
 .table-container {
   background-color: rgba(255, 255, 255, 0.7);
   border-radius: 10px;
@@ -208,5 +407,20 @@ export default {
 
 .table-container table {
   background-color: transparent;
+}
+.square-frame {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  position: relative;
+}
+
+.square-frame img {
+  width: 100%;
+  height: auto;
+}
+
+.rounded-square {
+  border-radius: 5px;
 }
 </style>
