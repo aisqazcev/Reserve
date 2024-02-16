@@ -1,81 +1,78 @@
 <template>
-  <div>
-    <div class="position-relative">
-      <section class="section-shaped my-0">
-        <div class="shape shape-style-3 shape-default shape-skew">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div class="container shape-container d-flex">
-          <link
-            href="/assets/vendor/font-awesome/css/font-awesome.min.css"
-            rel="stylesheet"
-          />
-          <div class="col px-0">
-            <h1 class="mb-4">Lista de facultades</h1>
-            <p class="mb-3" style="color: azure;">Filtra por campus:</p>
-            <b-form-select
-              v-model="selectedCampus"
-              :options="campusOptions"
-              placeholder="Seleccionar Campus"
-              class="mb-3 custom-select"
-            ></b-form-select>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-              <b-card
-                v-for="building in filteredBuildings"
-                :key="building.id"
-                no-body
-                class="overflow-hidden mb-4 custom-card"
-                style="max-width: 100%;"
-              >
-                <b-row no-gutters>
-                  <b-col md="6">
-                    <b-card-img
+  <section class="section-shaped my-0 d-flex ">
+    <div class="shape shape-style-3 shape-default ">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="container mt-3">
+      <div class="col px-0">
+        <h1 class="mb-4">Lista de facultades</h1>
+        <p class="mb-3" style="color: azure;">Filtra por campus:</p>
+        <b-form-select
+          v-model="selectedCampus"
+          :options="campusOptions"
+          placeholder="Seleccionar Campus"
+          class="mb-3 custom-select"
+        ></b-form-select>
+        <div class="row">
+          <div class="col-md-12 mb-4">
+            <div v-for="building in filteredBuildings" :key="building.id" class="mb-4">
+              <card class="custom-card">
+                <div class="row">
+                  <div class="col-md-5">
+                    <img
                       :src="
                         building.image
                           ? getBuildingImageUrl(building.image)
                           : '/img/alternative.jpg'
                       "
-                      alt="Building Image"
-                      class="rounded-0 custom-img"
-                    ></b-card-img>
-                  </b-col>
-                  <b-col md="6">
-                    <b-card-body :title="building.name_complete">
-                      <b-card-text>{{ building.address }}</b-card-text>
-                      <b-card-text>{{ building.web }}</b-card-text>
-                      <router-link
-                        :to="{
-                          name: 'building-spaces',
-                          params: { buildingId: building.id },
-                        }"
+                      class="img-fluid shadow-lg mb-4 rounded-square"
+                      alt="Imagen del espacio"
+                    />
+                  </div>
+                  <div class="col-md-7">
+                    <div class="card-body">
+                      <h3 class="card-title" style="color: #08217E;">
+                        {{ building.name_complete }}
+                      </h3>
+                      <div
+                        class="d-flex align-items-center"
+                        style="margin-bottom: 20px;"
                       >
+                        <i
+                          class="ni ni-square-pin mr-2"
+                          style="font-size: 24px; color:#08217E"
+                        ></i>
+                        <strong>{{ building.address }}</strong>
+                      </div>
+                      <router-link :to="`/building/${building.id}`">
                         <b-button variant="primary" class="mt-4"
-                          >Ver salas</b-button
+                          >Ver detalles</b-button
                         >
                       </router-link>
-                    </b-card-body>
-                  </b-col>
-                </b-row>
-              </b-card>
+                    </div>
+                  </div>
+                </div>
+              </card>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
+import "@fortawesome/fontawesome-free/css/all.css";
 import {
   BFormSelect,
   BCard,
