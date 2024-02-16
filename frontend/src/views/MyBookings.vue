@@ -115,10 +115,8 @@ export default {
           })
           .then((response) => {
             this.booking = response.data;
-            // Establecer totalItems como el número total de registros
             this.totalItems = response.data.length;
-            console.log("datos: ", response.data);
-            console.log("campus: ", response.data.campus);
+         
           })
           .catch((error) => {
             console.error("Error en la obtención de reservas:", error);

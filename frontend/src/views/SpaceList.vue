@@ -7,24 +7,58 @@
       <span style="background-color: #787CFF;"></span>
     </div>
     <div class="container mt-3">
-      <h2 class="card-title">{{ spaceDetails.name }} de {{ building.name }}</h2>
-      <card
-              class="row align-items-center"
-              style="background-color: rgba(159, 216, 197, 0.5); max-width: fit-content;"
-            >
+      <h1 class="mb-4" style="color: #051551;">
+        {{ building.name_complete }}
+        <i class="ni ni-bold-right" style="font-size: 24px; color:#051551"> </i>
+        {{ spaceDetails.name }}
+      </h1>
+      <card class="mb-3">
         <div class="row">
           <div class="col-md-5">
             <img
-              :src="spaceDetails.image ? getSpaceImageUrl(spaceDetails.image) : '/img/alternative.jpg'"
+              :src="
+                spaceDetails.image
+                  ? getSpaceImageUrl(spaceDetails.image)
+                  : '/img/alternative.jpg'
+              "
               class="img-fluid shadow-lg mb-4 rounded-square"
               alt="Imagen del espacio"
             />
           </div>
           <div class="col-md-7">
             <div class="card-body">
-              <h5 class="card-title">Detalles del Espacio</h5>
-              <p><strong>Nombre:</strong> {{ spaceDetails.name }}</p>
-              <p><strong>Ubicación:</strong> {{ spaceDetails.location }}</p>
+              <h3 class="card-title" style="color: #08217E;">
+                Detalles del Espacio
+              </h3>
+
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="ni ni-chart-bar-32 mr-2"
+                  style="font-size: 24px; color:#08217E"
+                >
+                </i>
+                <strong>Capacidad: {{ spaceDetails.capacity }} </strong>
+              </div>
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <strong>Equipamiento: {{ spaceDetails.equipment }}</strong>
+              </div>
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="fas fa-info-circle mr-2"
+                  style="font-size: 24px; color:#08217E"
+                ></i>
+                <light>{{ spaceDetails.general_info }}</light>
+              </div>
+              
             </div>
           </div>
         </div>
@@ -125,7 +159,7 @@
             </table>
           </div>
         </div>
-      </div>  
+      </div>
     </div>
   </section>
 </template>
@@ -164,9 +198,7 @@ export default {
     closeModal() {
       this.showModal = false;
     },
-    handleDurationChange(event) {
-
-    },
+    handleDurationChange(event) {},
     listSpaceItems() {
       const token = localStorage.getItem("token");
       const spaceId = this.$route.params.spaceId;
@@ -196,14 +228,12 @@ export default {
           })
           .then((response) => {
             this.spaceDetails = response.data;
-           
 
             const buildingId = response.data.building;
             axios
               .get(`${backendUrl}building/${buildingId}/`)
               .then((buildingResponse) => {
                 this.building = buildingResponse.data;
-                
               })
               .catch((error) => {
                 console.error(
@@ -223,7 +253,7 @@ export default {
     isPastDate(dateString) {
       const selectedDate = new Date(dateString);
       const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0); 
+      currentDate.setHours(0, 0, 0, 0);
       return selectedDate < currentDate;
     },
 
@@ -241,8 +271,8 @@ export default {
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
       const duration = document.getElementById("duration").value;
-      const spaceId = this.$route.params.spaceId; 
-      
+      const spaceId = this.$route.params.spaceId;
+
       if (this.isPastDate(date)) {
         this.errorMessage = "No se puede seleccionar una fecha pasada.";
         return;
@@ -274,9 +304,9 @@ export default {
             seat_status: "AVAILABLE",
           }));
           if (this.spacesItems.length === 0) {
-            this.showNoResultsMessage = true; 
+            this.showNoResultsMessage = true;
           } else {
-            this.showNoResultsMessage = false; 
+            this.showNoResultsMessage = false;
           }
         })
         .catch((error) => {
@@ -359,6 +389,16 @@ export default {
 </script>
 
 <style>
+.card {
+  background-color: rgba(
+    159,
+    216,
+    197,
+    0.5
+  ); /* Ajusta el color de fondo según tu preferencia */
+  /* Otros estilos de la tarjeta */
+}
+
 .table-container {
   background-color: rgba(255, 255, 255, 0.7);
   border-radius: 10px;
@@ -383,5 +423,4 @@ export default {
 .rounded-square {
   border-radius: 5px;
 }
-
 </style>
