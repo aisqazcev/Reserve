@@ -1,10 +1,8 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-<<<<<<< HEAD
-    <div class="shape shape-style-1 bg-gradient-default">
-=======
+
     <div class="shape shape-style-2 shape-default">
->>>>>>> develop
+
       <span></span>
       <span></span>
       <span></span>
@@ -24,60 +22,6 @@
             body-classes="px-lg-5 py-lg-5"
             class="border-0"
           >
-<<<<<<< HEAD
-            <template>
-              <div class="text-center text-muted mb-4">
-                <small>Reserva tu espacio</small>
-              </div>
-              <form @submit.prevent="booking" role="form">
-                <base-input
-                  alternative
-                  type="date"
-                  placeholder="Fecha"
-                  v-model="form.date"
-                ></base-input>
-                <span class="text-danger">{{ errors.date }}</span>
-
-                <base-input
-                  alternative
-                  type="time"
-                  placeholder="Hora de inicio"
-                  v-model="form.start_time"
-                ></base-input>
-                <span class="text-danger">{{ errors.start_time }}</span>
-
-                <base-input
-                  alternative
-                  type="time"
-                  placeholder="Hora de fin"
-                  v-model="form.end_time"
-                ></base-input>
-                <span class="text-danger">{{ errors.end_time }}</span>
-
-                <base-input
-                  alternative
-                  type="email"
-                  placeholder="Email"
-                  v-model="form.email"
-                ></base-input>
-                <span class="text-danger">{{ errors.email }}</span>
-
-                <div class="text-center">
-                  <base-button
-                    :disabled="loading"
-                    type="primary"
-                    class="my-4"
-                    @click="booking"
-                  >
-                    Reservar
-                  </base-button>
-                </div>
-              </form>
-              <span class="text-danger">{{ errors.booking }}</span>
-            </template>
-          </card>
-          <!-- Otras secciones de la página, si es necesario -->
-=======
             <div class="text-center text-muted mb-4">
               <small>Buscar Disponibilidad de Espacios</small>
             </div>
@@ -158,7 +102,6 @@
               </ul>
             </div>
           </card>
->>>>>>> develop
         </div>
       </div>
     </div>
@@ -166,49 +109,6 @@
 </template>
 
 <script>
-<<<<<<< HEAD
-import axios from 'axios';
-import { backendUrl } from "../main.js";
-
-export default {
-  name: "Booking",
-  data() {
-    return {
-      form: {
-        date: "",
-        start_time: "",
-        end_time: "",
-        email: "",
-      },
-      loading: false,
-      errors: {
-        date: "",
-        start_time: "",
-        end_time: "",
-        email: "",
-        booking: "",
-      },
-    };
-  },
-  methods: {
-    async booking() {
-      console.log("Booking called");
-      
-      try {
-        console.log(this.form)
-        const response = await axios.post(`${backendUrl}booking/`, this.form)
-
-        this.loading = true;
-        setTimeout(() => {
-          this.$router.push("/landing");
-          this.loading = false;
-        }, 2000);
-      } catch (error) {
-        // Handle booking error
-        this.errors.booking = "Error al realizar la reserva. Por favor, inténtelo de nuevo.";
-        console.error("Booking error:", error);
-      }
-=======
 import axios from "axios";
 import { backendUrl } from "../main.js";
 
@@ -281,7 +181,6 @@ export default {
         .catch((error) => {
           console.error("Error al buscar disponibilidad:", error);
         });
->>>>>>> develop
     },
   },
 };
