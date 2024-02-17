@@ -62,14 +62,21 @@
                 ></base-input>
                 <div class="text-center">
                   <base-button
-                    :disabled="loading"
+                    :disabled="!isValidForm || loading"
                     type="primary"
                     class="my-4"
                     @click="register"
                   >
-                    Crear Usuario
+                    {{ loading ? 'Creando...' : 'Crear Usuario' }}
                   </base-button>
                 </div>
+                <div class="text-center mt-3">
+                  <router-link to="/">
+                    Volver al inicio de sesión
+                  </router-link>
+                </div>
+                <div v-if="successMessage" class="text-success text-center mt-3">{{ successMessage }}</div>
+                <div v-if="errorMessage" class="text-danger text-center mt-3">{{ errorMessage }}</div>
               </form>
             </template>
           </card>
@@ -99,40 +106,58 @@ export default {
       },
       errors: [],
       loading: false,
+      successMessage: "",
+      errorMessage: "",
     };
+  },
+  computed: {
+    isValidForm() {
+      return (
+        this.form.username.trim() !== "" &&
+        this.form.name.trim() !== "" &&
+        this.form.email.trim() !== "" &&
+        this.form.password.trim() !== "" &&
+        this.form.password2.trim() !== "" &&
+        this.isSecurePassword() &&
+        this.form.password === this.form.password2
+      );
+    },
   },
   methods: {
     async register() {
-      this.errors = [];
-      this.loading = true;
+  this.errors = [];
+  this.loading = true;
+  this.errorMessage = "";
+  this.successMessage = "";
 
-      if (this.form.username === "") {
-        this.errors.push("The username is missing");
-      }
-      if (this.form.password === "" || this.form.password2 === "") {
-        this.errors.push("The password is missing");
-      }
-      if (this.form.password2 !== this.form.password) {
-        this.errors.push("The passwords don't match");
-      }
-      if (!this.errors.length) {
-        try {
-          const response = await axios.post(
-            `${backendUrl}register/`,
-            this.form
-          );
+  if (!this.isValidForm) {
+    this.errorMessage = "Por favor, complete todos los campos correctamente.";
+    this.loading = false;
+    return;
+  }
 
-          this.loading = true;
-          setTimeout(() => {
-            this.$router.push("/");
-            this.loading = false;
-          }, 2000);
-        } catch (error) {
-          this.errors.register =
-            "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
-          console.error("Register error:", error);
-        }
-      }
+  try {
+    const response = await axios.post(`${backendUrl}register/`, this.form);
+    if (response.data.detail === "Usuario registrado exitosamente") {
+      console.log("User created:", response.data);
+      this.successMessage = "Usuario creado correctamente.";
+      setTimeout(() => {
+        this.$router.push("/");
+      }, 2000);
+    } else {
+      this.errorMessage = "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
+    }
+  } catch (error) {
+    this.errorMessage = "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
+    console.error("Register error:", error);
+  } finally {
+    this.loading = false;
+  }
+},
+
+    isSecurePassword() {
+      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      return regex.test(this.form.password);
     },
   },
 };
