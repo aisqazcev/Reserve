@@ -1,6 +1,8 @@
 <template>
   <section class="section section-shaped section-lg my-0">
+
     <div class="shape shape-style-2 shape-default">
+
       <span></span>
       <span></span>
       <span></span>

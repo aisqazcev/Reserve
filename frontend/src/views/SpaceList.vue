@@ -143,9 +143,9 @@
               </thead>
               <tbody>
                 <tr v-for="(item, index) in spacesItems" :key="index">
-                  <td>{{ item.id }}</td>
-                  <td>{{ item.name }}</td>
-                  <td>{{ item.seat_status }}</td>
+                  <td data-label="Id">{{ item.id }}</td>
+                  <td data-label="Nombre">{{ item.name }}</td>
+                  <td data-label="Estado">{{ item.seat_status }}</td>
                   <td>
                     <button
                       class="btn btn-primary"
@@ -192,12 +192,6 @@ export default {
     this.getSpaceDetails();
   },
   methods: {
-    openModal() {
-      this.showModal = true;
-    },
-    closeModal() {
-      this.showModal = false;
-    },
     handleDurationChange(event) {},
     listSpaceItems() {
       const token = localStorage.getItem("token");
@@ -383,6 +377,11 @@ export default {
       } else {
         this.errorMessage = "No se encontró el token de autenticación.";
       }
+    },
+    getSpaceImageUrl(relativePath) {
+      relativePath = relativePath.replace(/^\/*/, "");
+      const imageUrl = `${backendUrl}${relativePath}`;
+      return imageUrl;
     },
   },
 };

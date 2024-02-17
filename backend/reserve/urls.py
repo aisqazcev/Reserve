@@ -28,6 +28,10 @@ urlpatterns = [
 
 
     path('buildings/', BuildingListView.as_view(), name='building-list'),
+
+    path('register/', RegisterView.as_view(), name='register'),
+    path('booking/', BookingManagementView.as_view(), name='booking'),
+    
     path('building/<int:building_id>/', BuildingDetailstView.as_view(), name='building-details'),
     path('building/<int:building_id>/spaces/', SpacesByBuildingView.as_view(), name='spaces_by_building'),
 

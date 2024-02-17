@@ -9,6 +9,7 @@ from rest_framework import status
 from django.contrib.auth import logout
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
 from django.http import JsonResponse
@@ -51,6 +52,7 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST as ST_400,
     HTTP_205_RESET_CONTENT as ST_205,
     HTTP_401_UNAUTHORIZED as ST_401,
+    HTTP_500_INTERNAL_SERVER_ERROR as ST_500
 )
 
 
