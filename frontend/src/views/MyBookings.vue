@@ -1,13 +1,14 @@
 <template>
   <section class="section-shaped section-lg my-0 d-flex justify-content-center">
     <div class="shape shape-style-3 shape-default">
-      <span style="visibility: hidden;"></span>
       <span></span>
       <span></span>
-      <span style="background-color: #787CFF;"></span>
+      <span></span>
     </div>
-
-    <div class="container mt-3">
+    <div class="container mt-0 mb-3">
+      <h1 class="mb-4" style="color: #051551;">
+        Reservas
+      </h1>
       <div class="table-container">
         <table class="table">
           <thead>
@@ -129,8 +130,8 @@ export default {
           const dateA = new Date(a.date);
           const dateB = new Date(b.date);
 
-          const directionFactor = this.sortDirection === "asc" ? 1 : -1; 
-          
+          const directionFactor = this.sortDirection === "asc" ? 1 : -1;
+
           if (dateA > dateB) return -1 * directionFactor;
           if (dateA < dateB) return 1 * directionFactor;
 
