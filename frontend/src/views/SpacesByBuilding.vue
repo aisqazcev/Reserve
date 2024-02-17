@@ -15,6 +15,7 @@
       <h1 class="mb-4" style="color: #051551;">
         {{ building.name_complete }}
       </h1>
+      
       <card class="mb-3">
         <div class="row">
           <div class="col-md-5">

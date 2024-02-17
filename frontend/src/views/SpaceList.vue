@@ -56,7 +56,7 @@
                   class="fas fa-info-circle mr-2"
                   style="font-size: 24px; color:#08217E"
                 ></i>
-                <light>{{ spaceDetails.general_info }}</light>
+                <td>{{ spaceDetails.general_info }}</td>
               </div>
               
             </div>
