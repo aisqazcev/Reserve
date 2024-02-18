@@ -60,15 +60,43 @@
                   v-model="form.password2"
                   addon-left-icon="ni ni-lock-circle-open"
                 ></base-input>
+                <i
+                  class="fas fa-question-circle"
+                  size="sm"
+                  type="default"
+                  v-b-popover.hover.left="
+                    'La contraseña debe contener al menos 8 caracteres, incluyendo al menos una letra mayúscula, una letra minúscula, un número y un carácter especial.'
+                  "
+                  title="Información sobre la contraseña"
+                >
+                </i>
+
                 <div class="text-center">
                   <base-button
-                    :disabled="loading"
+                    :disabled="!isValidForm || loading"
                     type="primary"
                     class="my-4"
                     @click="register"
                   >
-                    Crear Usuario
+                    {{ loading ? "Creando..." : "Crear Usuario" }}
                   </base-button>
+                </div>
+                <div class="text-center mt-3">
+                  <router-link to="/">
+                    Volver al inicio de sesión
+                  </router-link>
+                </div>
+                <base-alert
+                  v-if="successMessage"
+                  type="success"
+                  dismissible
+                  class="text-center mt-3"
+                >
+                  <span class="alert-inner--icon"><i class="ni ni-like-2"></i></span>
+                  <span class="alert-inner--text"><strong>¡Todo listo!</strong> {{ successMessage }}</span>
+                </base-alert>
+                <div v-if="errorMessage" class="text-danger text-center mt-3">
+                  {{ errorMessage }}
                 </div>
               </form>
             </template>
@@ -82,6 +110,8 @@
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
+import { VBTooltip } from "bootstrap-vue/esm/directives/tooltip/tooltip";
+import { VBPopover } from "bootstrap-vue/esm/directives/popover/popover";
 
 axios.defaults.xsrfCookieName = "csrftoken";
 axios.defaults.xsrfHeaderName = "X-CSRFToken";
@@ -99,40 +129,65 @@ export default {
       },
       errors: [],
       loading: false,
+      successMessage: "",
+      errorMessage: "",
     };
+  },
+  directives: {
+    BTooltip: VBTooltip,
+    BPopover: VBPopover,
+  },
+  computed: {
+    isValidForm() {
+      return (
+        this.form.username.trim() !== "" &&
+        this.form.name.trim() !== "" &&
+        this.form.email.trim() !== "" &&
+        this.form.password.trim() !== "" &&
+        this.form.password2.trim() !== "" &&
+        this.isSecurePassword() &&
+        this.form.password === this.form.password2
+      );
+    },
   },
   methods: {
     async register() {
       this.errors = [];
       this.loading = true;
+      this.errorMessage = "";
+      this.successMessage = "";
 
-      if (this.form.username === "") {
-        this.errors.push("The username is missing");
+      if (!this.isValidForm) {
+        this.errorMessage =
+          "Por favor, complete todos los campos correctamente.";
+        this.loading = false;
+        return;
       }
-      if (this.form.password === "" || this.form.password2 === "") {
-        this.errors.push("The password is missing");
-      }
-      if (this.form.password2 !== this.form.password) {
-        this.errors.push("The passwords don't match");
-      }
-      if (!this.errors.length) {
-        try {
-          const response = await axios.post(
-            `${backendUrl}register/`,
-            this.form
-          );
 
-          this.loading = true;
+      try {
+        const response = await axios.post(`${backendUrl}register/`, this.form);
+        if (response.data.detail === "Usuario registrado exitosamente") {
+          console.log("User created:", response.data);
+          this.successMessage = "Usuario creado correctamente.";
           setTimeout(() => {
             this.$router.push("/");
-            this.loading = false;
           }, 2000);
-        } catch (error) {
-          this.errors.register =
+        } else {
+          this.errorMessage =
             "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
-          console.error("Register error:", error);
         }
+      } catch (error) {
+        this.errorMessage =
+          "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
+        console.error("Register error:", error);
+      } finally {
+        this.loading = false;
       }
+    },
+
+    isSecurePassword() {
+      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      return regex.test(this.form.password);
     },
   },
 };
