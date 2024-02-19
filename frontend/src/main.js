@@ -30,14 +30,18 @@ Vue.prototype.$axios = axios;
 
 Vue.use(VueAxios, axios);
 
-Vue.prototype.$axios = axios;
 
+Vue.prototype.$axios = axios;
+Vue.use(VueAxios, axios)
+
+//Configuración global
 export const backendUrl = "http://localhost:8000/";
 
 Vue.component("modal", Modal);
 
 Vue.config.productionTip = false;
 Vue.use(Argon);
+
 new Vue({
   router,
   // store,

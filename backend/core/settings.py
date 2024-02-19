@@ -158,3 +158,12 @@ REST_FRAMEWORK = {
     ),
 }
 AUTH_USER_MODEL = 'reserve.CustomUser'
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # Puede variar según la configuración del servidor
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'susillaPrueba@gmail.com'  # Reemplaza con tu dirección de correo electrónico
+EMAIL_HOST_PASSWORD = 'Aquí iría la contra'  # Reemplaza con tu contraseña
