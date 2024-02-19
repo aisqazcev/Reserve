@@ -447,7 +447,7 @@ class CampusDetailView(APIView):
     def get(self, request, campus_id, *args, **kwargs):
         campus = get_object_or_404(Campus, id=campus_id)
         serializer = CampusSerializer(campus)
-        return Response({"id": campus.id, "name": campus.campus_name})
+        return Response({"id": campus.id, "campus_name": campus.campus_name})
 
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
