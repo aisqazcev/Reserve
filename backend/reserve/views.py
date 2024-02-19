@@ -373,7 +373,6 @@ def find_available_seats(request):
             start_time_str = start_time_str.rstrip('Z').split('.')[0]
             start_time = datetime.fromisoformat(start_time_str)
 
-
             duration = timedelta(minutes=int(duration_str))
             end_time = start_time + duration
  
@@ -450,7 +449,7 @@ class CampusDetailView(APIView):
     def get(self, request, campus_id, *args, **kwargs):
         campus = get_object_or_404(Campus, id=campus_id)
         serializer = CampusSerializer(campus)
-        return Response({"id": campus.id, "name": campus.campus_name})
+        return Response({"id": campus.id, "campus_name": campus.campus_name})
 
 class BuildingListView(APIView):
     def get(self, request, *args, **kwargs):
@@ -487,30 +486,38 @@ class SpacesByBuildingView(APIView):
         serializer = SpaceSerializer(spaces, many=True)
 
         return Response(serializer.data)
-    
-from rest_framework.decorators import api_view
 
-@api_view(['GET'])
 def find_available_spaces(request):
-    date = request.GET.get('date')
-    time = request.GET.get('time')
-    campus_id = request.GET.get('campus_id')
-    building_id = request.GET.get('building_id')
+    if request.method == 'GET':
+        start_time_str = request.GET.get('start_time')
+        duration_str = request.GET.get('duration')
 
-    # Filtrar las salas disponibles en el campus y edificio especificados
-    available_spaces = Space.objects.filter(building__campus_id=campus_id, building_id=building_id)
+        if not start_time_str or not duration_str:
+            return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
 
-    # Filtrar las salas que tienen escritorios disponibles en la fecha y hora especificadas
-    available_spaces_with_desks = []
-    for space in available_spaces:
-        desks = Desk.objects.filter(space_id=space.id)
-        
-        occupied_desks = Booking.objects.filter(space=space, date=date, start_time__time=time).count()
-        total_desks = len(desks)
-        if occupied_desks < total_desks:
-            available_spaces_with_desks.append(space)
+        try:            
+            start_time_str = start_time_str.rstrip('Z').split('.')[0]
+            start_time = datetime.fromisoformat(start_time_str)
+            start_time = timezone.make_aware(start_time, timezone.get_current_timezone())
+            duration = timedelta(minutes=int(duration_str))
+            end_time = start_time + duration
 
-    # Serializar y devolver las salas disponibles
-    serialized_spaces = SpaceSerializer(available_spaces_with_desks, many=True)
-    return Response(serialized_spaces.data)
+            overlapping_bookings = Booking.objects.filter(date=start_time.date()).filter(
+                start_time__lt=end_time, end_time__gt=start_time
+            )
+            all_spaces = Space.objects.all()
 
+            available_spaces = []
+            for space in all_spaces:
+                available_desks = [desk.id for desk in space.space_item_set.filter(seat_status=0)]
+                overlapping_desks = [booking.desk.id for booking in overlapping_bookings]
+                is_available = bool(set(available_desks) - set(overlapping_desks))
+                if is_available:
+                    available_spaces.append(space)
+
+            available_spaces_ids = [space.id for space in available_spaces]
+
+            return JsonResponse({'available_spaces': available_spaces_ids})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
