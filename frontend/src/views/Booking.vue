@@ -93,23 +93,25 @@
                     >
                   </select>
                 </div>
-                  <div class="col-sm d-flex flex-column align-items-center justify-content-center">
-                    <base-button
-                      :disabled="loading"
-                      type="primary"
-                      class="my-4"
-                      @click="buscarDisponibilidad"
-                    >
-                      Buscar Disponibilidad
-                    </base-button>
-                    <div
-                      v-if="errorMessage"
-                      class="alert alert-warning error-message mt-3"
-                      role="alert"
-                    >
-                      <i class="fas fa-exclamation-triangle"></i>
-                      {{ errorMessage }}
-                    </div>
+                <div
+                  class="col-sm d-flex flex-column align-items-center justify-content-center"
+                >
+                  <base-button
+                    :disabled="loading"
+                    type="primary"
+                    class="my-4"
+                    @click="buscarDisponibilidad"
+                  >
+                    Buscar Disponibilidad
+                  </base-button>
+                  <div
+                    v-if="errorMessage"
+                    class="alert alert-warning error-message mt-3"
+                    role="alert"
+                  >
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ errorMessage }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -121,36 +123,39 @@
           <h5 class="card-title">Espacios con sitios disponibles</h5>
         </div>
         <div v-for="space in spaces" :key="space.id" class="mb-4">
-  <card class="custom-card">
-    <div class="row">
-      <div class="col-md-7">
-        <div class="card-body">
-         <h3 class="card-title" style=" white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 25px;">
-            {{ space.building.campusName }}
-            <i class="ni ni-bold-right" style="051551;"></i>
-            {{ space.building.name_complete }}
-            <i class="ni ni-bold-right" style="color:#051551;"></i>
-            {{ space.name }}
-          </h3>
-          <div class="d-flex align-items-center" style="margin-bottom: 20px;">
-            <i class="ni ni-square-pin" style="font-size: 24px; color:#08217E;"></i>
-            <strong>
-              {{ space.building && space.building.address
-                ? space.building.address
-                : "Dirección no disponible" }}
-            </strong>
-          </div>
+          <card class="custom-card">
+            <div class="row">
+              <div class="card-body">
+                <h3 style="font-size: 24px;">
+                  {{ space.building.campusName }}
+                  <i class="ni ni-bold-right" style="color:#051551;"></i>
+                  {{ space.building.name_complete }}
+                  <i class="ni ni-bold-right" style="color:#051551;"></i>
+                  {{ space.name }}
+                </h3>
+                <div class="d-flex align-items-center">
+                  <i
+                    class="ni ni-square-pin"
+                    style="font-size: 24px; color:#08217E; margin-right: 15px; margin-top: 30px;"
+                  ></i>
+                  <strong style="margin-top: 30px;">
+                    {{ space.building.address }}
+                  </strong>
+                </div>
+                <router-link :to="`/space/${space.id}`">
+                <b-button variant="primary" class="mt-0 float-right" style="margin-right: 15px;"
+                  >Ver detalles</b-button
+                >
+              </router-link>
+              </div>
+            </div>
+          </card>
         </div>
       </div>
-      <div class="col-md-5 d-flex align-items-end justify-content-end">
-        <router-link :to="`/space/${space.id}`">
-          <b-button variant="primary" class="mt-4">Ver detalles</b-button>
-        </router-link>
-      </div>
-    </div>
-  </card>
-</div>
-
+      <div v-if="search && spaces.length == 0" class="mt-4">
+        <div class="alert alert-danger" role="alert">
+          Lo sentimos, no se han encontrado sitios disponibles para esa configuración.
+        </div>
       </div>
     </div>
   </section>
@@ -195,7 +200,15 @@ export default {
       buildings: [],
       spaces: [],
       loading: false,
+      search: false,
     };
+  },
+  watch: {
+    selectedCampus(newCampus) {
+      if (newCampus === null) {
+        this.selectedBuilding = null;
+      }
+    },
   },
   computed: {
     filteredBuildings() {
@@ -212,8 +225,7 @@ export default {
     this.loadBuildings();
   },
   methods: {
-     toggleReadOnly() {
-  },
+    toggleReadOnly() {},
     isPastDate(dateString) {
       const selectedDate = new Date(dateString);
       const currentDate = new Date();
@@ -264,22 +276,25 @@ export default {
       return imageUrl;
     },
     buscarDisponibilidad() {
-      this.errorMessage = '';
-
+      this.errorMessage = "";
+      if (!this.selectedDate || !this.selectedTime || !this.selectedDuration) {
+        this.errorMessage =
+          "Por favor, complete los campos fecha, hora y duración.";
+        return;
+      }
       if (this.isPastDate(this.selectedDate)) {
-        console.log("Fechaaaaaaa: ", this.selectedDate);
         this.errorMessage = "No se puede seleccionar una fecha pasada.";
         return;
       }
-
       if (
-        date === this.getCurrentDate() &&
+        this.selectedDate == this.getCurrentDate() &&
         this.isPastTime(this.selectedTime)
       ) {
         this.errorMessage =
           "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
         return;
       }
+      this.search= true;
       axios
         .get(`${backendUrl}find-available-spaces/`, {
           params: {
@@ -290,10 +305,6 @@ export default {
           },
         })
         .then(async (response) => {
-          console.log(
-            "Respuesta de la API de Espacios Disponibles:",
-            response.data
-          );
           const availableSpaceIds = response.data.available_spaces;
           const spacesDetails = await Promise.all(
             availableSpaceIds.map(async (spaceId) => {
@@ -305,6 +316,7 @@ export default {
           );
           this.spaces = spacesDetails;
           this.getSpaceDetails();
+
         })
         .catch((error) => {
           console.error("Error al buscar disponibilidad:", error);
@@ -344,22 +356,21 @@ export default {
 };
 </script>
 <style scoped>
-  .readonly-input {
-    position: relative;
-  }
+.readonly-input {
+  position: relative;
+}
 
-  .readonly-input input {
-    pointer-events: none;
-  }
+.readonly-input input {
+  pointer-events: none;
+}
 
-  .readonly-input::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: not-allowed;
-  }
+.readonly-input::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: not-allowed;
+}
 </style>
-
