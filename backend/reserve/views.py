@@ -491,6 +491,7 @@ def find_available_spaces(request):
     if request.method == 'GET':
         start_time_str = request.GET.get('start_time')
         duration_str = request.GET.get('duration')
+        building_id = request.GET.get('building_id')
 
         if not start_time_str or not duration_str:
             return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
@@ -503,10 +504,13 @@ def find_available_spaces(request):
             end_time = start_time + duration
 
             overlapping_bookings = Booking.objects.filter(date=start_time.date()).filter(
-                start_time__lt=end_time, end_time__gt=start_time
+                start_time__lt=end_time, 
+                end_time__gt=start_time,                
             )
-            all_spaces = Space.objects.all()
+            all_spaces = Space.objects.filter(
+                building_id=request.GET.get('building_id'))
 
+            
             available_spaces = []
             for space in all_spaces:
                 available_desks = [desk.id for desk in space.space_item_set.filter(seat_status=0)]

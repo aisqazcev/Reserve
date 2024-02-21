@@ -1,8 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-
     <div class="shape shape-style-2 shape-default">
-
       <span></span>
       <span></span>
       <span></span>
@@ -24,40 +22,48 @@
             <div class="ct-example-row">
               <div class="row">
                 <div class="col-sm">
+                  <label for="date" style="color: black;">Fecha</label>
                   <base-input
                     alternative
                     type="date"
-                    placeholder="Fecha"
                     v-model="selectedDate"
+                    id="date"
                   ></base-input>
                 </div>
                 <div class="col-sm">
+                  <label for="time" style="color: black;">Hora</label>
                   <base-input
                     alternative
                     type="time"
-                    placeholder="Hora"
                     v-model="selectedTime"
+                    id="time"
                   ></base-input>
                 </div>
                 <div class="col-sm">
+                  <label for="duracion" style="color: black;"
+                    >Duración (minutos)</label
+                  >
                   <base-input
                     alternative
                     type="number"
-                    placeholder="Duración (minutos)"
                     v-model="selectedDuration"
                     min="15"
+                    step="15"
+                    max="180"
+                    @keydown.prevent
+                    @click="toggleReadOnly"
                   ></base-input>
                 </div>
               </div>
               <div class="row">
                 <div class="col-sm-6">
-                  <label for="campusType">Campus</label>
+                  <label for="campusType" style="color: black;">Campus</label>
                   <select
                     v-model="selectedCampus"
                     class="form-control"
                     id="campusType"
                   >
-                    <option :value="null">Cualquier campus</option>
+                    <option :value="null">Cualquiera</option>
                     <option
                       v-for="campus in campuses"
                       :key="campus.id"
@@ -67,7 +73,9 @@
                   </select>
                 </div>
                 <div class="col-sm-6">
-                  <label for="buildingType">Facultad</label>
+                  <label for="buildingType" style="color: black;"
+                    >Facultad</label
+                  >
                   <select
                     v-model="selectedBuilding"
                     class="form-control"
@@ -75,7 +83,7 @@
                     :disabled="selectedCampus === null"
                   >
                     <option :value="null" :disabled="selectedCampus == null"
-                      >Cualquier Facultad</option
+                      >Cualquiera</option
                     >
                     <option
                       v-for="building in filteredBuildings"
@@ -86,16 +94,24 @@
                   </select>
                 </div>
                 <div
-                  class="col-sm d-flex justify-content-center align-items-center"
+                  class="col-sm d-flex flex-column align-items-center justify-content-center"
                 >
                   <base-button
                     :disabled="loading"
                     type="primary"
-                    class="my-4 w-100"
+                    class="my-4"
                     @click="buscarDisponibilidad"
                   >
                     Buscar Disponibilidad
                   </base-button>
+                  <div
+                    v-if="errorMessage"
+                    class="alert alert-warning error-message mt-3"
+                    role="alert"
+                  >
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ errorMessage }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -109,46 +125,36 @@
         <div v-for="space in spaces" :key="space.id" class="mb-4">
           <card class="custom-card">
             <div class="row">
-              <div class="col-md-7">
-                <div class="card-body">
-                  <h3 class="card-title" style="color: #08217E;">
-                    {{ space.building.campusName }}
-                    <i
-                      class="ni ni-bold-right"
-                      style="font-size: 24px; color:#051551"
-                    ></i>
-                    {{ space.building.name_complete }}
-                    <i
-                      class="ni ni-bold-right"
-                      style="font-size: 24px; color:#051551"
-                    ></i>
-                    {{ space.name }}
-                  </h3>
-                  <div
-                    class="d-flex align-items-center"
-                    style="margin-bottom: 20px;"
-                  >
-                    <i
-                      class="ni ni-square-pin"
-                      style="font-size: 24px; color:#08217E"
-                    ></i>
-                    <strong>{{
-                      space.building && space.building.address
-                        ? space.building.address
-                        : "Dirección no disponible"
-                    }}</strong>
-                  </div>
+              <div class="card-body">
+                <h3 style="font-size: 24px;">
+                  {{ space.building.campusName }}
+                  <i class="ni ni-bold-right" style="color:#051551;"></i>
+                  {{ space.building.name_complete }}
+                  <i class="ni ni-bold-right" style="color:#051551;"></i>
+                  {{ space.name }}
+                </h3>
+                <div class="d-flex align-items-center">
+                  <i
+                    class="ni ni-square-pin"
+                    style="font-size: 24px; color:#08217E; margin-right: 15px; margin-top: 30px;"
+                  ></i>
+                  <strong style="margin-top: 30px;">
+                    {{ space.building.address }}
+                  </strong>
                 </div>
-              </div>
-              <div class="col-md-5 d-flex align-items-end justify-content-end">
                 <router-link :to="`/space/${space.id}`">
-                  <b-button variant="primary" class="mt-4"
-                    >Ver detalles</b-button
-                  >
-                </router-link>
+                <b-button variant="primary" class="mt-0 float-right" style="margin-right: 15px;"
+                  >Ver detalles</b-button
+                >
+              </router-link>
               </div>
             </div>
           </card>
+        </div>
+      </div>
+      <div v-if="search && spaces.length == 0" class="mt-4">
+        <div class="alert alert-danger" role="alert">
+          Lo sentimos, no se han encontrado sitios disponibles para esa configuración.
         </div>
       </div>
     </div>
@@ -186,6 +192,7 @@ export default {
     return {
       selectedDate: "",
       selectedTime: "",
+      errorMessage: "",
       selectedCampus: null,
       selectedBuilding: null,
       selectedDuration: 60,
@@ -193,7 +200,15 @@ export default {
       buildings: [],
       spaces: [],
       loading: false,
+      search: false,
     };
+  },
+  watch: {
+    selectedCampus(newCampus) {
+      if (newCampus === null) {
+        this.selectedBuilding = null;
+      }
+    },
   },
   computed: {
     filteredBuildings() {
@@ -210,6 +225,31 @@ export default {
     this.loadBuildings();
   },
   methods: {
+    toggleReadOnly() {},
+    isPastDate(dateString) {
+      const selectedDate = new Date(dateString);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      return selectedDate < currentDate;
+    },
+
+    isPastTime(timeString) {
+      const currentTime = new Date();
+      const [hours, minutes] = timeString.split(":");
+      const selectedTime = new Date();
+      selectedTime.setHours(hours, minutes, 0, 0);
+
+      return selectedTime < currentTime;
+    },
+
+    getCurrentDate() {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
+
     async loadCampuses() {
       axios
         .get(`${backendUrl}campuses/`)
@@ -236,6 +276,25 @@ export default {
       return imageUrl;
     },
     buscarDisponibilidad() {
+      this.errorMessage = "";
+      if (!this.selectedDate || !this.selectedTime || !this.selectedDuration) {
+        this.errorMessage =
+          "Por favor, complete los campos fecha, hora y duración.";
+        return;
+      }
+      if (this.isPastDate(this.selectedDate)) {
+        this.errorMessage = "No se puede seleccionar una fecha pasada.";
+        return;
+      }
+      if (
+        this.selectedDate == this.getCurrentDate() &&
+        this.isPastTime(this.selectedTime)
+      ) {
+        this.errorMessage =
+          "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
+        return;
+      }
+      this.search= true;
       axios
         .get(`${backendUrl}find-available-spaces/`, {
           params: {
@@ -246,10 +305,6 @@ export default {
           },
         })
         .then(async (response) => {
-          console.log(
-            "Respuesta de la API de Espacios Disponibles:",
-            response.data
-          );
           const availableSpaceIds = response.data.available_spaces;
           const spacesDetails = await Promise.all(
             availableSpaceIds.map(async (spaceId) => {
@@ -261,6 +316,7 @@ export default {
           );
           this.spaces = spacesDetails;
           this.getSpaceDetails();
+
         })
         .catch((error) => {
           console.error("Error al buscar disponibilidad:", error);
@@ -299,3 +355,22 @@ export default {
   },
 };
 </script>
+<style scoped>
+.readonly-input {
+  position: relative;
+}
+
+.readonly-input input {
+  pointer-events: none;
+}
+
+.readonly-input::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: not-allowed;
+}
+</style>
