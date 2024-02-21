@@ -189,9 +189,17 @@ export default {
     BButton,
   },
   data() {
+    const now = new Date();
+    const currentDate = now.toISOString().substring(0, 10);
+    now.setMinutes(0, 0, 0);
+    now.setHours(now.getHours() + 1);
+    let hours = now.getHours().toString().padStart(2, '0');
+    let minutes = now.getMinutes().toString().padStart(2, '0');
+    const nextHour = `${hours}:${minutes}`;
+
     return {
-      selectedDate: "",
-      selectedTime: "",
+      selectedDate: currentDate,
+      selectedTime: nextHour,
       errorMessage: "",
       selectedCampus: null,
       selectedBuilding: null,
