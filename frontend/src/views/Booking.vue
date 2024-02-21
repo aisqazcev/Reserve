@@ -142,7 +142,7 @@
                     {{ space.building.address }}
                   </strong>
                 </div>
-                <router-link :to="`/space/${space.id}`">
+                <router-link :to="{ path: `/space/${space.id}`, query: { date: selectedDate, time: selectedTime, duration: selectedDuration } }">
                 <b-button variant="primary" class="mt-0 float-right" style="margin-right: 15px;"
                   >Ver detalles</b-button
                 >
