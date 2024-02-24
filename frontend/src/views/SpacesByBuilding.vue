@@ -176,6 +176,7 @@ export default {
     },
     getSpaceImageUrl(relativePath) {
       relativePath = relativePath.replace(/^\/*/, "");
+      relativePath = relativePath.replace(/^media\/*/, "");
       const imageUrl = `${backendUrl}${relativePath}`;
       return imageUrl;
     },

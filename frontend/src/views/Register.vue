@@ -167,7 +167,6 @@ export default {
       try {
         const response = await axios.post(`${backendUrl}register/`, this.form);
         if (response.data.detail === "Usuario registrado exitosamente") {
-          console.log("User created:", response.data);
           this.successMessage = "Usuario creado correctamente.";
           setTimeout(() => {
             this.$router.push("/");

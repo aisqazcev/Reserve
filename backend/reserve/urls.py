@@ -15,7 +15,7 @@ urlpatterns = [
     path('location/<int:location_id>/', SpaceShowView.as_view()),
     path('location/create/', SpaceManagementView.as_view(), name='location-create'),
     path('equipment/', EquipmentManagementView.as_view()),
-    path('equipment/<int:location_id>/', EquipmentShowView.as_view()),
+    path('equipment/<int:equipment_id>/', EquipmentShowView.as_view()),
 
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
@@ -43,5 +43,7 @@ urlpatterns = [
 
     path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
     path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),
+
+
 
 ]
