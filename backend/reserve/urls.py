@@ -36,6 +36,7 @@ urlpatterns = [
 
     path('booking/', BookingManagementView.as_view(), name='booking'),
     path('bookings/', BookingListView.as_view(), name='booking-list'),
+    path('booking/<int:booking_id>/', BookingManagementView.as_view(), name='delete-booking'),
 
     # path('search_spaces/', search_spaces, name='search_spaces'),
 

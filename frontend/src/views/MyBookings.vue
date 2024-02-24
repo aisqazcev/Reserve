@@ -10,8 +10,28 @@
         Reservas
       </h1>
       <div class="mb-3">
-        <button @click="filterPastBookings" :class="{'btn-primary': selectedOption === 'past', 'btn-secondary': selectedOption !== 'past'}" class="btn mr-2" style="text-transform: none;">Pasadas</button>
-        <button @click="filterFutureBookings" :class="{'btn-primary': selectedOption === 'future', 'btn-secondary': selectedOption !== 'future'}" class="btn" style="text-transform: none;">Próximas</button>
+        <button
+          @click="filterPastBookings"
+          :class="{
+            'btn-primary': selectedOption === 'past',
+            'btn-secondary': selectedOption !== 'past',
+          }"
+          class="btn mr-2"
+          style="text-transform: none;"
+        >
+          Pasadas
+        </button>
+        <button
+          @click="filterFutureBookings"
+          :class="{
+            'btn-primary': selectedOption === 'future',
+            'btn-secondary': selectedOption !== 'future',
+          }"
+          class="btn"
+          style="text-transform: none;"
+        >
+          Próximas
+        </button>
       </div>
       <div class="table-container">
         <table class="table">
@@ -100,7 +120,7 @@ export default {
       isLoading: true,
       sortDirection: "desc",
       displayedBookings: [],
-      selectedOption: 'future',
+      selectedOption: "future",
       isPastBookingsSelected: false,
       isFutureBookingsSelected: true,
     };
@@ -121,9 +141,9 @@ export default {
   },
   methods: {
     filterPastBookings() {
-      this.selectedOption = 'past';
+      this.selectedOption = "past";
       const currentDate = new Date();
-      
+
       this.displayedBookings = this.booking.filter((booking) => {
         const endDateTime = new Date(booking.end_time);
         return endDateTime < currentDate;
@@ -133,39 +153,36 @@ export default {
     },
 
     filterFutureBookings() {
-      this.selectedOption = 'future';
+      this.selectedOption = "future";
       if (this.booking !== null) {
         const currentDate = new Date();
-        console.log("Fecha actual:", currentDate);
-        
+
         this.displayedBookings = this.booking.filter((booking) => {
           const endDateTime = new Date(booking.end_time);
-          console.log("Fecha y hora de fin de la reserva:", endDateTime);
           return endDateTime > currentDate;
         });
         this.isPastBookingsSelected = false;
         this.isFutureBookingsSelected = true;
-        console.log("Reservas futuras preseleccionadas:", this.displayedBookings);
       }
     },
     toggleSortDirection() {
       this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
-      this.sortBookingsByDate();
+      this.sortBookingsByDate(this.displayedBookings);
     },
-    sortBookingsByDate() {
-      if (this.booking) {
-        this.booking.sort((a, b) => {
-          const dateA = new Date(a.date);
-          const dateB = new Date(b.date);
+    sortBookingsByDate(bookings) {
+      if (bookings) {
+        bookings.sort((a, b) => {
+          const dateA = a.date;
+          const dateB = b.date;
 
-          const directionFactor = this.sortDirection === "asc" ? 1 : -1;
+          const timeA = a.start_time;
+          const timeB = b.start_time;
 
-          if (dateA > dateB) return -1 * directionFactor;
-          if (dateA < dateB) return 1 * directionFactor;
-
-          const timeA = new Date(a.start_time);
-          const timeB = new Date(b.start_time);
-          return (timeA - timeB) * directionFactor;
+          let result = dateA.localeCompare(dateB);
+          if (result === 0) {
+            result = timeA.localeCompare(timeB);
+          }
+          return this.sortDirection === "asc" ? result : -result;
         });
       }
     },
@@ -231,24 +248,32 @@ export default {
       });
     },
     cancelBooking(bookingId, index) {
-      const bookingToCancel = this.booking.find(booking => booking.id === bookingId);
+      const bookingToCancel = this.booking.find(
+        (booking) => booking.id === bookingId
+      );
 
       if (bookingToCancel) {
         const startDateTime = new Date(bookingToCancel.start_time);
         const currentDateTime = new Date();
-        const timeDifference = startDateTime.getTime() - currentDateTime.getTime();
+        const timeDifference =
+          startDateTime.getTime() - currentDateTime.getTime();
         const hoursDifference = timeDifference / (1000 * 60 * 60);
-        
+
         if (hoursDifference <= 8) {
-          this.$toast.error("No se pueden cancelar reservas que comienzan en 8 horas o menos.");
+          this.$toast.error(
+            "No se pueden cancelar reservas que comienzan en 8 horas o menos."
+          );
           return;
         }
       }
-      axios.delete(`${backendUrl}booking/${bookingId}/`, {
+      axios
+        .delete(`${backendUrl}booking/${bookingId}/`, {
           headers: { Authorization: `Token ${this.token}` },
         })
         .then((response) => {
-          this.booking = this.booking.filter((booking) => booking.id !== bookingId);
+          this.booking = this.booking.filter(
+            (booking) => booking.id !== bookingId
+          );
           this.displayedBookings.splice(index, 1);
           this.$toast.success("Reserva eliminada exitosamente");
         })
@@ -256,7 +281,7 @@ export default {
           console.error("Cancellation Error:", error);
           this.$toast.error("Error al intentar cancelar la reserva");
         });
-    }
+    },
   },
 };
 </script>
