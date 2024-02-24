@@ -1,0 +1,89 @@
+{
+  "buildings":[
+  {
+    "id": 1,
+    "name": "USEdificioA",
+    "name_complete": "Edificio A",
+    "address": "Dirección Edificio A",
+    "web": "http://www.edificioa.com",
+    "email": "info@edificioa.com",
+    "phone": "123-456-7890",
+    "services": "Servicios del Edificio A",
+    "image": "./media/edificio_a.jpg",
+    "campus": "Reina Mercedes"
+  },
+  {
+    "id": 2,
+    "name": "EdificioB",
+    "name_complete": "Edificio de Laboratorios B",
+    "address": "Dirección Edificio B",
+    "web": "http://www.edificiob.com",
+    "email": "info@edificiob.com",
+    "phone": "987-654-3210",
+    "services": "Servicios del Edificio B",
+    "image": "./media/edificio_b.jpg",
+    "campus": "Cartuja"
+  },
+  {
+    "id": 3,
+    "name": "EdificioC",
+    "name_complete": "Edificio C",
+    "address": "Dirección Edificio C",
+    "web": "http://www.edificioc.com",
+    "email": "info@edificioc.com",
+    "phone": "123-456-7890",
+    "services": "Servicios del Edificio C",
+    "image": "./media/edificio_c.jpg",
+    "campus": "Reina Mercedes"
+  }
+],
+  "equipments":[
+    {
+      "id": 1,
+      "name": "WHEELCHAIR"
+    },
+    {
+      "id": 2,
+      "name": "WIFI"
+    },
+    {
+      "id": 3,
+      "name": "POWER_PLUG"
+    },
+    { 
+      "id": 4,
+      "name": "BICYCLE"
+    },
+    {
+      "id": 5,
+      "name": "LOCKER"
+    },
+    {
+      "id": 6,
+      "name": "CAFETERIA"
+    },
+    {
+      "id": 7,
+      "name": "PRINTER"
+    },
+    {
+      "id": 8,
+      "name": "VENDING_MACHINE"
+    },
+    {
+      "id": 9,
+      "name": "AIR_CONDITIONING"
+    }
+  ],
+  "spaces":[
+  {
+    "name": "Aula Magna",
+    "building": 1,
+    "capacity": 20,  
+    "general_info": "El acceso a la biblioteca está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
+    "schedule": "10:00-14:00",
+    "image": "./media/aula_magna.jpg",
+    "features":  [1, 2, 3]
+  }
+]
+}
