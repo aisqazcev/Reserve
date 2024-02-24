@@ -55,15 +55,6 @@
                 <button
                   type="button"
                   rel="tooltip"
-                  class="btn btn-success btn-icon btn-sm"
-                  data-original-title=""
-                  title=""
-                >
-                  <i class="fa fa-pencil pt-1"></i>
-                </button>
-                <button
-                  type="button"
-                  rel="tooltip"
                   class="btn btn-danger btn-icon btn-sm"
                   data-original-title=""
                   title=""
