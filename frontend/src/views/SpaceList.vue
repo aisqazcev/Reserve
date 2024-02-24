@@ -190,6 +190,20 @@ export default {
   mounted() {
     this.listSpaceItems();
     this.getSpaceDetails();
+
+    const routeQuery = this.$route.query;
+
+  if (routeQuery.date && routeQuery.time && routeQuery.duration) {
+    this.reservationDate = routeQuery.date;
+    document.getElementById("date").value = routeQuery.date;
+
+    this.reservationStartTime = routeQuery.time;
+    document.getElementById("start_time").value = routeQuery.time;
+
+    document.getElementById("duration").value = routeQuery.duration;
+
+    this.buscarDisponibilidad();
+  }
   },
   methods: {
     handleDurationChange(event) {},

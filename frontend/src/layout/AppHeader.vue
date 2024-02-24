@@ -86,17 +86,10 @@
             <span class="nav-link-inner--text d-lg-none">Github</span>
           </a>
         </li>
-        <li class="nav-item d-none d-lg-block ml-lg-4">
-          <a
-            href="http://localhost:8080/profile"
-            rel="noopener"
-            class="btn btn-neutral btn-icon"
-          >
-            <span class="btn-inner--icon"> </span>
-            <span class="nav-link-inner--text">Perfil</span>
-          </a>
-        </li>
       </ul>
+      <button class="btn btn-neutral" @click="perfil">
+        Perfil
+      </button>
       <button class="btn btn-danger" @click="logout">
         Logout
       </button>
@@ -125,6 +118,9 @@ export default {
 
   mounted() {},
   methods: {
+    perfil() {
+      this.$router.push('/profile');
+    },
     async logout() {
       const token = localStorage.getItem("token");
       if (token) {
