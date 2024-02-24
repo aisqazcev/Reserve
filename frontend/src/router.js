@@ -2,25 +2,23 @@ import Vue from "vue";
 import Router from "vue-router";
 import AppHeader from "./layout/AppHeader";
 import AppFooter from "./layout/AppFooter";
+import Components from "./views/Components.vue";
 import Landing from "./views/Landing.vue";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
-import SpacesByBuilding from './views/SpacesByBuilding.vue';
-import Booking from "./views/Booking.vue";
-import Bookings from "./views/MyBookings.vue";
-import Desk from "./views/SpaceList.vue";
-import Buildings from "./views/Buildings.vue";
 
 Vue.use(Router);
 
-const router = new Router({
-  mode: "history",
+export default new Router({
+  linkExactActiveClass: "active",
   routes: [
     {
       path: "/",
       name: "login",
       components: {
+        Login,
+        header: AppHeader,
         default: Login,
         footer: AppFooter
       }
@@ -32,13 +30,13 @@ const router = new Router({
         header: AppHeader,
         default: Landing,
         footer: AppFooter
-      },
-      meta: { requiresAuth: true }
+      }
     },
     {
       path: "/register",
       name: "register",
       components: {
+        header: AppHeader,
         default: Register,
         footer: AppFooter
       }
@@ -50,53 +48,8 @@ const router = new Router({
         header: AppHeader,
         default: Profile,
         footer: AppFooter
-      },
-      meta: { requiresAuth: true }
-    },
-    {
-      path: "/buildings",
-      name: "Buildings",
-      components: {
-        header: AppHeader,
-        default: Buildings,
-        footer: AppFooter
       }
-    },
-    {
-      path: "/building/:buildingId",
-      name: "building-spaces",
-      components: {
-        header: AppHeader,
-        default: SpacesByBuilding,
-        footer: AppFooter
-      }
-    },
-    {
-      path: "/booking",
-      name: "booking",
-      components: {
-        header: AppHeader,
-        default: Booking,
-        footer: AppFooter,
-      },
-    },
-    {
-      path: "/bookings",
-      name: "bookings",
-      components: {
-        header: AppHeader,
-        default: Bookings,
-      }
-    },
-    {
-      path: "/space/:spaceId",
-      name: "desk",
-      components: {
-        header: AppHeader,
-        default: Desk,
-        footer: AppFooter,
-      },
-    },
+    }
   ],
   scrollBehavior: to => {
     if (to.hash) {
@@ -106,17 +59,3 @@ const router = new Router({
     }
   }
 });
-
-router.beforeEach((to, from, next) => {
-  if(to.matched.some(record => record.meta.requiresAuth)) {
-    if (!localStorage.getItem('token')) {
-      next({ name: 'login' });
-    } else {
-      next();
-    }
-  } else {
-    next();
-  }
-});
-
-export default router;

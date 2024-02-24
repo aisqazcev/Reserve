@@ -151,19 +151,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
-        
     ),
-     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
     ),
 }
 AUTH_USER_MODEL = 'reserve.CustomUser'
-
-# settings.py
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587  # Puede variar según la configuración del servidor
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'susillaPrueba@gmail.com'  # Reemplaza con tu dirección de correo electrónico
-EMAIL_HOST_PASSWORD = 'Aquí iría la contra'  # Reemplaza con tu contraseña
