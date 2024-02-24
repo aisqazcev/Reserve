@@ -27,9 +27,7 @@
           <span class="nav-link-inner--text">Reservar</span>
         </router-link>
 
-
         <router-link to="/bookings" class="nav-link">
-
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
       </ul>
@@ -90,9 +88,24 @@
       <button class="btn btn-neutral" @click="perfil">
         Perfil
       </button>
-      <button class="btn btn-danger" @click="logout">
+      <button class="btn btn-danger" @click="showLogoutConfirmationCard = true">
         Logout
       </button>
+      <div v-if="showLogoutConfirmationCard" class="logout-confirmation">
+        <card shadow class="bg-white">
+          <div class="text-center mb-4 text-primary">
+            <h6>¿Estás seguro de que quieres cerrar sesión?</h6>
+          </div>
+          <div class="text-center">
+            <base-button type="success" class="mr-2" @click="confirmLogout">
+              Aceptar
+            </base-button>
+            <base-button type="danger" @click="cancelLogout">
+              Cancelar
+            </base-button>
+          </div>
+        </card>
+      </div>
     </base-nav>
   </header>
 </template>
@@ -101,6 +114,7 @@
 import BaseNav from "@/components/BaseNav";
 import BaseDropdown from "@/components/BaseDropdown";
 import CloseButton from "@/components/CloseButton";
+import Card from "@/components/Card";
 import axios from "axios";
 import { backendUrl } from "../main.js";
 
@@ -109,17 +123,29 @@ export default {
     BaseNav,
     CloseButton,
     BaseDropdown,
+    Card,
   },
   data() {
     return {
       buildings: [],
+      showLogoutConfirmationCard: false,
     };
   },
 
   mounted() {},
   methods: {
     perfil() {
-      this.$router.push('/profile');
+      this.$router.push("/profile");
+    },
+    showLogoutConfirmationDialog() {
+      this.showConfirmationDialog = true;
+    },
+    cancelLogout() {
+      this.showLogoutConfirmationCard = false;
+    },
+    confirmLogout() {
+      this.showLogoutConfirmationCard = false;
+      this.logout();
     },
     async logout() {
       const token = localStorage.getItem("token");
@@ -144,5 +170,11 @@ export default {
 <style>
 .separator {
   margin: 0 50px;
+}
+.logout-confirmation {
+  position: absolute;
+  top: calc(100% + 10px); /* Ajusta el valor según sea necesario */
+  left: 50%;
+  transform: translateX(-50%);
 }
 </style>
