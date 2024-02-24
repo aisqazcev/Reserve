@@ -24,7 +24,11 @@
               <div class="text-center text-muted mb-4">
                 <small>Introduce tus credenciales</small>
               </div>
-              <form @submit.prevent="handleSubmit" role="form">
+              <form
+                @submit.prevent="handleSubmit"
+                @keydown.enter="handleEnterKey"
+                role="form"
+              >
                 <base-input
                   alternative
                   class="mb-3"
@@ -32,7 +36,6 @@
                   addon-left-icon="ni ni-email-83"
                   v-model="form.usernameOrEmail"
                 ></base-input>
-                <span class="text-danger">{{ errors.usernameOrEmail }}</span>
 
                 <base-input
                   alternative
@@ -41,7 +44,6 @@
                   addon-left-icon="ni ni-lock-circle-open"
                   v-model="form.password"
                 ></base-input>
-                <span class="text-danger">{{ errors.password }}</span>
 
                 <base-checkbox v-model="form.remember">
                   Recordarme
@@ -56,14 +58,25 @@
                     Iniciar
                   </base-button>
                 </div>
+                <div class="col-md-12">
+                  <dt>
+                    <div
+                      v-if="errorMessage"
+                      class="alert alert-warning error-message"
+                      role="alert"
+                    >
+                      <i class="fas fa-exclamation-triangle"></i>
+                      {{ errorMessage }}
+                    </div>
+                  </dt>
+                </div>
               </form>
-              <span class="text-danger">{{ errors.login }}</span>
             </template>
           </card>
           <div class="row mt-3">
             <div class="col-6">
               <router-link to="#" class="text-light">
-                <small>¿Olivdaste tu contraseña?</small>
+                <small>¿Olvidaste tu contraseña?</small>
               </router-link>
             </div>
             <div class="col-6 text-right">
@@ -92,37 +105,61 @@ export default {
         remember: false,
       },
       loading: false,
-      errors: {
-        usernameOrEmail: "",
-        password: "",
-        login: "",
-      },
+      errorMessage: "",
     };
   },
+  mounted() {
+    this.checkRememberedUser();
+  },
   methods: {
+    checkRememberedUser() {
+      const rememberedUser = localStorage.getItem("rememberedUser");
+      const rememberedPassword = localStorage.getItem("rememberedPassword");
+      if (rememberedUser && rememberedPassword) {
+        this.form.usernameOrEmail = JSON.parse(rememberedUser);
+        this.form.password = JSON.parse(rememberedPassword);
+        this.form.remember = true;
+      }
+    },
     async handleSubmit() {
-      axios
-        .post(`${backendUrl}login/`, {
+      if (!this.form.usernameOrEmail || !this.form.password) {
+        this.errorMessage = "Los campos no pueden estar vacíos";
+        return;
+      }
+      if (this.form.remember) {
+        localStorage.setItem(
+          "rememberedUser",
+          JSON.stringify(this.form.usernameOrEmail)
+        );
+        localStorage.setItem("rememberedPassword", JSON.stringify(this.form.password));
+      } else {
+        localStorage.removeItem("rememberedUser");
+        localStorage.removeItem("rememberedPassword");
+      }
+      try {
+        const response = await axios.post(`${backendUrl}login/`, {
           username_or_email: this.form.usernameOrEmail,
           password: this.form.password,
           remember: this.form.remember,
-        })
-        .then((response) => {
-          const token = response.data.token;
-          localStorage.setItem("token", token);
-          this.$router.push("/landing");
-        })
-        .catch((error) => {
-          console.error("Error en el inicio de sesión:", error);
-          if (error.response && error.response.status === 400) {
-            this.errors.login = "Credenciales inválidas";
-            this.errors.usernameOrEmail =
-              error.response.data.username_or_email[0];
-          } else {
-            this.errors.login =
-              "Error en el inicio de sesión. Por favor, inténtalo de nuevo.";
-          }
         });
+
+        const token = response.data.token;
+        localStorage.setItem("token", token);
+        this.$router.push("/landing");
+      } catch (error) {
+        console.error("Error en el inicio de sesión:", error);
+        if (error.response && error.response.status === 400) {
+          this.errorMessage = "Credenciales incorrectas";
+        } else {
+          this.errorMessage =
+            "Error en el inicio de sesión. Por favor, inténtalo de nuevo.";
+        }
+      }
+    },
+    handleEnterKey(event) {
+      if (event.key === "Enter") {
+        this.handleSubmit();
+      }
     },
   },
 };
