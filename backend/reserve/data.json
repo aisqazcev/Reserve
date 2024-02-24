@@ -82,7 +82,7 @@
     "capacity": 20,  
     "general_info": "El acceso a la biblioteca está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
     "schedule": "10:00-14:00",
-    "image": "./media/aula_magna.jpg",
+    "image": "./media/aula.jpg",
     "features":  [1, 2, 3]
   }
 ]

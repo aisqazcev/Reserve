@@ -124,12 +124,9 @@ def load_data():
                 image=space_data.get("image")
             )
 
-            # Obtener los IDs de las características de los espacios desde el archivo JSON
             feature_ids = space_data.get("features", [])
 
-            # Crear instancias de equipos relacionados con las características de los espacios
             for feature_id in feature_ids:
-                # Buscar el equipo por su ID
                 try:
                     equipment = Equipment.objects.get(id=feature_id)
                     space.features.add(equipment)
@@ -141,11 +138,6 @@ def load_data_after_migrate(sender, **kwargs):
     if sender.name == "reserve":
         load_data()
 
-
-
-
-
-    
 class Space(models.Model):
     name = models.CharField(max_length=250)
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
@@ -169,8 +161,6 @@ class Space_item(models.Model):
     seat_status = models.IntegerField(
         default=0, choices=[(status.value, status.name) for status in SeatStatus]
     )
-
-
 
 class Room(Space_item):
     capacity = models.IntegerField()
