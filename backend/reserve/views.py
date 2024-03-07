@@ -1,3 +1,5 @@
+import random
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
@@ -526,3 +528,15 @@ def find_available_spaces(request):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+        
+def get_random_images(request):
+    try:
+        espacios_aleatorios = random.sample(list(Space.objects.all()), 3)
+        print("Random:", espacios_aleatorios)
+        urls_imagenes = [f"{settings.MEDIA_URL}{espacio.image}" if espacio.image else None for espacio in espacios_aleatorios]
+        # urls_imagenes = [url.replace("/media/media", "/media") if url else None for url in urls_imagenes]
+
+        return JsonResponse({'urls_imagenes': urls_imagenes})
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
