@@ -3,13 +3,13 @@
   {
     "id": 1,
     "name": "USEdificioA",
-    "name_complete": "Edificio A",
+    "name_complete": "Facultad de Derecho",
     "address": "Dirección Edificio A",
     "web": "http://www.edificioa.com",
     "email": "info@edificioa.com",
     "phone": "123-456-7890",
     "services": "Servicios del Edificio A",
-    "image": "./media/edificio_a.jpg",
+    "image": "./media/derechoUs.jpg",
     "campus": "Reina Mercedes"
   },
   {
@@ -84,6 +84,24 @@
     "schedule": "10:00-14:00",
     "image": "./media/aula.jpg",
     "features":  [1, 2, 3]
-  }
+  },
+  {
+    "name": "Sala de estudio",
+    "building": 1,
+    "capacity": 30,  
+    "general_info": "El acceso a la sala de estudios está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
+    "schedule": "10:00-14:00",
+    "image": "./media/sala_estudio.jpg",
+    "features":  [1, 2, 3]
+  },
+  {
+    "name": "Sala de ordenadores",
+    "building": 2,
+    "capacity": 30,  
+    "general_info": "El acceso a la sala de ordenadores está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
+    "schedule": "10:00-14:00",
+    "image": "./media/sala_ordenadores.jpg",
+    "features":  [1, 2, 3]
+  }  
 ]
 }
