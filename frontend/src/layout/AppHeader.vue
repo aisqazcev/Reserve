@@ -1,8 +1,8 @@
 <template>
   <header class="header-global">
     <base-nav class="navbar-main" transparent type="" effect="light" expand>
-      <router-link to="/landing" class="nav-link">
-        <i class="fa fa-home fa-2x" style="color: white;"></i>
+    <router-link to="/landing" class="nav-link">
+    <i class="fa fa-home fa-2x" style="color: #be0f2e;"></i>
       </router-link>
 
       <div class="row" slot="content-header" slot-scope="{ closeMenu }">
@@ -168,6 +168,15 @@ export default {
 </script>
 
 <style>
+body {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 400;
+}
+
+.nav-link:hover .fa-home {
+  color: #0f1af2; /* Cambia al color deseado al pasar el ratón */
+}
+
 .separator {
   margin: 0 50px;
 }
