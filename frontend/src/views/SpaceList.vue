@@ -46,7 +46,10 @@
                 class="d-flex align-items-center"
                 style="margin-bottom: 20px;"
               >
-                <strong>Equipamiento: {{ spaceDetails.equipment }}</strong>
+                <div v-if="spaceDetails && spaceDetails.features">
+                  <strong>Equipamiento:</strong>
+                  <equipment :equipments="spaceDetails.features"></equipment>
+                </div>
               </div>
               <div
                 class="d-flex align-items-center"
@@ -58,7 +61,6 @@
                 ></i>
                 <td>{{ spaceDetails.general_info }}</td>
               </div>
-              
             </div>
           </div>
         </div>
@@ -169,9 +171,10 @@ import axios from "axios";
 import { backendUrl } from "../main.js";
 import "@fortawesome/fontawesome-free/css/all.css";
 import Card from "../components/Card.vue";
+import Equipment from "../components/Equipment.vue";
 
 export default {
-  components: { Card },
+  components: { Equipment, Card },
   data() {
     return {
       spacesItems: [],
@@ -236,6 +239,8 @@ export default {
           })
           .then((response) => {
             this.spaceDetails = response.data;
+            this.spaceDetails.features = response.data.features;
+
 
             const buildingId = response.data.building;
             axios
@@ -334,21 +339,19 @@ export default {
       const start_time = document.getElementById("start_time").value;
       const durationMinutes = parseInt(
         document.getElementById("duration").value
-      ); // Duración en minutos
-      const spaceId = this.$route.params.spaceId; // Obtener el ID de la sala actual
+      );
+      const spaceId = this.$route.params.spaceId;
 
       const startTimeSplit = start_time.split(":");
       const startHour = parseInt(startTimeSplit[0]);
       const startMinute = parseInt(startTimeSplit[1]);
       const endMinute = startMinute + durationMinutes;
-      const endHour = startHour + Math.floor(endMinute / 60);
-      const endMinuteAdjusted = endMinute % 60;
+      // const endHour = startHour + Math.floor(endMinute / 60);
+      // const endMinuteAdjusted = endMinute % 60;
 
-      // Convertir duración de minutos a horas y minutos
       const durationHours = Math.floor(durationMinutes / 60);
       const durationMinutesRemainder = durationMinutes % 60;
 
-      // Formatear la duración como hh:mm:ss
       const formattedDuration = `${durationHours
         .toString()
         .padStart(2, "0")}:${durationMinutesRemainder
@@ -393,7 +396,7 @@ export default {
       }
     },
     getSpaceImageUrl(relativePath) {
-      relativePath = relativePath.replace(/^\/*/, "");
+      relativePath = relativePath.replace(/^\/media*/, "");
       const imageUrl = `${backendUrl}${relativePath}`;
       return imageUrl;
     },
@@ -403,13 +406,7 @@ export default {
 
 <style>
 .card {
-  background-color: rgba(
-    159,
-    216,
-    197,
-    0.5
-  ); /* Ajusta el color de fondo según tu preferencia */
-  /* Otros estilos de la tarjeta */
+  background-color: rgba(159, 216, 197, 0.5);
 }
 
 .table-container {
