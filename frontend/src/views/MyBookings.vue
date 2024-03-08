@@ -33,6 +33,14 @@
           Próximas
         </button>
       </div>
+      <div
+        v-if="errorMessage"
+        class="alert alert-warning error-message"
+        role="alert"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ errorMessage }}
+      </div>
       <div class="table-container">
         <table class="table">
           <thead>
@@ -123,6 +131,7 @@ export default {
       selectedOption: "future",
       isPastBookingsSelected: false,
       isFutureBookingsSelected: true,
+      errorMessage: "",
     };
   },
   mounted() {
@@ -259,27 +268,25 @@ export default {
           startDateTime.getTime() - currentDateTime.getTime();
         const hoursDifference = timeDifference / (1000 * 60 * 60);
 
-        if (hoursDifference <= 8) {
-          this.$toast.error(
-            "No se pueden cancelar reservas que comienzan en 8 horas o menos."
-          );
+        if (hoursDifference <= 4) {
+          this.errorMessage =
+            "No se pueden cancelar reservas que comienzan en 4 horas o menos.";
           return;
         }
       }
+      const token = localStorage.getItem("token");
       axios
         .delete(`${backendUrl}booking/${bookingId}/`, {
-          headers: { Authorization: `Token ${this.token}` },
+          headers: { Authorization: `Token ${token}` },
         })
         .then((response) => {
           this.booking = this.booking.filter(
             (booking) => booking.id !== bookingId
           );
           this.displayedBookings.splice(index, 1);
-          this.$toast.success("Reserva eliminada exitosamente");
         })
         .catch((error) => {
           console.error("Cancellation Error:", error);
-          this.$toast.error("Error al intentar cancelar la reserva");
         });
     },
   },
