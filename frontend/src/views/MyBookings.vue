@@ -40,6 +40,9 @@
       >
         <i class="fas fa-exclamation-triangle"></i>
         {{ errorMessage }}
+      <button type="button" class="close" @click="closeErrorMessage" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
       </div>
       <div class="table-container">
         <table class="table">
@@ -149,6 +152,9 @@ export default {
     },
   },
   methods: {
+    closeErrorMessage() {
+      this.errorMessage = "";
+    },
     filterPastBookings() {
       this.selectedOption = "past";
       const currentDate = new Date();
