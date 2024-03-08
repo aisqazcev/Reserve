@@ -27,10 +27,9 @@
                             <div class="col-lg-6">
                                 <b-carousel id="carousel1" controls indicators>
                                     <b-carousel-slide
-                                        v-for="(imagen, index) in imagenesAleatorias"
+                                        v-for="(imagen, index) in randomImages"
                                         :key="index"
                                         :img-src="getSpaceImageUrl(imagen)"
-                                        style="width: 100%; height: auto;"
                                     ></b-carousel-slide>
                                  </b-carousel>
                             </div>
@@ -57,7 +56,7 @@ export default {
     },
     data() {
         return {
-        imagenesAleatorias: [],
+        randomImages: [],
         };
     },
     methods: {
@@ -71,8 +70,7 @@ export default {
     mounted() {
         axios.get(`${backendUrl}get-random-images/`)
         .then(response => {
-            this.imagenesAleatorias = response.data.urls_imagenes;
-            console.log(this.imagenesAleatorias)
+            this.randomImages = response.data.urls_imagenes;
         })
         .catch(error => {
             console.error('Error al obtener imágenes aleatorias:', error);
