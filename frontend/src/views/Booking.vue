@@ -78,9 +78,8 @@
                     v-model="selectedBuilding"
                     class="form-control"
                     id="buildingType"
-                    :disabled="selectedCampus === null"
                   >
-                    <option :value="null" :disabled="selectedCampus == null"
+                    <option :value="null"
                       >Cualquiera</option
                     >
                     <option
@@ -276,7 +275,7 @@ export default {
       try {
         if (this.selectedCampus === null) {
           const response = await axios.get(`${backendUrl}buildings/`);
-          this.buildings = [{ id: null, name_complete: "Cualquiera" }, ...response.data];
+          this.buildings = [...response.data];
         } else {
           const response = await axios.get(`${backendUrl}buildings/?campus_id=${this.selectedCampus}`);
           this.buildings = response.data;
