@@ -7,9 +7,9 @@
                     <h4 class="mb-0 font-weight-light">No te quedes sin tu sitio.</h4>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <!-- <div>
-                        <img src="img/logo_ejemplo.png" alt="Logo" style="max-width: 100%; height: auto;">
-                    </div> -->
+                    <div>
+                        <img src="img/brand/VseateasyNameLogo.png"  alt="Logo" style="max-width: 50%; height: auto;">
+                    </div>
                 </div>
             </div>
             <hr>

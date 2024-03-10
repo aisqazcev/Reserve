@@ -33,7 +33,7 @@
     position: relative;
 
     .stars-and-coded{
-        margin-top: 8rem;
+        margin-top: 5rem;
     }
     
     .shape {
@@ -76,7 +76,7 @@
         transform-origin: 0;
 
         span {
-            transform: skew(8deg);
+            transform: skew(3deg);
         }
     }
 
@@ -325,7 +325,7 @@
         }
 
          :nth-child(2) {
-            background-color: #fbfbfb; 
+            background-color: #fcfcfc; 
             width: 33.33333%;
             top: 0;
             left: 16.66666%;
@@ -333,7 +333,7 @@
         }
 
          :nth-child(3) {
-            background-color: #dbdbdb65; 
+            background-color: #f7f7f765; 
             width: 33.33333%;
             left: 49.99999%;
             bottom: auto;
