@@ -188,6 +188,7 @@ export default {
       reservationStartTime: "",
       reservedSeat: "",
       showNoResultsMessage: false,
+      userReservations: "",
     };
   },
   mounted() {
@@ -196,17 +197,17 @@ export default {
 
     const routeQuery = this.$route.query;
 
-  if (routeQuery.date && routeQuery.time && routeQuery.duration) {
-    this.reservationDate = routeQuery.date;
-    document.getElementById("date").value = routeQuery.date;
+    if (routeQuery.date && routeQuery.time && routeQuery.duration) {
+      this.reservationDate = routeQuery.date;
+      document.getElementById("date").value = routeQuery.date;
 
-    this.reservationStartTime = routeQuery.time;
-    document.getElementById("start_time").value = routeQuery.time;
+      this.reservationStartTime = routeQuery.time;
+      document.getElementById("start_time").value = routeQuery.time;
 
-    document.getElementById("duration").value = routeQuery.duration;
+      document.getElementById("duration").value = routeQuery.duration;
 
-    this.buscarDisponibilidad();
-  }
+      this.buscarDisponibilidad();
+    }
   },
   methods: {
     handleDurationChange(event) {},
@@ -214,6 +215,16 @@ export default {
       const token = localStorage.getItem("token");
       const spaceId = this.$route.params.spaceId;
       if (token) {
+        axios
+          .get(`${backendUrl}bookings/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.userReservations = response.data;
+          })
+          .catch((error) => {
+            console.error("Error al obtener reservas del usuario:", error);
+          });
         axios
           .get(`${backendUrl}${spaceId}/desk/`, {
             headers: { Authorization: `Token ${token}` },
@@ -240,7 +251,6 @@ export default {
           .then((response) => {
             this.spaceDetails = response.data;
             this.spaceDetails.features = response.data.features;
-
 
             const buildingId = response.data.building;
             axios
@@ -346,8 +356,6 @@ export default {
       const startHour = parseInt(startTimeSplit[0]);
       const startMinute = parseInt(startTimeSplit[1]);
       const endMinute = startMinute + durationMinutes;
-      // const endHour = startHour + Math.floor(endMinute / 60);
-      // const endMinuteAdjusted = endMinute % 60;
 
       const durationHours = Math.floor(durationMinutes / 60);
       const durationMinutesRemainder = durationMinutes % 60;
@@ -367,6 +375,23 @@ export default {
         .replace("T", " ");
 
       const token = localStorage.getItem("token");
+      
+      const overlappingReservation = this.userReservations.some((reservation) => {
+    const reservationStart = new Date(reservation.start_time).getTime();
+    const reservationEnd = new Date(reservation.end_time).getTime();
+
+    return (
+      (reservationStart <= new Date(end_time).getTime() &&
+       new Date(end_time).getTime() <= reservationEnd) ||
+      (reservationStart <= new Date(`${date} ${start_time}`).getTime() &&
+       new Date(`${date} ${start_time}`).getTime() <= reservationEnd)
+    );
+  });
+
+  if (overlappingReservation) {
+    this.errorMessage = "Ya tienes una reserva en esta franja horaria.";
+    return;
+  }
       if (token) {
         axios
           .post(
@@ -387,6 +412,7 @@ export default {
             this.spacesItems = this.spacesItems.filter(
               (item) => item.id !== deskId
             );
+            window.location.reload();
           })
           .catch((error) => {
             this.errorMessage = "Error al reservar el escritorio.";
