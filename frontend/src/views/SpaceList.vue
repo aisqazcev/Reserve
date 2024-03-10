@@ -131,7 +131,9 @@
           </div>
         </div>
       </div>
-
+      <div v-if="bookingMessage" class="alert alert-success" role="alert">
+        {{ bookingMessage }}
+      </div>
       <div class="row mt-3" v-if="search">
         <div class="col">
           <div class="table-container">
@@ -190,6 +192,7 @@ export default {
       showNoResultsMessage: false,
       userReservations: "",
       search: false,
+      bookingMessage: "",
     };
   },
   mounted() {
@@ -377,23 +380,25 @@ export default {
         .replace("T", " ");
 
       const token = localStorage.getItem("token");
-      
-      const overlappingReservation = this.userReservations.some((reservation) => {
-    const reservationStart = new Date(reservation.start_time).getTime();
-    const reservationEnd = new Date(reservation.end_time).getTime();
 
-    return (
-      (reservationStart <= new Date(end_time).getTime() &&
-       new Date(end_time).getTime() <= reservationEnd) ||
-      (reservationStart <= new Date(`${date} ${start_time}`).getTime() &&
-       new Date(`${date} ${start_time}`).getTime() <= reservationEnd)
-    );
-  });
+      const overlappingReservation = this.userReservations.some(
+        (reservation) => {
+          const reservationStart = new Date(reservation.start_time).getTime();
+          const reservationEnd = new Date(reservation.end_time).getTime();
 
-  if (overlappingReservation) {
-    this.errorMessage = "Ya tienes una reserva en esta franja horaria.";
-    return;
-  }
+          return (
+            (reservationStart <= new Date(end_time).getTime() &&
+              new Date(end_time).getTime() <= reservationEnd) ||
+            (reservationStart <= new Date(`${date} ${start_time}`).getTime() &&
+              new Date(`${date} ${start_time}`).getTime() <= reservationEnd)
+          );
+        }
+      );
+
+      if (overlappingReservation) {
+        this.errorMessage = "Ya tienes una reserva en esta franja horaria.";
+        return;
+      }
       if (token) {
         axios
           .post(
@@ -414,6 +419,7 @@ export default {
             this.spacesItems = this.spacesItems.filter(
               (item) => item.id !== deskId
             );
+            this.bookingMessage = "Reserva exitosa";
             window.location.reload();
           })
           .catch((error) => {
