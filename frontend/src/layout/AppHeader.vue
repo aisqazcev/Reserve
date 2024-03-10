@@ -1,17 +1,14 @@
 <template>
   <header class="header-global">
     <base-nav class="navbar-main" transparent type="" effect="light" expand>
-    <router-link to="/landing" class="nav-link">
-    <i class="fa fa-home fa-2x" style="color: #be0f2e;"></i>
-      </router-link>
-
+      <router-link slot="brand" class="navbar-brand mr-lg-5" to="/landing">
+        <img src="img/brand/logo.png" alt="logo"
+      /></router-link>
       <div class="row" slot="content-header" slot-scope="{ closeMenu }">
         <div class="col-6 collapse-brand">
-          <a
-            href="https://demos.creative-tim.com/vue-argon-design-system/documentation/"
-          >
-            <img src="img/brand/blue.png" />
-          </a>
+          <router-link to="/landing" class="nav-link">
+            <img src="img/brand/seateasyNameLogo.png" />
+          </router-link>
         </div>
         <div class="col-6 collapse-close">
           <close-button @click="closeMenu"></close-button>
@@ -31,8 +28,7 @@
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
       </ul>
-      <ul class="navbar-nav align-items-lg-center ml-lg-auto">
-      </ul>
+      <ul class="navbar-nav align-items-lg-center ml-lg-auto"></ul>
       <button class="btn btn-neutral" @click="perfil">
         Perfil
       </button>
@@ -117,11 +113,11 @@ export default {
 
 <style>
 .header-global .navbar-brand {
-  font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
 }
 
 .header-global .navbar-nav .nav-link {
-  font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
 }
 .separator {
   margin: 0 50px;
@@ -131,5 +127,8 @@ export default {
   top: calc(100% + 10px); /* Ajusta el valor según sea necesario */
   left: 50%;
   transform: translateX(-50%);
+}
+.logo {
+  margin-right: 10px; /* Ajusta el margen según sea necesario */
 }
 </style>
