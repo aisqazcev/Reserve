@@ -123,7 +123,7 @@
         <div v-for="space in spaces" :key="space.id" class="mb-4">
           <card class="custom-card">
             <div class="row">
-              <div class="card-body">
+              <div class="card-body-1">
                 <h3 style="font-size: 24px;">
                   {{ space.building.campusName }}
                   <i class="ni ni-bold-right" ></i>

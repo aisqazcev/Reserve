@@ -168,15 +168,13 @@ export default {
 </script>
 
 <style>
-body {
+.header-global .navbar-brand {
   font-family: 'Raleway', sans-serif;
-  font-weight: 400;
 }
 
-.nav-link:hover .fa-home {
-  color: #0f1af2; /* Cambia al color deseado al pasar el ratón */
+.header-global .navbar-nav .nav-link {
+  font-family: 'Raleway', sans-serif;
 }
-
 .separator {
   margin: 0 50px;
 }
