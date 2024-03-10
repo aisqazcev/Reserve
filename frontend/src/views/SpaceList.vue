@@ -30,7 +30,6 @@
               <h3 class="card-title">
                 Detalles del Espacio
               </h3>
-
               <div
                 class="d-flex align-items-center"
                 style="margin-bottom: 20px;"
@@ -40,14 +39,14 @@
                   style="font-size: 24px; color:#be0f2e;"
                 >
                 </i>
-                <strong>Capacidad: {{ spaceDetails.capacity }} </strong>
+                Capacidad: {{ spaceDetails.capacity }} 
               </div>
               <div
                 class="d-flex align-items-center"
                 style="margin-bottom: 20px;"
               >
                 <div v-if="spaceDetails && spaceDetails.features">
-                  <strong>Equipamiento:</strong>
+                  Equipamiento:
                   <equipment :equipments="spaceDetails.features"></equipment>
                 </div>
               </div>

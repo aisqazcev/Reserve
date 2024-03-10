@@ -50,7 +50,7 @@
                           class="ni ni-square-pin mr-2"
                           style="font-size: 24px; color:#be0f2e;"
                         ></i>
-                        <strong>{{ building.address }}</strong>
+                        {{ building.address }}
                       </div>
                       <router-link :to="`/building/${building.id}`">
                         <b-button variant="primary" class="mt-4"

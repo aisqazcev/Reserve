@@ -15,7 +15,7 @@
       <h1 class="mb-4">
         {{ building.name_complete }}
       </h1>
-      
+
       <card class="mb-3">
         <div class="row">
           <div class="col-md-5">
@@ -34,39 +34,50 @@
               <h3 class="card-title">
                 Información y contacto
               </h3>
-              
-                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
-                  <i
-                    class="ni ni-square-pin mr-2"
-                    style="font-size: 24px; color:#be0f2e;"
-                  ></i>
-                  <strong>{{ building.address }}</strong>
-                </div>
 
-                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
-                  <i
-                    class="ni ni-world-2 mr-2"
-                    style="font-size: 24px; color:#be0f2e"
-                  ></i>
-                  <strong>{{ building.web }}</strong>
-                </div>
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="ni ni-square-pin mr-2"
+                  style="font-size: 24px; color:#be0f2e;"
+                ></i>
+                {{ building.address }}
+              </div>
 
-                <div class="d-flex align-items-center" style="margin-bottom: 20px;">
-                  <i
-                    class="ni ni-email-83 mr-2"
-                    style="font-size: 24px; color:#be0f2e;"
-                  ></i>
-                  <strong>{{ building.email }}</strong>
-                </div>
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="ni ni-world-2 mr-2"
+                  style="font-size: 24px; color:#be0f2e"
+                ></i>
+                {{ building.web }}
+              </div>
 
-                <div class="d-flex align-items-center"  style="margin-bottom: 20px;">
-                  <i
-                    class="ni ni-mobile-button mr-2 "
-                    style="font-size: 24px; color:#be0f2e;"
-                  ></i>
-                  <strong>{{ building.phone }}</strong>
-                </div>
-              
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="ni ni-email-83 mr-2"
+                  style="font-size: 24px; color:#be0f2e;"
+                ></i>
+                {{ building.email }}
+              </div>
+
+              <div
+                class="d-flex align-items-center"
+                style="margin-bottom: 20px;"
+              >
+                <i
+                  class="ni ni-mobile-button mr-2 "
+                  style="font-size: 24px; color:#be0f2e;"
+                ></i>
+                {{ building.phone }}
+              </div>
             </div>
           </div>
         </div>
@@ -95,7 +106,11 @@
                       alt="Imagen del espacio"
                     />
                   </div>
+
                   <h5 :class="space.name">{{ space.name }}</h5>
+                  <div class="d-flex align-items-center icon-container">
+                    <equipment :equipments="space.features" :show-equipment-names="false"></equipment>
+                  </div>
                   <div class="progress-label mt-4">
                     <span
                       >Ocupación actual
@@ -134,9 +149,10 @@ import axios from "axios";
 import { backendUrl } from "../main.js";
 import Card from "../components/Card.vue";
 import "@fortawesome/fontawesome-free/css/all.css";
+import Equipment from "../components/Equipment.vue";
 
 export default {
-  components: { Card },
+  components: { Equipment, Card },
   data() {
     return {
       building: {},
@@ -144,16 +160,14 @@ export default {
       buildingId: null,
       freeSeats: null,
       occupation: 0,
-      campus:{}
+      campus: {},
     };
   },
   mounted() {
     this.buildingId = this.$route.params.buildingId || "";
     this.fetchSpaces();
-    
   },
   methods: {
-
     async fetchSpaces() {
       await axios
         .get(`${backendUrl}building/${this.buildingId}/`)
@@ -243,5 +257,15 @@ export default {
 
 .rounded-square {
   border-radius: 5px;
+}
+.icon-container {
+  height: 50px; /* Altura fija para el contenedor */
+  /* Ocultar los iconos adicionales si desbordan el contenedor */
+}
+
+.icon-container equipment {
+  width: 50px; /* Ancho fijo para cada icono */
+  height: 50px; /* Altura fija para cada icono */
+  margin-right: 10px; /* Espacio entre los iconos */
 }
 </style>
