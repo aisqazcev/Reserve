@@ -70,13 +70,13 @@
             <div class="col-md-4 mb-3">
               <div class="form-group">
                 <label for="fecha">Fecha:</label>
-                <input type="date" id="date" class="form-control" />
+                <input type="date" id="date" v-model="reservationDate" class="form-control" />
               </div>
             </div>
             <div class="col-md-4 mb-3">
               <div class="form-group">
                 <label for="horaInicio">Hora de inicio:</label>
-                <input type="time" id="start_time" class="form-control" />
+                <input type="time" id="start_time" v-model="reservationStartTime" class="form-control" />
               </div>
             </div>
             <div class="col-md-4 mb-3">
@@ -84,6 +84,7 @@
                 <label for="duracion">Duración:</label>
                 <select
                   id="duration"
+                  v-model="duration"
                   class="form-control"
                   @change="handleDurationChange"
                 >
@@ -141,15 +142,14 @@
                 <tr>
                   <th>id</th>
                   <th>Nombre</th>
-                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(item, index) in spacesItems" :key="index">
                   <td data-label="Id">{{ item.id }}</td>
                   <td data-label="Nombre">{{ item.name }}</td>
-                  <td data-label="Estado">{{ item.seat_status }}</td>
-                  <td>
+                  <td data-label="Acciones">
                     <button
                       class="btn btn-primary"
                       @click="bookingDesk(item.id)"
@@ -177,6 +177,14 @@ import Equipment from "../components/Equipment.vue";
 export default {
   components: { Equipment, Card },
   data() {
+    const now = new Date();
+    const currentDate = now.toISOString().substring(0, 10);
+    now.setMinutes(0, 0, 0);
+    now.setHours(now.getHours() + 1);
+    let hours = now.getHours().toString().padStart(2, '0');
+    let minutes = now.getMinutes().toString().padStart(2, '0');
+    const nextHour = `${hours}:${minutes}`;
+
     return {
       spacesItems: [],
       spaceDetails: {},
@@ -185,8 +193,9 @@ export default {
       originalSpacesItems: [],
       errorMessage: "",
       showModal: false,
-      reservationDate: "",
-      reservationStartTime: "",
+      reservationDate: currentDate,
+      reservationStartTime: nextHour,
+      duration: 60,
       reservedSeat: "",
       showNoResultsMessage: false,
       userReservations: "",
