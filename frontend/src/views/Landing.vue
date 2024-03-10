@@ -2,7 +2,7 @@
     <div>
         <div class="position-relative">
             <section class="section-shaped my-0">
-                <div class="shape shape-style-1 shape-default shape-skew">
+                <div class="shape shape-style-3 shape-default shape-skew">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -17,10 +17,10 @@
                     <div class="col px-0">
                         <div class="row">
                             <div class="col-lg-6">
-                                <h1 class="display-3  text-white">¡No te quedes sin tu sitio!
+                                <h1 class="display-3 ">¡No te quedes sin tu sitio!
                                     <span>Reserva asientos</span>
                                 </h1>
-                                <p class="lead  text-white">Con esta plataforma aseguras tu sitio en el momento 
+                                <p class="lead">Con esta plataforma aseguras tu sitio en el momento 
                                     y lugar que prefieras. De esta forma evitarás desplazarte y quedarte sin hueco. 
                                     Además, puedes consultar la ocupación en tiempo real, así como la información de cada espacio.</p>
                             </div>
