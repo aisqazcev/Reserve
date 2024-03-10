@@ -13,11 +13,9 @@
     <div class="container pt-lg-md">
       <div class="card mb-3  text-white">
         <div class="card-body">
-          <h3 class="card-title" style="color: #08217E;">
+          <h3 class="card-title">
             Buscar Disponibilidad de Espacios
-          </h3>
-        </div>
-        <div class="card-body">
+          </h3>       
           <form @submit.prevent="buscarDisponibilidad" role="form">
             <div class="ct-example-row">
               <div class="row">
@@ -106,7 +104,7 @@
                   </base-button>
                   <div
                     v-if="errorMessage"
-                    class="alert alert-warning error-message mt-3"
+                    class="alert alert-default error-message mt-3"
                     role="alert"
                   >
                     <i class="fas fa-exclamation-triangle"></i>
@@ -125,18 +123,18 @@
         <div v-for="space in spaces" :key="space.id" class="mb-4">
           <card class="custom-card">
             <div class="row">
-              <div class="card-body">
+              <div class="card-body-1">
                 <h3 style="font-size: 24px;">
                   {{ space.building.campusName }}
-                  <i class="ni ni-bold-right" style="color:#051551;"></i>
+                  <i class="ni ni-bold-right" ></i>
                   {{ space.building.name_complete }}
-                  <i class="ni ni-bold-right" style="color:#051551;"></i>
+                  <i class="ni ni-bold-right"></i>
                   {{ space.name }}
                 </h3>
                 <div class="d-flex align-items-center">
                   <i
                     class="ni ni-square-pin"
-                    style="font-size: 24px; color:#08217E; margin-right: 15px; margin-top: 30px;"
+                    style="font-size: 24px; color:#be0f2e; margin-right: 15px; margin-top: 30px;"
                   ></i>
                   <strong style="margin-top: 30px;">
                     {{ space.building.address }}

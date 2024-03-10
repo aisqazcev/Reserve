@@ -181,7 +181,6 @@ class Booking(models.Model):
 
 
     def clean(self):
-        # Determinar el campus, edificio y espacio basado en el escritorio seleccionado
         if self.desk_id:
             desk = Desk.objects.select_related('space_id__building__campus').get(pk=self.desk_id)
             self.space = desk.space_id
