@@ -35,14 +35,19 @@
       </div>
       <div
         v-if="errorMessage"
-        class="alert alert-warning error-message"
+        class="alert alert-default error-message"
         role="alert"
       >
         <i class="fas fa-exclamation-triangle"></i>
         {{ errorMessage }}
-      <button type="button" class="close" @click="closeErrorMessage" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+        <button
+          type="button"
+          class="close"
+          @click="closeErrorMessage"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="table-container">
         <table class="table">
@@ -64,7 +69,7 @@
               <th>Asiento</th>
               <th>Sala</th>
               <th>Edificio</th>
-              <th v-if="isFutureBookingsSelected">Acciones</th>
+              <th v-if="selectedOption === 'future'">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -77,7 +82,7 @@
               <td data-label="Asiento">{{ item.deskName }}</td>
               <td data-label="Sala">{{ item.spaceName }}</td>
               <td data-label="Edificio">{{ item.buildingName }}</td>
-              <td class="td-actions" v-if="isFutureBookingsSelected">
+              <td class="td-actions" v-if="isFutureBooking(item)">
                 <button
                   type="button"
                   rel="tooltip"
@@ -130,10 +135,8 @@ export default {
       totalItems: 0,
       isLoading: true,
       sortDirection: "desc",
-      displayedBookings: [],
       selectedOption: "future",
-      isPastBookingsSelected: false,
-      isFutureBookingsSelected: true,
+      filteredBookings: [],
       errorMessage: "",
     };
   },
@@ -145,44 +148,50 @@ export default {
   },
   computed: {
     displayedBookings() {
-      if (!this.booking) return [];
       const startIndex = (this.currentPage - 1) * this.perPage;
       const endIndex = startIndex + this.perPage;
-      return this.booking.slice(startIndex, endIndex);
+      return this.filteredBookings.slice(startIndex, endIndex);
     },
   },
   methods: {
+    isFutureBooking(item) {
+      const endDateTime = new Date(item.end_time);
+      const currentDate = new Date();
+      return endDateTime > currentDate;
+    },
     closeErrorMessage() {
       this.errorMessage = "";
     },
+
     filterPastBookings() {
       this.selectedOption = "past";
       const currentDate = new Date();
 
-      this.displayedBookings = this.booking.filter((booking) => {
-        const endDateTime = new Date(booking.end_time);
-        return endDateTime < currentDate;
-      });
-      this.isPastBookingsSelected = true;
-      this.isFutureBookingsSelected = false;
+      this.currentPage = 1;
+      if (this.booking !== null) {
+        this.filteredBookings = this.booking.filter((booking) => {
+          const endDateTime = new Date(booking.end_time);
+          return endDateTime < currentDate;
+        });
+        this.totalItems = this.filteredBookings.length;
+      }
     },
-
     filterFutureBookings() {
       this.selectedOption = "future";
-      if (this.booking !== null) {
-        const currentDate = new Date();
+      const currentDate = new Date();
 
-        this.displayedBookings = this.booking.filter((booking) => {
+      this.currentPage = 1; // Reset currentPage
+      if (this.booking !== null) {
+        this.filteredBookings = this.booking.filter((booking) => {
           const endDateTime = new Date(booking.end_time);
           return endDateTime > currentDate;
         });
-        this.isPastBookingsSelected = false;
-        this.isFutureBookingsSelected = true;
+        this.totalItems = this.filteredBookings.length;
       }
     },
     toggleSortDirection() {
       this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
-      this.sortBookingsByDate(this.displayedBookings);
+      this.sortBookingsByDate(this.filteredBookings);
     },
     sortBookingsByDate(bookings) {
       if (bookings) {
@@ -263,9 +272,7 @@ export default {
       });
     },
     cancelBooking(bookingId, index) {
-      const bookingToCancel = this.booking.find(
-        (booking) => booking.id === bookingId
-      );
+      const bookingToCancel = this.displayedBookings[index];
 
       if (bookingToCancel) {
         const startDateTime = new Date(bookingToCancel.start_time);
@@ -286,10 +293,9 @@ export default {
           headers: { Authorization: `Token ${token}` },
         })
         .then((response) => {
-          this.booking = this.booking.filter(
-            (booking) => booking.id !== bookingId
-          );
           this.displayedBookings.splice(index, 1);
+          this.totalItems--;
+          this.totalItems = this.filteredBookings.length;
         })
         .catch((error) => {
           console.error("Cancellation Error:", error);
