@@ -1,8 +1,8 @@
 <template>
     <div>
-        <div class="position-relative">
-            <section class="section-shaped my-0">
-                <div class="shape shape-style-3 shape-default shape-skew">
+        <div class="position">
+            <section class="section section-shaped section-lg my-0">
+                <div class="shape shape-style-2 shape-default">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -24,12 +24,15 @@
                                     y lugar que prefieras. De esta forma evitarás desplazarte y quedarte sin hueco. 
                                     Además, puedes consultar la ocupación en tiempo real, así como la información de cada espacio.</p>
                             </div>
-                            <div class="col-lg-6">
+                            
+                            <div class="col-lg-6 mt-4">
+                                
                                 <b-carousel id="carousel1" controls indicators>
                                     <b-carousel-slide
                                         v-for="(imagen, index) in randomImages"
                                         :key="index"
                                         :img-src="getSpaceImageUrl(imagen)"
+                                        class="carousel-image"
                                     ></b-carousel-slide>
                                  </b-carousel>
                             </div>
@@ -78,3 +81,15 @@ export default {
     },
 };
 </script>
+<style>
+.carousel-image img {
+    max-width: 100%; 
+    height: auto; 
+    max-height: 220px; 
+}
+@media (max-width: 768px) {
+    .carousel-image img {
+        max-height: 150px; 
+    }
+}
+</style>

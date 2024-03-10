@@ -8,7 +8,7 @@
                 </div>
                 <div class="col-lg-6 text-center">
                     <div>
-                        <img src="img/brand/VseateasyNameLogo.png"  alt="Logo" style="max-width: 100%; height: auto;">
+                        <img src="img/brand/VseateasyNameLogo.png"  alt="Logo" style="max-width: 50%; height: auto;">
                     </div>
                 </div>
             </div>
