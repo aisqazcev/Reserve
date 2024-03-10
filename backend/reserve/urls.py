@@ -1,5 +1,7 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces, occupation_actual
+from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces, get_random_images, occupation_actual
 
 app_name="reserve"
 
@@ -38,13 +40,13 @@ urlpatterns = [
     path('bookings/', BookingListView.as_view(), name='booking-list'),
     path('booking/<int:booking_id>/', BookingManagementView.as_view(), name='delete-booking'),
 
-    # path('search_spaces/', search_spaces, name='search_spaces'),
-
     path('find-available-seats/', find_available_seats, name='find_available_seats'),
 
     path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
     path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),
 
-
-
+    path('get-random-images/', get_random_images, name='get-random-images'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -10,7 +10,7 @@
         @mouseover="showEquipmentName(index)"
         @mouseleave="hideEquipmentName(index)"
       ></i>
-      <span class="equipment-name" :class="{ 'visible': isHovered[index] }">
+      <span class="equipment-name" :class="{ 'visible': showEquipmentNames && isHovered[index] }">
         {{ equipment }}
       </span>
     </span>
@@ -23,6 +23,10 @@ export default {
     equipments: {
       type: Array,
       required: true,
+    },
+    showEquipmentNames: {
+      type: Boolean,
+      default: true, // Por defecto, mostrar los nombres de los equipos
     },
   },
   data() {
@@ -67,30 +71,31 @@ export default {
     getIconClass(equipmentName) {
       switch (equipmentName) {
         case 'WHEELCHAIR':
-          return 'fas fa fa-wheelchair-alt';
+          return 'icon-wheelchair';
         case 'WIFI':
-          return 'fas fa-wifi';
+          return 'icon-connection';
         case 'POWER_PLUG':
-          return 'fas fa-plug';
+          return 'icon-power-cord';
         case 'BYCICLE':
-          return 'fas fa-bicycle';
+          return 'icon-bicycle';
         case 'LOCKER':
-          return 'fas fa-lock';
+          return 'icon-lock';
         case 'CAFETERIA':
-          return 'fas fa-coffee';
+          return 'icon-cafe';
         case 'PRINTER':
-          return 'fas fa-print';
+          return 'icon-print';
         case 'VENDING_MACHINE':
-          return 'ni icon-snacks';
+          return 'icon-snacks';
         case 'AIR_CONDITIONING':
-          return 'fas fa-snowflake';
+          return 'icon-snow';
 
         default:
           return 'fas fa-question'; 
       }
     },
+    // Methods to handle hover effect
     showEquipmentName(index) {
-      this.$set(this.isHovered, index, true);
+      this.$set(this.isHovered, index, true); 
     },
     hideEquipmentName(index) {
       this.$set(this.isHovered, index, false);
@@ -100,10 +105,11 @@ export default {
 </script>
 
 <style>
-
 .equipment {
   display: flex;
   flex-wrap: wrap;
+  font-size: 110%;
+  color: #aaaaaa;
 }
 
 .equipment-item {
