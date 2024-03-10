@@ -123,7 +123,7 @@
               </dt>
               <button
                 class="btn btn-primary btn-block"
-                @click="buscarDisponibilidad"
+                @click="searchDisponibility"
               >
                 Buscar Disponibilidad
               </button>
@@ -132,7 +132,7 @@
         </div>
       </div>
 
-      <div class="row mt-3">
+      <div class="row mt-3" v-if="search">
         <div class="col">
           <div class="table-container">
             <table class="table">
@@ -151,7 +151,7 @@
                   <td>
                     <button
                       class="btn btn-primary"
-                      @click="reservarDesk(item.id)"
+                      @click="bookingDesk(item.id)"
                     >
                       Reservar
                     </button>
@@ -189,6 +189,7 @@ export default {
       reservedSeat: "",
       showNoResultsMessage: false,
       userReservations: "",
+      search: false,
     };
   },
   mounted() {
@@ -206,7 +207,7 @@ export default {
 
       document.getElementById("duration").value = routeQuery.duration;
 
-      this.buscarDisponibilidad();
+      this.searchDisponibility();
     }
   },
   methods: {
@@ -289,7 +290,8 @@ export default {
       return selectedTime < currentTime;
     },
 
-    buscarDisponibilidad() {
+    searchDisponibility() {
+      this.search = true;
       this.errorMessage = "";
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
@@ -344,7 +346,7 @@ export default {
       return `${year}-${month}-${day}`;
     },
 
-    reservarDesk(deskId) {
+    bookingDesk(deskId) {
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
       const durationMinutes = parseInt(
