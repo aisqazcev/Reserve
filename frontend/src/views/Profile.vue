@@ -1,7 +1,7 @@
 <template>
   <div class="profile-page">
     <section class="section-profile-cover section-shaped my-0">
-      <div class="shape shape-style-1 shape-primary shape-skew alpha-4">
+      <div class="shape shape-style-1 shape-skew alpha-4">
         <span></span>
         <span></span>
         <span></span>
@@ -20,7 +20,7 @@
                 <div class="card-profile-image">
                   <a href="#">
                     <img
-                      v-lazy="'img/theme/team-4-800x800.jpg'"
+                      v-lazy="'img/theme/img-profile.jpg'"
                       class="rounded-circle"
                     />
                   </a>
