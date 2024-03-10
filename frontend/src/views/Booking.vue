@@ -136,9 +136,9 @@
                     class="ni ni-square-pin"
                     style="font-size: 24px; color:#be0f2e; margin-right: 15px; margin-top: 30px;"
                   ></i>
-                  <strong style="margin-top: 30px;">
+                  <h6 style="margin-top: 30px;">
                     {{ space.building.address }}
-                  </strong>
+                  </h6>
                 </div>
                 <router-link :to="{ path: `/space/${space.id}`, query: { date: selectedDate, time: selectedTime, duration: selectedDuration } }">
                 <b-button variant="primary" class="mt-0 float-right" style="margin-right: 15px;"
