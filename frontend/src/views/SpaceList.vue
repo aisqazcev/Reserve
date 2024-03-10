@@ -4,12 +4,12 @@
       <span style="visibility: hidden;"></span>
       <span></span>
       <span></span>
-      <span style="background-color: #787CFF;"></span>
+      <span></span>
     </div>
     <div class="container mt-3">
-      <h1 class="mb-4" style="color: #051551;">
+      <h1 class="mb-4">
         {{ building.name_complete }}
-        <i class="ni ni-bold-right" style="font-size: 24px; color:#051551"> </i>
+        <i class="ni ni-bold-right" style="font-size: 24px; color:#303030 ;"> </i>
         {{ spaceDetails.name }}
       </h1>
       <card class="mb-3">
@@ -26,8 +26,8 @@
             />
           </div>
           <div class="col-md-7">
-            <div class="card-body">
-              <h3 class="card-title" style="color: #08217E;">
+            <div class="card-body-1">
+              <h3 class="card-title">
                 Detalles del Espacio
               </h3>
 
@@ -37,7 +37,7 @@
               >
                 <i
                   class="ni ni-chart-bar-32 mr-2"
-                  style="font-size: 24px; color:#08217E"
+                  style="font-size: 24px; color:#be0f2e;"
                 >
                 </i>
                 <strong>Capacidad: {{ spaceDetails.capacity }} </strong>
@@ -57,7 +57,7 @@
               >
                 <i
                   class="fas fa-info-circle mr-2"
-                  style="font-size: 24px; color:#08217E"
+                  style="font-size: 24px; color:#be0f2e;"
                 ></i>
                 <td>{{ spaceDetails.general_info }}</td>
               </div>
@@ -107,14 +107,14 @@
               <dt>
                 <div
                   v-if="showNoResultsMessage"
-                  class="alert alert-info"
+                  class="alert alert-default"
                   role="alert"
                 >
                   No hay resultados para la búsqueda.
                 </div>
                 <div
                   v-if="errorMessage"
-                  class="alert alert-warning error-message"
+                  class="alert alert-default error-message"
                   role="alert"
                 >
                   <i class="fas fa-exclamation-triangle"></i>

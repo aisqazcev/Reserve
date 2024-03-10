@@ -7,6 +7,11 @@
 // See also https://github.com/twbs/bootstrap/issues/18178
 .img-fluid {
   @include img-fluid;
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+  -o-filter: grayscale(100%);
 }
 
 

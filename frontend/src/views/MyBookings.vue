@@ -46,7 +46,7 @@
                 <button
                   type="button"
                   rel="tooltip"
-                  class="btn btn-info btn-icon btn-sm"
+                  class="btn btn-default btn-icon btn-sm"
                   data-original-title=""
                   title=""
                 >

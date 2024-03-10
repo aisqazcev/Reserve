@@ -3,8 +3,9 @@
 }
 
 .profile-page {
+    background-color: rgb(255, 255, 255);
     .card-profile {
-        margin-top: -150px;
+        margin-top: -100px;
 
         .card-profile-image {
             position: relative;
@@ -19,9 +20,9 @@
                 left: 50%;
                 transition: $transition-base;
 
-                &:hover {
-                    transform: translate(-50%, -33%);
-                }
+                // &:hover {
+                //     transform: translate(-50%, -33%);
+                // }
             }
         }
 

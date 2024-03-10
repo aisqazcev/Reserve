@@ -62,7 +62,7 @@
                   <dt>
                     <div
                       v-if="errorMessage"
-                      class="alert alert-warning error-message"
+                      class="alert alert-default error-message"
                       role="alert"
                     >
                       <i class="fas fa-exclamation-triangle"></i>

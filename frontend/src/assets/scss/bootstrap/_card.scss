@@ -36,9 +36,18 @@
   // as much space as possible, ensuring footers are aligned to the bottom.
   flex: 1 1 auto;
   padding: $card-spacer-x;
+  box-shadow: 3px 3px 3px rgba(0,0,0,.06)
+}
+
+.card-body-1 {
+  // Enable `flex-grow: 1` for decks and groups so that card blocks take up
+  // as much space as possible, ensuring footers are aligned to the bottom.
+  flex: 1 1 auto;
+  padding: $card-spacer-x;
 }
 
 .card-title {
+  color: #000;
   margin-bottom: $card-spacer-y;
 }
 

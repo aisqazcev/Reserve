@@ -12,7 +12,7 @@
       <span></span>
     </div>
     <div class="container mt-3">
-      <h1 class="mb-4" style="color: #051551;">
+      <h1 class="mb-4">
         {{ building.name_complete }}
       </h1>
       
@@ -30,15 +30,15 @@
             />
           </div>
           <div class="col-md-7">
-            <div class="card-body">
-              <h3 class="card-title" style="color: #08217E;">
+            <div class="card-body-1">
+              <h3 class="card-title">
                 Información y contacto
               </h3>
               
                 <div class="d-flex align-items-center" style="margin-bottom: 20px;">
                   <i
                     class="ni ni-square-pin mr-2"
-                    style="font-size: 24px; color:#08217E"
+                    style="font-size: 24px; color:#be0f2e;"
                   ></i>
                   <strong>{{ building.address }}</strong>
                 </div>
@@ -46,7 +46,7 @@
                 <div class="d-flex align-items-center" style="margin-bottom: 20px;">
                   <i
                     class="ni ni-world-2 mr-2"
-                    style="font-size: 24px; color:#08217E;"
+                    style="font-size: 24px; color:#be0f2e"
                   ></i>
                   <strong>{{ building.web }}</strong>
                 </div>
@@ -54,7 +54,7 @@
                 <div class="d-flex align-items-center" style="margin-bottom: 20px;">
                   <i
                     class="ni ni-email-83 mr-2"
-                    style="font-size: 24px; color:#08217E;"
+                    style="font-size: 24px; color:#be0f2e;"
                   ></i>
                   <strong>{{ building.email }}</strong>
                 </div>
@@ -62,7 +62,7 @@
                 <div class="d-flex align-items-center"  style="margin-bottom: 20px;">
                   <i
                     class="ni ni-mobile-button mr-2 "
-                    style="font-size: 24px; color:#08217E;"
+                    style="font-size: 24px; color:#be0f2e;"
                   ></i>
                   <strong>{{ building.phone }}</strong>
                 </div>
@@ -91,7 +91,7 @@
                           ? getSpaceImageUrl(space.image)
                           : '/img/alternative.jpg'
                       "
-                      class="img-fluid shadow-lg mb-4 rounded-square"
+                      class="img-fluid rounded-square"
                       alt="Imagen del espacio"
                     />
                   </div>
