@@ -8,6 +8,7 @@
     </div>
     <div class="container mt-3">
       <h1 class="mb-4">
+        <span class="icon-arrow-left" @click="goBack"></span>
         {{ building.name_complete }}
         <i class="ni ni-bold-right" style="font-size: 24px; color:#303030 ;"> </i>
         {{ spaceDetails.name }}
@@ -222,6 +223,9 @@ export default {
     }
   },
   methods: {
+    goBack() {
+      this.$router.go(-1);
+    },
     handleDurationChange(event) {},
     listSpaceItems() {
       const token = localStorage.getItem("token");
@@ -474,5 +478,13 @@ export default {
 
 .rounded-square {
   border-radius: 5px;
+}
+
+.icon-arrow-left {
+  color: #be0f2e; 
+} 
+
+.icon-arrow-left:hover {
+  color: #0f1af2; 
 }
 </style>

@@ -78,9 +78,8 @@
                     v-model="selectedBuilding"
                     class="form-control"
                     id="buildingType"
-                    :disabled="selectedCampus === null"
                   >
-                    <option :value="null" :disabled="selectedCampus == null"
+                    <option :value="null"
                       >Cualquiera</option
                     >
                     <option
@@ -210,11 +209,17 @@ export default {
     };
   },
   watch: {
-    selectedCampus(newCampus) {
-      if (newCampus === null) {
+    async selectedCampus(newCampus) {
+    if (newCampus !== null) {
+      await this.loadBuildings();
+
+      if (this.selectedBuilding !== null) {
         this.selectedBuilding = null;
       }
-    },
+    } else {
+      await this.loadBuildings();
+    }
+  },
   },
   computed: {
     filteredBuildings() {
@@ -267,14 +272,18 @@ export default {
         });
     },
     async loadBuildings() {
-      axios
-        .get(`${backendUrl}buildings/`)
-        .then((response) => {
+      try {
+        if (this.selectedCampus === null) {
+          const response = await axios.get(`${backendUrl}buildings/`);
+          this.buildings = [...response.data];
+        } else {
+          const response = await axios.get(`${backendUrl}buildings/?campus_id=${this.selectedCampus}`);
           this.buildings = response.data;
-        })
-        .catch((error) => {
-          console.error("Error fetching buildings:", error);
-        });
+          this.buildings.unshift({ id: null, name_complete: "Cualquiera" });
+        }
+      } catch (error) {
+        console.error("Error fetching buildings:", error);
+      }
     },
     getSpaceImageUrl(relativePath) {
       relativePath = relativePath.replace(/^\/*/, "");
@@ -300,7 +309,8 @@ export default {
           "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
         return;
       }
-      this.search= true;
+      this.search = true;
+      
       axios
         .get(`${backendUrl}find-available-spaces/`, {
           params: {

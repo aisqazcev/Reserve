@@ -13,9 +13,9 @@
     </div>
     <div class="container mt-3">
       <h1 class="mb-4">
+        <span class="icon-arrow-left" @click="goBack"></span>
         {{ building.name_complete }}
       </h1>
-
       <card class="mb-3">
         <div class="row">
           <div class="col-md-5">
@@ -168,6 +168,9 @@ export default {
     this.fetchSpaces();
   },
   methods: {
+    goBack() {
+      this.$router.go(-1);
+    },
     async fetchSpaces() {
       await axios
         .get(`${backendUrl}building/${this.buildingId}/`)
