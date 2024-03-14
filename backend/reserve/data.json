@@ -83,7 +83,7 @@
     "general_info": "El acceso a la biblioteca está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
     "schedule": "10:00-14:00",
     "image": "./media/aula.jpg",
-    "features":  [1, 2, 3]
+    "features":  [1, 2, 5, 6]
   },
   {
     "name": "Sala de estudio",
@@ -92,7 +92,7 @@
     "general_info": "El acceso a la sala de estudios está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
     "schedule": "10:00-14:00",
     "image": "./media/sala_estudio.jpg",
-    "features":  [1, 2, 3]
+    "features":  [1, 4, 6]
   },
   {
     "name": "Sala de ordenadores",
