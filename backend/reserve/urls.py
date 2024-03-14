@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces, get_random_images, occupation_actual
+from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, verificar_codigo
 
 app_name="reserve"
 
@@ -46,7 +46,13 @@ urlpatterns = [
     path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),
 
     path('get-random-images/', get_random_images, name='get-random-images'),
+    
+    path('register/', RegisterView.as_view(), name='register'),
+    path('enviar_correo/', enviar_correo_vista, name='enviar_correo'),
+    path('verify_code/', verificar_codigo, name='verify_code'),
+    
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
