@@ -1,4 +1,5 @@
 import random
+import secrets
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -104,7 +105,9 @@ class LogoutView(APIView):
                 {"detail": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
@@ -115,8 +118,50 @@ class RegisterView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+import random
+from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.http import JsonResponse
+from django.core.cache import cache
 
+@csrf_exempt
+def enviar_correo_vista(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        recipient_email = data.get('email', '')
+        subject = 'Verificación del registro'
+        verification_code = secrets.token_hex(4)
+        message = f'¡Hola! Este es tu código de verificación para confirmar el registro: {verification_code}. Por favor, no responda este correo.'
+        from_email = 'seateasy8@gmail.com'
 
+        cache.set(f'verification_code_{recipient_email}', verification_code, timeout=900)
+
+        send_mail(subject, message, from_email, [recipient_email])
+
+        return JsonResponse({'message': 'Correo enviado con éxito.'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+def verificar_codigo(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        recipient_email = data.get('email', '')
+        verification_code = data.get('verificationCode', '')
+
+        verification_code_cached = cache.get(f'verification_code_{recipient_email}')
+
+        if verification_code == verification_code_cached:
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': 'Código de verificación inválido'})
+
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'valid': False, 'error': 'Usuario no encontrado'})
+    except Exception as e:
+        return JsonResponse({'valid': False, 'error': str(e)}, status=500)
 @authentication_classes([TokenAuthentication])
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -542,3 +587,4 @@ def get_random_images(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+    
