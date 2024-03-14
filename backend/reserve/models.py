@@ -12,7 +12,9 @@ from django.conf import settings
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.forms import ValidationError
-
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
+from django.contrib.auth import get_user_model
 
 def user_directory_path(instance, filename):
     return "reserve/{0}/{1}".format(instance.name, filename)
@@ -46,6 +48,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+@receiver(post_migrate)
+def create_superuser(sender, **kwargs):
+    User = get_user_model()
+    if kwargs.get('app_config').label == 'reserve':
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser(username='usuario', name='Admin User', email='usuario@prueba.es', password='Usuario1!')
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250, unique=True)
