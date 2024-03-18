@@ -6,7 +6,7 @@ from .views import BookingListView, BookingManagementView, BuildingByCampusView,
 app_name="reserve"
 
 urlpatterns = [
-    path('bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
+    path('reserve/bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
     path('space/', SpaceItemListView.as_view()),
     path('spaces/<int:space_id>/', SpaceShowView.as_view()),
     path('room/', RoomListView.as_view()),
@@ -19,7 +19,7 @@ urlpatterns = [
     path('equipment/', EquipmentManagementView.as_view()),
     path('equipment/<int:equipment_id>/', EquipmentShowView.as_view()),
 
-    path('login/', LoginView.as_view(), name='login'),
+    path('', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', UserView.as_view(), name='get_user_data'),

@@ -33,7 +33,16 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(username, name, password, **extra_fields)
 
+# from django.db.models.signals import post_migrate
+# from django.dispatch import receiver
+# from django.contrib.auth import get_user_model
 
+# @receiver(post_migrate)
+# def create_superuser(sender, **kwargs):
+#     User = get_user_model()
+#     if kwargs.get('app_config').label == 'reserve':  
+#         if not User.objects.filter(username='admin').exists():
+#             User.objects.create_superuser(username='usuario', name='Admin User', email='usuario@prueba.es', password='Usuario1!')
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
     username = models.CharField(max_length=150, unique=True)

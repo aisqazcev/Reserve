@@ -34,7 +34,7 @@ const router = new Router({
         default: Landing,
         footer: AppFooter
       },
-      meta: { requiresAuth: true }
+      // meta: { requiresAuth: true }
     },
     {
       path: "/register",
@@ -52,7 +52,7 @@ const router = new Router({
         default: Profile,
         footer: AppFooter
       },
-      meta: { requiresAuth: true }
+      // meta: { requiresAuth: true }
     },
     {
       path: "/buildings",

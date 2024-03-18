@@ -18,5 +18,9 @@ module.exports = {
   },
   css: {
     sourceMap: process.env.NODE_ENV !== 'production'
+  },
+  devServer: {
+    disableHostCheck: true,
+    allowedHosts: ['all']
   }
 };

@@ -85,7 +85,8 @@ class LoginView(ObtainAuthToken):
         return Response(
             {"detail": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
         )
-
+    def get(self, request, *args, **kwargs):
+        return Response({"detail": "Método GET permitido"}, status=status.HTTP_200_OK)
 
 @authentication_classes([TokenAuthentication])
 class LogoutView(APIView):

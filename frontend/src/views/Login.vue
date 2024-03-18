@@ -137,7 +137,7 @@ export default {
         localStorage.removeItem("rememberedPassword");
       }
       try {
-        const response = await axios.post(`${backendUrl}login/`, {
+        const response = await axios.post(`${backendUrl}`, {
           username_or_email: this.form.usernameOrEmail,
           password: this.form.password,
           remember: this.form.remember,

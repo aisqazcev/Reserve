@@ -21,7 +21,8 @@ SECRET_KEY = 'django-insecure-hvr68l3u66)ve3nswcv1-jw_ibbvxw3v%u-1b+31x9g=nzshmu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['3716-87-218-156-52.ngrok-free.app', '8199-87-218-156-52.ngrok-free.app', 'a180-87-218-156-52.ngrok-free.app', 'localhost']
+
 
 
 # Application definition
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:8000',
@@ -59,8 +61,9 @@ CORS_ORIGIN_WHITELIST = (
     'http://localhost:8080',
     'http://127.0.0.1:8080',
 
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    'http://localhost:4040',
+    'http://127.0.0.1:4040',
+    
 
 )
 
@@ -162,8 +165,15 @@ AUTH_USER_MODEL = 'reserve.CustomUser'
 # settings.py
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587  # Puede variar según la configuración del servidor
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587 
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'susillaPrueba@gmail.com'  # Reemplaza con tu dirección de correo electrónico
-EMAIL_HOST_PASSWORD = 'Aquí iría la contra'  # Reemplaza con tu contraseña
+EMAIL_HOST_USER = 'seateasy8@gmail.com' 
+EMAIL_HOST_PASSWORD = 'hSOJDdvnAEzjfxMq'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
