@@ -59,6 +59,11 @@
                     </div>
                   </div>
                 </div>
+                <div class="text-center mt-3">
+                  <router-link to="/">
+                    Volver al inicio de sesión
+                  </router-link>
+                </div>
               </form>
             </div>
           </div>
