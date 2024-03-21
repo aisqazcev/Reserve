@@ -185,6 +185,7 @@ export default {
 
         if (response.status === 200) {
           this.successMessage = "Contraseña cambiada exitosamente.";
+          localStorage.removeItem('formData');
           this.$router.push("/");
         } else {
           this.errorMessage =

@@ -31,6 +31,7 @@
                       <label for="date" style="color: black;">Email</label>
                       <base-input
                         alternative
+                        placeholder="Correo electrónico"
                         type="email"
                         v-model="form.email"
                         id="email"
@@ -104,9 +105,9 @@ export default {
         });
         if (response.status === 200 && response.data.verification_code) {
           localStorage.setItem('formData', JSON.stringify(this.form));
-          this.$router.push({ name: 'confirm_pass' });
           this.form.email = "";
           this.errorMessage = "";
+          this.$router.push({ name: 'confirm_pass' });
         } else {
           this.errorMessage = "No se pudo enviar el correo electrónico.";
         }
