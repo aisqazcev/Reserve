@@ -111,6 +111,18 @@ export default {
   mounted() {
     this.checkRememberedUser();
   },
+  watch: {
+    'form.remember': function(newVal) {
+      if (!newVal) {
+        this.clearRememberedUser();
+      }
+    },
+    'form.usernameOrEmail': function(newVal) {
+      if(!newVal){
+        this.form.password = "";
+      }
+    }
+  },
   methods: {
     checkRememberedUser() {
       const rememberedUser = localStorage.getItem("rememberedUser");
@@ -120,6 +132,12 @@ export default {
         this.form.password = JSON.parse(rememberedPassword);
         this.form.remember = true;
       }
+    },
+    clearRememberedUser() {
+      localStorage.removeItem("rememberedUser");
+      localStorage.removeItem("rememberedPassword");
+      this.form.usernameOrEmail = "";
+      this.form.password = "";
     },
     async handleSubmit() {
       if (!this.form.usernameOrEmail || !this.form.password) {
