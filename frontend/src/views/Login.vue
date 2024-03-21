@@ -1,14 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="shape shape-style-1 color">
     </div>
     <div class="container pt-lg-md">
       <div class="row justify-content-center">
@@ -182,3 +174,9 @@ export default {
   },
 };
 </script>
+
+<style>
+ .color{
+    background-image: linear-gradient(87deg, #ffffff 0, #a5a5a593 100%);
+ }
+</style>
