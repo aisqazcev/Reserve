@@ -75,7 +75,7 @@
           </card>
           <div class="row mt-3">
             <div class="col-6">
-              <router-link to="#" class="text-light">
+              <router-link to="/forget_pass" class="text-light">
                 <small>¿Olvidaste tu contraseña?</small>
               </router-link>
             </div>

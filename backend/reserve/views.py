@@ -1,8 +1,14 @@
 import random
 import secrets
+import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.cache import cache
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import authentication_classes
@@ -12,12 +18,11 @@ from rest_framework import status
 from django.contrib.auth import logout
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
-from django.http import JsonResponse
 from datetime import datetime, timedelta
-from django.utils import timezone
+from django.contrib.auth.hashers import make_password
+
 
 
 
@@ -85,7 +90,52 @@ class LoginView(ObtainAuthToken):
         return Response(
             {"detail": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
         )
+    
+@csrf_exempt
+def change_pass_email(request, *args, **kwargs):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        email = data.get('email', '')
+        username = CustomUser.objects.get(email=email).username
+        user = CustomUser.objects.get(email=email)
+        new_password = data.get('new_password', '')
+        confirm_new_password = data.get('confirm_new_password', '')
 
+        if new_password != confirm_new_password:
+            return JsonResponse({"detail": "Las nuevas contraseñas no coinciden."}, status=400)
+        
+        else: 
+            hashed_password = make_password(new_password)
+            user.password = hashed_password
+            user.save()
+            return JsonResponse({"detail": "Contraseña cambiada exitosamente."}, status=200)
+        
+    except CustomUser.DoesNotExist:
+        return JsonResponse({"detail": "Usuario no encontrado."}, status=404)
+    except Exception as e:
+        return JsonResponse({"detail": str(e)}, status=500)
+    
+@csrf_exempt
+def send_recovery_email(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        recipient_email = data.get('email', '')
+        
+        if CustomUser.objects.filter(email=recipient_email).exists():
+            subject = 'Restauración de contraseña'
+            verification_code = secrets.token_hex(4)
+            message = f'¡Hola! Entra en este enlace para recuperar tu contraseña: {verification_code}. Por favor, no responda este correo.'
+            from_email = 'seateasy8@gmail.com'
+
+            cache.set(f'verification_code_{recipient_email}', verification_code, timeout=600)
+            
+            send_mail(subject, message, from_email, [recipient_email])
+
+            return JsonResponse({'message': 'Correo enviado con éxito.', 'verification_code':cache.get(f'verification_code_{recipient_email}')})
+        else:
+            return JsonResponse({'error': 'El correo electrónico no está asociado a ningún usuario registrado.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @authentication_classes([TokenAuthentication])
 class LogoutView(APIView):
@@ -104,10 +154,6 @@ class LogoutView(APIView):
             return Response(
                 {"detail": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
             )
-
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
@@ -118,13 +164,7 @@ class RegisterView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-import random
-from django.core.mail import send_mail
-from django.views.decorators.csrf import csrf_exempt
-import json
-from django.http import JsonResponse
-from django.core.cache import cache
+
 
 @csrf_exempt
 def enviar_correo_vista(request):
@@ -136,7 +176,7 @@ def enviar_correo_vista(request):
         message = f'¡Hola! Este es tu código de verificación para confirmar el registro: {verification_code}. Por favor, no responda este correo.'
         from_email = 'seateasy8@gmail.com'
 
-        cache.set(f'verification_code_{recipient_email}', verification_code, timeout=900)
+        cache.set(f'verification_code_{recipient_email}', verification_code, timeout=600)
 
         send_mail(subject, message, from_email, [recipient_email])
 
@@ -152,7 +192,7 @@ def verificar_codigo(request):
         verification_code = data.get('verificationCode', '')
 
         verification_code_cached = cache.get(f'verification_code_{recipient_email}')
-
+       
         if verification_code == verification_code_cached:
             return JsonResponse({'valid': True})
         else:

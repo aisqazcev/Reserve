@@ -17,15 +17,18 @@
           <div class="col px-0">
             <div class="row">
               <div class="col-lg-6">
-                <p class="lead">
-                  Se ha enviado un código de verificación al correo electrónico
-                  registrado, por favor, ingresa el código:
-                </p>
+                <p class="lead" v-if="!codeVerified">
+                Se ha enviado un código de verificación al correo electrónico
+                registrado, por favor, ingresa el código:
+              </p>
+              <p class="lead" v-else>
+                Ingresa tu nueva contraseña:
+              </p>
               </div>
             </div>
             <div class="row">
               <div class="col-lg-6 mt-4">
-                <form role="form">
+                <form role="form" v-if="!codeVerified">
                   <div class="ct-example-row">
                     <div class="row">
                       <div class="col-sm">
@@ -62,6 +65,58 @@
                     </div>
                   </div>
                 </form>
+                <form role="form" v-else>
+                <div class="ct-example-row">
+                  <div class="row">
+                    <div class="col-sm">
+                      <label for="newPassword" style="color: black;"
+                        >Nueva contraseña</label
+                      >
+                      <base-input
+                        alternative
+                        type="password"
+                        v-model="form.newPassword"
+                        id="newPassword"
+                      ></base-input>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm">
+                      <label for="confirmPassword" style="color: black;"
+                        >Confirmar contraseña</label
+                      >
+                      <base-input
+                        alternative
+                        type="password"
+                        v-model="form.confirmPassword"
+                        id="confirmPassword"
+                      ></base-input>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div
+                      class="col-sm d-flex flex-column align-items-center justify-content-center"
+                    >
+                      <base-button
+                        :disabled="loading"
+                        type="primary"
+                        class="my-4"
+                        @click="change_pass"
+                      >
+                        Cambiar contraseña
+                      </base-button>
+                      <div
+                        v-if="errorMessage"
+                        class="alert alert-default error-message mt-3"
+                        role="alert"
+                      >
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ errorMessage }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
               </div>
             </div>
           </div>
@@ -78,10 +133,13 @@ import { backendUrl } from "../main.js";
 export default {
   data() {
     return {
-      email: "",
       form: {
         verificationCode: "",
+        email: "",
+        newPassword: "",
+        confirmPassword: "",
       },
+      codeVerified: false,
       loading: false,
       errorMessage: "",
     };
@@ -106,7 +164,7 @@ export default {
         if (response.status === 200 && response.data.valid) {
           this.successMessage =
             "Código de verificación válido. Registrando usuario...";
-          await this.register();
+          this.codeVerified = true;
         } else {
           this.errorMessage =
             "Código de verificación inválido. Por favor, verifica e intenta de nuevo.";
@@ -116,24 +174,26 @@ export default {
         console.error("Verification error:", error);
       }
     },
-    async register() {
-      this.loading = true;
-
+    async change_pass() {
       try {
-        const response = await axios.post(`${backendUrl}register/`, this.form);
-        if (response.data.detail === "Usuario registrado exitosamente") {
-          this.successMessage = "Usuario creado correctamente.";
-          setTimeout(() => {
-            this.$router.push("/");
-          }, 2000);
+        this.loading = true;
+        const response = await axios.post(`${backendUrl}change_pass/`, {
+                email: this.form.email,
+                new_password: this.form.newPassword,
+                confirm_new_password: this.form.confirmPassword,
+            });
+
+        if (response.status === 200) {
+          this.successMessage = "Contraseña cambiada exitosamente.";
+          this.$router.push("/");
         } else {
           this.errorMessage =
-            "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
+            "Ha ocurrido un error al cambiar la contraseña. Por favor, inténtalo de nuevo.";
         }
       } catch (error) {
         this.errorMessage =
-          "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
-        console.error("Register error:", error);
+          "Ha ocurrido un error al cambiar la contraseña. Por favor, inténtalo de nuevo.";
+        console.error("Change password error:", error);
       } finally {
         this.loading = false;
       }
