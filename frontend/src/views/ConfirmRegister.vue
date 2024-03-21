@@ -78,7 +78,6 @@ import { backendUrl } from "../main.js";
 export default {
   data() {
     return {
-      mensaje: "Confirmando registro...",
       email: "",
       form: {
         verificationCode: "",

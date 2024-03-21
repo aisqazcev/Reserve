@@ -1,4 +1,3 @@
-from datetime import timedelta
 from enum import Enum
 import json
 import os
@@ -11,7 +10,7 @@ from django.db import models
 from django.conf import settings
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
-from django.forms import ValidationError
+from django.contrib.auth.hashers import make_password
 
 def user_directory_path(instance, filename):
     return "reserve/{0}/{1}".format(instance.name, filename)
@@ -45,6 +44,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+        
+    def set_password_custom(self, raw_password):
+        self.password = make_password(raw_password)
 
 class Equipment(models.Model):
     name = models.CharField(max_length=250, unique=True)

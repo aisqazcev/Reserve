@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingByCampusView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, verificar_codigo
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, send_recovery_email, verificar_codigo
 
 app_name="reserve"
 
@@ -20,6 +20,8 @@ urlpatterns = [
     path('equipment/<int:equipment_id>/', EquipmentShowView.as_view()),
 
     path('login/', LoginView.as_view(), name='login'),
+    path('send_recovery/', send_recovery_email, name='send_recovery'),
+    path('change_pass/', change_pass_email, name='change_pass'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', UserView.as_view(), name='get_user_data'),
