@@ -13,7 +13,6 @@ from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.forms import ValidationError
 
-
 def user_directory_path(instance, filename):
     return "reserve/{0}/{1}".format(instance.name, filename)
 
