@@ -30,12 +30,14 @@
                 </div>
                 <div class="col-sm">
                   <label for="time" style="color: black;">Hora</label>
-                  <base-input
-                    alternative
-                    type="time"
-                    v-model="selectedTime"
-                    id="time"
-                  ></base-input>
+                  <select v-model="selectedHour" @change="updateTime">
+      <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
+    </select>
+
+    <label for="minute">Minuto:</label>
+    <select v-model="selectedMinute" @change="updateTime">
+      <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
+    </select>
                 </div>
                 <div class="col-sm">
                   <label for="duracion" style="color: black;"
@@ -206,6 +208,10 @@ export default {
       spaces: [],
       loading: false,
       search: false,
+      selectedHour: '00',
+      selectedMinute: '00',
+      hours: Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')),
+      minutes: ['00', '15', '30', '45']
     };
   },
   watch: {
@@ -236,6 +242,11 @@ export default {
     this.loadBuildings();
   },
   methods: {
+    updateTime() {
+      const selectedTime = `${this.selectedHour}:${this.selectedMinute}`;
+      console.log('Hora seleccionada:', selectedTime);
+      this.selectedTime = selectedTime;
+    },
     toggleReadOnly() {},
     isPastDate(dateString) {
       const selectedDate = new Date(dateString);

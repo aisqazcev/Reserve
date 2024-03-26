@@ -61,7 +61,8 @@ const router = new Router({
         header: AppHeader,
         default: Buildings,
         footer: AppFooter
-      }
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/building/:buildingId",
@@ -70,7 +71,8 @@ const router = new Router({
         header: AppHeader,
         default: SpacesByBuilding,
         footer: AppFooter
-      }
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/booking",
@@ -80,6 +82,7 @@ const router = new Router({
         default: Booking,
         footer: AppFooter,
       },
+      meta: { requiresAuth: true }
     },
     {
       path: "/bookings",
@@ -87,7 +90,9 @@ const router = new Router({
       components: {
         header: AppHeader,
         default: Bookings,
-      }
+        footer: AppFooter,
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/space/:spaceId",
@@ -97,11 +102,13 @@ const router = new Router({
         default: Desk,
         footer: AppFooter,
       },
+      meta: { requiresAuth: true }
     },
     {
       path: "/confirm_register",
       name: "confirm_register",
       component: ConfirmRegistration,
+      footer: AppFooter,
     },
   ],
   scrollBehavior: to => {

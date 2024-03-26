@@ -262,13 +262,12 @@ export default {
   border-radius: 5px;
 }
 .icon-container {
-  height: 50px; /* Altura fija para el contenedor */
-  /* Ocultar los iconos adicionales si desbordan el contenedor */
+  height: 50px; 
 }
 
 .icon-container equipment {
-  width: 50px; /* Ancho fijo para cada icono */
-  height: 50px; /* Altura fija para cada icono */
-  margin-right: 10px; /* Espacio entre los iconos */
+  width: 50px; 
+  height: 50px;
+  margin-right: 10px;
 }
 </style>
