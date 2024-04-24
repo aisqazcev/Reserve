@@ -2,10 +2,27 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, send_recovery_email, verificar_codigo
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
 app_name="reserve"
 
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Doc API",
+      default_version='v1',
+      description="API for the Seateasy project",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 urlpatterns = [
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+
     path('bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
     path('space/', SpaceItemListView.as_view()),
     path('spaces/<int:space_id>/', SpaceShowView.as_view()),
