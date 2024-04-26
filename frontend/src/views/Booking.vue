@@ -30,14 +30,12 @@
                 </div>
                 <div class="col-sm">
                   <label for="time" style="color: black;">Hora</label>
-                  <select v-model="selectedHour" @change="updateTime">
-      <option v-for="hour in hours" :key="hour" :value="hour">{{ hour }}</option>
-    </select>
-
-    <label for="minute">Minuto:</label>
-    <select v-model="selectedMinute" @change="updateTime">
-      <option v-for="minute in minutes" :key="minute" :value="minute">{{ minute }}</option>
-    </select>
+                  <base-input
+                    alternative
+                    type="time"
+                    v-model="selectedTime"
+                    id="time"
+                  ></base-input>
                 </div>
                 <div class="col-sm">
                   <label for="duracion" style="color: black;"
