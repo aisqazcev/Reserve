@@ -38,8 +38,8 @@
                     />
                   </div>
                   <div class="col-md-7">
-                    <div class="card-body">
-                      <h3 class="card-title" style="color: #08217E;">
+                    <div class="card-body-1">
+                      <h3 class="card-title">
                         {{ building.name_complete }}
                       </h3>
                       <div
@@ -48,9 +48,9 @@
                       >
                         <i
                           class="ni ni-square-pin mr-2"
-                          style="font-size: 24px; color:#08217E"
+                          style="font-size: 24px; color:#be0f2e;"
                         ></i>
-                        <strong>{{ building.address }}</strong>
+                        {{ building.address }}
                       </div>
                       <router-link :to="`/building/${building.id}`">
                         <b-button variant="primary" class="mt-4"

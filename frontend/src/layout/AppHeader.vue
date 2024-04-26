@@ -1,17 +1,14 @@
 <template>
   <header class="header-global">
     <base-nav class="navbar-main" transparent type="" effect="light" expand>
-      <router-link to="/landing" class="nav-link">
-        <i class="fa fa-home fa-2x" style="color: white;"></i>
-      </router-link>
-
+      <router-link slot="brand" class="navbar-brand mr-lg-5" to="/landing">
+        <img src="img/brand/logo.png" alt="logo"
+      /></router-link>
       <div class="row" slot="content-header" slot-scope="{ closeMenu }">
         <div class="col-6 collapse-brand">
-          <a
-            href="https://demos.creative-tim.com/vue-argon-design-system/documentation/"
-          >
-            <img src="img/brand/blue.png" />
-          </a>
+          <router-link to="/landing" class="nav-link">
+            <img src="img/brand/seateasyNameLogo.png" />
+          </router-link>
         </div>
         <div class="col-6 collapse-close">
           <close-button @click="closeMenu"></close-button>
@@ -31,60 +28,7 @@
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
       </ul>
-      <ul class="navbar-nav align-items-lg-center ml-lg-auto">
-        <li class="nav-item">
-          <a
-            class="nav-link nav-link-icon"
-            href="https://www.facebook.com/creativetim"
-            target="_blank"
-            rel="noopener"
-            data-toggle="tooltip"
-            title="Like us on Facebook"
-          >
-            <i class="fa fa-facebook-square"></i>
-            <span class="nav-link-inner--text d-lg-none">Facebook</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link nav-link-icon"
-            href="https://www.instagram.com/creativetimofficial"
-            target="_blank"
-            rel="noopener"
-            data-toggle="tooltip"
-            title="Follow us on Instagram"
-          >
-            <i class="fa fa-instagram"></i>
-            <span class="nav-link-inner--text d-lg-none">Instagram</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link nav-link-icon"
-            href="https://twitter.com/creativetim"
-            target="_blank"
-            rel="noopener"
-            data-toggle="tooltip"
-            title="Follow us on Twitter"
-          >
-            <i class="fa fa-twitter-square"></i>
-            <span class="nav-link-inner--text d-lg-none">Twitter</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link nav-link-icon"
-            href="https://github.com/creativetimofficial/vue-argon-design-system"
-            target="_blank"
-            rel="noopener"
-            data-toggle="tooltip"
-            title="Star us on Github"
-          >
-            <i class="fa fa-github"></i>
-            <span class="nav-link-inner--text d-lg-none">Github</span>
-          </a>
-        </li>
-      </ul>
+      <ul class="navbar-nav align-items-lg-center ml-lg-auto"></ul>
       <button class="btn btn-neutral" @click="perfil">
         Perfil
       </button>
@@ -168,6 +112,13 @@ export default {
 </script>
 
 <style>
+.header-global .navbar-brand {
+  font-family: "Raleway", sans-serif;
+}
+
+.header-global .navbar-nav .nav-link {
+  font-family: "Raleway", sans-serif;
+}
 .separator {
   margin: 0 50px;
 }
@@ -176,5 +127,8 @@ export default {
   top: calc(100% + 10px); /* Ajusta el valor según sea necesario */
   left: 50%;
   transform: translateX(-50%);
+}
+.logo {
+  margin-right: 10px; /* Ajusta el margen según sea necesario */
 }
 </style>

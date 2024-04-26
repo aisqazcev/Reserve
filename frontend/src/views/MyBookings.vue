@@ -9,6 +9,46 @@
       <h1 class="mb-4" style="color: #051551;">
         Reservas
       </h1>
+      <div class="mb-3">
+        <button
+          @click="filterPastBookings"
+          :class="{
+            'btn-primary': selectedOption === 'past',
+            'btn-secondary': selectedOption !== 'past',
+          }"
+          class="btn mr-2"
+          style="text-transform: none;"
+        >
+          Pasadas
+        </button>
+        <button
+          @click="filterFutureBookings"
+          :class="{
+            'btn-primary': selectedOption === 'future',
+            'btn-secondary': selectedOption !== 'future',
+          }"
+          class="btn"
+          style="text-transform: none;"
+        >
+          Próximas
+        </button>
+      </div>
+      <div
+        v-if="errorMessage"
+        class="alert alert-default error-message"
+        role="alert"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ errorMessage }}
+        <button
+          type="button"
+          class="close"
+          @click="closeErrorMessage"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
       <div class="table-container">
         <table class="table">
           <thead>
@@ -29,7 +69,7 @@
               <th>Asiento</th>
               <th>Sala</th>
               <th>Edificio</th>
-              <th>Acciones</th>
+              <th v-if="selectedOption === 'future'">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -42,11 +82,11 @@
               <td data-label="Asiento">{{ item.deskName }}</td>
               <td data-label="Sala">{{ item.spaceName }}</td>
               <td data-label="Edificio">{{ item.buildingName }}</td>
-              <td class="td-actions">
+              <td class="td-actions" v-if="isFutureBooking(item)">
                 <button
                   type="button"
                   rel="tooltip"
-                  class="btn btn-info btn-icon btn-sm"
+                  class="btn btn-default btn-icon btn-sm"
                   data-original-title=""
                   title=""
                 >
@@ -56,8 +96,7 @@
                   type="button"
                   rel="tooltip"
                   class="btn btn-danger btn-icon btn-sm"
-                  data-original-title=""
-                  title=""
+                  @click="cancelBooking(item.id, index)"
                 >
                   <i class="ni ni-fat-remove pt-1"></i>
                 </button>
@@ -96,39 +135,78 @@ export default {
       totalItems: 0,
       isLoading: true,
       sortDirection: "desc",
+      selectedOption: "future",
+      filteredBookings: [],
+      errorMessage: "",
     };
   },
   mounted() {
-    this.listBookings();
-    this.sortBookingsByDate();
+    this.listBookings().then(() => {
+      this.sortBookingsByDate();
+      this.filterFutureBookings();
+    });
   },
   computed: {
     displayedBookings() {
-      if (!this.booking) return [];
       const startIndex = (this.currentPage - 1) * this.perPage;
       const endIndex = startIndex + this.perPage;
-      return this.booking.slice(startIndex, endIndex);
+      return this.filteredBookings.slice(startIndex, endIndex);
     },
   },
   methods: {
+    isFutureBooking(item) {
+      const endDateTime = new Date(item.end_time);
+      const currentDate = new Date();
+      return endDateTime > currentDate;
+    },
+    closeErrorMessage() {
+      this.errorMessage = "";
+    },
+
+    filterPastBookings() {
+      this.selectedOption = "past";
+      const currentDate = new Date();
+
+      this.currentPage = 1;
+      if (this.booking !== null) {
+        this.filteredBookings = this.booking.filter((booking) => {
+          const endDateTime = new Date(booking.end_time);
+          return endDateTime < currentDate;
+        });
+        this.totalItems = this.filteredBookings.length;
+      }
+    },
+    filterFutureBookings() {
+      this.selectedOption = "future";
+      const currentDate = new Date();
+
+      this.currentPage = 1; // Reset currentPage
+      if (this.booking !== null) {
+        this.filteredBookings = this.booking.filter((booking) => {
+          const endDateTime = new Date(booking.end_time);
+          return endDateTime > currentDate;
+        });
+        this.totalItems = this.filteredBookings.length;
+      }
+    },
     toggleSortDirection() {
       this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
-      this.sortBookingsByDate();
+      this.sortBookingsByDate(this.filteredBookings);
     },
-    sortBookingsByDate() {
-      if (this.booking) {
-        this.booking.sort((a, b) => {
-          const dateA = new Date(a.date);
-          const dateB = new Date(b.date);
+    sortBookingsByDate(bookings) {
+      if (bookings) {
+        bookings.sort((a, b) => {
+          const dateA = a.date;
+          const dateB = b.date;
 
-          const directionFactor = this.sortDirection === "asc" ? 1 : -1;
+          const timeA = a.start_time;
+          const timeB = b.start_time;
 
-          if (dateA > dateB) return -1 * directionFactor;
-          if (dateA < dateB) return 1 * directionFactor;
-
-          const timeA = new Date(a.start_time);
-          const timeB = new Date(b.start_time);
-          return (timeA - timeB) * directionFactor;
+          let result = dateA.localeCompare(dateB);
+          if (result === 0) {
+            result = timeA.localeCompare(timeB);
+          }
+          return this.sortDirection === "asc" ? result : -result;
         });
       }
     },
@@ -192,6 +270,36 @@ export default {
         minute: "2-digit",
         second: "2-digit",
       });
+    },
+    cancelBooking(bookingId, index) {
+      const bookingToCancel = this.displayedBookings[index];
+
+      if (bookingToCancel) {
+        const startDateTime = new Date(bookingToCancel.start_time);
+        const currentDateTime = new Date();
+        const timeDifference =
+          startDateTime.getTime() - currentDateTime.getTime();
+        const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+        if (hoursDifference <= 4) {
+          this.errorMessage =
+            "No se pueden cancelar reservas que comienzan en 4 horas o menos.";
+          return;
+        }
+      }
+      const token = localStorage.getItem("token");
+      axios
+        .delete(`${backendUrl}booking/${bookingId}/`, {
+          headers: { Authorization: `Token ${token}` },
+        })
+        .then((response) => {
+          this.displayedBookings.splice(index, 1);
+          this.totalItems--;
+          this.totalItems = this.filteredBookings.length;
+        })
+        .catch((error) => {
+          console.error("Cancellation Error:", error);
+        });
     },
   },
 };

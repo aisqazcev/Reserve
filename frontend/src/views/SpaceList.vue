@@ -4,12 +4,13 @@
       <span style="visibility: hidden;"></span>
       <span></span>
       <span></span>
-      <span style="background-color: #787CFF;"></span>
+      <span></span>
     </div>
     <div class="container mt-3">
-      <h1 class="mb-4" style="color: #051551;">
+      <h1 class="mb-4">
+        <span class="icon-arrow-left" @click="goBack"></span>
         {{ building.name_complete }}
-        <i class="ni ni-bold-right" style="font-size: 24px; color:#051551"> </i>
+        <i class="ni ni-bold-right" style="font-size: 24px; color:#303030 ;"> </i>
         {{ spaceDetails.name }}
       </h1>
       <card class="mb-3">
@@ -26,27 +27,29 @@
             />
           </div>
           <div class="col-md-7">
-            <div class="card-body">
-              <h3 class="card-title" style="color: #08217E;">
+            <div class="card-body-1">
+              <h3 class="card-title">
                 Detalles del Espacio
               </h3>
-
               <div
                 class="d-flex align-items-center"
                 style="margin-bottom: 20px;"
               >
                 <i
                   class="ni ni-chart-bar-32 mr-2"
-                  style="font-size: 24px; color:#08217E"
+                  style="font-size: 24px; color:#be0f2e;"
                 >
                 </i>
-                <strong>Capacidad: {{ spaceDetails.capacity }} </strong>
+                Capacidad: {{ spaceDetails.capacity }} 
               </div>
               <div
                 class="d-flex align-items-center"
                 style="margin-bottom: 20px;"
               >
-                <strong>Equipamiento: {{ spaceDetails.equipment }}</strong>
+                <div v-if="spaceDetails && spaceDetails.features">
+                  Equipamiento:
+                  <equipment :equipments="spaceDetails.features"></equipment>
+                </div>
               </div>
               <div
                 class="d-flex align-items-center"
@@ -54,11 +57,10 @@
               >
                 <i
                   class="fas fa-info-circle mr-2"
-                  style="font-size: 24px; color:#08217E"
+                  style="font-size: 24px; color:#be0f2e;"
                 ></i>
                 <td>{{ spaceDetails.general_info }}</td>
               </div>
-              
             </div>
           </div>
         </div>
@@ -69,13 +71,13 @@
             <div class="col-md-4 mb-3">
               <div class="form-group">
                 <label for="fecha">Fecha:</label>
-                <input type="date" id="date" class="form-control" />
+                <input type="date" id="date" v-model="reservationDate" class="form-control" />
               </div>
             </div>
             <div class="col-md-4 mb-3">
               <div class="form-group">
                 <label for="horaInicio">Hora de inicio:</label>
-                <input type="time" id="start_time" class="form-control" />
+                <input type="time" id="start_time" v-model="reservationStartTime" class="form-control" />
               </div>
             </div>
             <div class="col-md-4 mb-3">
@@ -83,6 +85,7 @@
                 <label for="duracion">Duración:</label>
                 <select
                   id="duration"
+                  v-model="duration"
                   class="form-control"
                   @change="handleDurationChange"
                 >
@@ -105,14 +108,14 @@
               <dt>
                 <div
                   v-if="showNoResultsMessage"
-                  class="alert alert-info"
+                  class="alert alert-default"
                   role="alert"
                 >
                   No hay resultados para la búsqueda.
                 </div>
                 <div
                   v-if="errorMessage"
-                  class="alert alert-warning error-message"
+                  class="alert alert-default error-message"
                   role="alert"
                 >
                   <i class="fas fa-exclamation-triangle"></i>
@@ -121,7 +124,7 @@
               </dt>
               <button
                 class="btn btn-primary btn-block"
-                @click="buscarDisponibilidad"
+                @click="searchDisponibility"
               >
                 Buscar Disponibilidad
               </button>
@@ -129,8 +132,10 @@
           </div>
         </div>
       </div>
-
-      <div class="row mt-3">
+      <div v-if="bookingMessage" class="alert alert-success" role="alert">
+        {{ bookingMessage }}
+      </div>
+      <div class="row mt-3" v-if="search">
         <div class="col">
           <div class="table-container">
             <table class="table">
@@ -138,18 +143,17 @@
                 <tr>
                   <th>id</th>
                   <th>Nombre</th>
-                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(item, index) in spacesItems" :key="index">
                   <td data-label="Id">{{ item.id }}</td>
                   <td data-label="Nombre">{{ item.name }}</td>
-                  <td data-label="Estado">{{ item.seat_status }}</td>
-                  <td>
+                  <td data-label="Acciones">
                     <button
                       class="btn btn-primary"
-                      @click="reservarDesk(item.id)"
+                      @click="bookingDesk(item.id)"
                     >
                       Reservar
                     </button>
@@ -169,10 +173,19 @@ import axios from "axios";
 import { backendUrl } from "../main.js";
 import "@fortawesome/fontawesome-free/css/all.css";
 import Card from "../components/Card.vue";
+import Equipment from "../components/Equipment.vue";
 
 export default {
-  components: { Card },
+  components: { Equipment, Card },
   data() {
+    const now = new Date();
+    const currentDate = now.toISOString().substring(0, 10);
+    now.setMinutes(0, 0, 0);
+    now.setHours(now.getHours() + 1);
+    let hours = now.getHours().toString().padStart(2, '0');
+    let minutes = now.getMinutes().toString().padStart(2, '0');
+    const nextHour = `${hours}:${minutes}`;
+
     return {
       spacesItems: [],
       spaceDetails: {},
@@ -181,10 +194,14 @@ export default {
       originalSpacesItems: [],
       errorMessage: "",
       showModal: false,
-      reservationDate: "",
-      reservationStartTime: "",
+      reservationDate: currentDate,
+      reservationStartTime: nextHour,
+      duration: 60,
       reservedSeat: "",
       showNoResultsMessage: false,
+      userReservations: "",
+      search: false,
+      bookingMessage: "",
     };
   },
   mounted() {
@@ -193,24 +210,37 @@ export default {
 
     const routeQuery = this.$route.query;
 
-  if (routeQuery.date && routeQuery.time && routeQuery.duration) {
-    this.reservationDate = routeQuery.date;
-    document.getElementById("date").value = routeQuery.date;
+    if (routeQuery.date && routeQuery.time && routeQuery.duration) {
+      this.reservationDate = routeQuery.date;
+      document.getElementById("date").value = routeQuery.date;
 
-    this.reservationStartTime = routeQuery.time;
-    document.getElementById("start_time").value = routeQuery.time;
+      this.reservationStartTime = routeQuery.time;
+      document.getElementById("start_time").value = routeQuery.time;
 
-    document.getElementById("duration").value = routeQuery.duration;
+      document.getElementById("duration").value = routeQuery.duration;
 
-    this.buscarDisponibilidad();
-  }
+      this.searchDisponibility();
+    }
   },
   methods: {
+    goBack() {
+      this.$router.go(-1);
+    },
     handleDurationChange(event) {},
     listSpaceItems() {
       const token = localStorage.getItem("token");
       const spaceId = this.$route.params.spaceId;
       if (token) {
+        axios
+          .get(`${backendUrl}bookings/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.userReservations = response.data;
+          })
+          .catch((error) => {
+            console.error("Error al obtener reservas del usuario:", error);
+          });
         axios
           .get(`${backendUrl}${spaceId}/desk/`, {
             headers: { Authorization: `Token ${token}` },
@@ -236,6 +266,7 @@ export default {
           })
           .then((response) => {
             this.spaceDetails = response.data;
+            this.spaceDetails.features = response.data.features;
 
             const buildingId = response.data.building;
             axios
@@ -274,7 +305,8 @@ export default {
       return selectedTime < currentTime;
     },
 
-    buscarDisponibilidad() {
+    searchDisponibility() {
+      this.search = true;
       this.errorMessage = "";
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
@@ -329,26 +361,22 @@ export default {
       return `${year}-${month}-${day}`;
     },
 
-    reservarDesk(deskId) {
+    bookingDesk(deskId) {
       const date = document.getElementById("date").value;
       const start_time = document.getElementById("start_time").value;
       const durationMinutes = parseInt(
         document.getElementById("duration").value
-      ); // Duración en minutos
-      const spaceId = this.$route.params.spaceId; // Obtener el ID de la sala actual
+      );
+      const spaceId = this.$route.params.spaceId;
 
       const startTimeSplit = start_time.split(":");
       const startHour = parseInt(startTimeSplit[0]);
       const startMinute = parseInt(startTimeSplit[1]);
       const endMinute = startMinute + durationMinutes;
-      const endHour = startHour + Math.floor(endMinute / 60);
-      const endMinuteAdjusted = endMinute % 60;
 
-      // Convertir duración de minutos a horas y minutos
       const durationHours = Math.floor(durationMinutes / 60);
       const durationMinutesRemainder = durationMinutes % 60;
 
-      // Formatear la duración como hh:mm:ss
       const formattedDuration = `${durationHours
         .toString()
         .padStart(2, "0")}:${durationMinutesRemainder
@@ -364,6 +392,25 @@ export default {
         .replace("T", " ");
 
       const token = localStorage.getItem("token");
+
+      const overlappingReservation = this.userReservations.some(
+        (reservation) => {
+          const reservationStart = new Date(reservation.start_time).getTime();
+          const reservationEnd = new Date(reservation.end_time).getTime();
+
+          return (
+            (reservationStart <= new Date(end_time).getTime() &&
+              new Date(end_time).getTime() <= reservationEnd) ||
+            (reservationStart <= new Date(`${date} ${start_time}`).getTime() &&
+              new Date(`${date} ${start_time}`).getTime() <= reservationEnd)
+          );
+        }
+      );
+
+      if (overlappingReservation) {
+        this.errorMessage = "Ya tienes una reserva en esta franja horaria.";
+        return;
+      }
       if (token) {
         axios
           .post(
@@ -384,6 +431,8 @@ export default {
             this.spacesItems = this.spacesItems.filter(
               (item) => item.id !== deskId
             );
+            this.bookingMessage = "Reserva exitosa";
+            window.location.reload();
           })
           .catch((error) => {
             this.errorMessage = "Error al reservar el escritorio.";
@@ -393,7 +442,7 @@ export default {
       }
     },
     getSpaceImageUrl(relativePath) {
-      relativePath = relativePath.replace(/^\/*/, "");
+      relativePath = relativePath.replace(/^\/media*/, "");
       const imageUrl = `${backendUrl}${relativePath}`;
       return imageUrl;
     },
@@ -403,13 +452,7 @@ export default {
 
 <style>
 .card {
-  background-color: rgba(
-    159,
-    216,
-    197,
-    0.5
-  ); /* Ajusta el color de fondo según tu preferencia */
-  /* Otros estilos de la tarjeta */
+  background-color: rgba(159, 216, 197, 0.5);
 }
 
 .table-container {
@@ -435,5 +478,13 @@ export default {
 
 .rounded-square {
   border-radius: 5px;
+}
+
+.icon-arrow-left {
+  color: #be0f2e; 
+} 
+
+.icon-arrow-left:hover {
+  color: #0f1af2; 
 }
 </style>

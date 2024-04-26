@@ -1,14 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="shape shape-style-1 color">
     </div>
     <div class="container pt-lg-md">
       <div class="row justify-content-center">
@@ -62,7 +54,7 @@
                   <dt>
                     <div
                       v-if="errorMessage"
-                      class="alert alert-warning error-message"
+                      class="alert alert-default error-message"
                       role="alert"
                     >
                       <i class="fas fa-exclamation-triangle"></i>
@@ -75,7 +67,7 @@
           </card>
           <div class="row mt-3">
             <div class="col-6">
-              <router-link to="#" class="text-light">
+              <router-link to="/forget_pass" class="text-light">
                 <small>¿Olvidaste tu contraseña?</small>
               </router-link>
             </div>
@@ -111,6 +103,18 @@ export default {
   mounted() {
     this.checkRememberedUser();
   },
+  watch: {
+    'form.remember': function(newVal) {
+      if (!newVal) {
+        this.clearRememberedUser();
+      }
+    },
+    'form.usernameOrEmail': function(newVal) {
+      if(!newVal){
+        this.form.password = "";
+      }
+    }
+  },
   methods: {
     checkRememberedUser() {
       const rememberedUser = localStorage.getItem("rememberedUser");
@@ -120,6 +124,12 @@ export default {
         this.form.password = JSON.parse(rememberedPassword);
         this.form.remember = true;
       }
+    },
+    clearRememberedUser() {
+      localStorage.removeItem("rememberedUser");
+      localStorage.removeItem("rememberedPassword");
+      this.form.usernameOrEmail = "";
+      this.form.password = "";
     },
     async handleSubmit() {
       if (!this.form.usernameOrEmail || !this.form.password) {
@@ -164,3 +174,9 @@ export default {
   },
 };
 </script>
+
+<style>
+ .color{
+    background-image: linear-gradient(87deg, #ffffff 0, #a5a5a593 100%);
+ }
+</style>

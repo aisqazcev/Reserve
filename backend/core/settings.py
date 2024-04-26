@@ -7,6 +7,7 @@ environ.Env.read_env()
 
 DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,12 +17,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hvr68l3u66)ve3nswcv1-jw_ibbvxw3v%u-1b+31x9g=nzshmu'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -61,6 +62,8 @@ CORS_ORIGIN_WHITELIST = (
 
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+
+    'https://seateasy-61465.web.app'
 
 )
 
@@ -159,11 +162,16 @@ REST_FRAMEWORK = {
 }
 AUTH_USER_MODEL = 'reserve.CustomUser'
 
-# settings.py
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587  # Puede variar según la configuración del servidor
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587 
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'susillaPrueba@gmail.com'  # Reemplaza con tu dirección de correo electrónico
-EMAIL_HOST_PASSWORD = 'Aquí iría la contra'  # Reemplaza con tu contraseña
+EMAIL_HOST_USER = 'seateasy8@gmail.com' 
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}

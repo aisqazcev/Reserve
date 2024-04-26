@@ -1,4 +1,3 @@
-from datetime import timedelta
 from enum import Enum
 import json
 import os
@@ -11,8 +10,7 @@ from django.db import models
 from django.conf import settings
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
-from django.forms import ValidationError
-
+from django.contrib.auth.hashers import make_password
 
 def user_directory_path(instance, filename):
     return "reserve/{0}/{1}".format(instance.name, filename)
@@ -46,7 +44,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+        
+    def set_password_custom(self, raw_password):
+        self.password = make_password(raw_password)
 
+class Equipment(models.Model):
+    name = models.CharField(max_length=250, unique=True)
+
+    def __str__(self):
+        return self.name
 
 class Campus(models.Model):
     campus_name = models.CharField(max_length=250, unique=True)
@@ -69,11 +75,20 @@ class Building(models.Model):
     def __str__(self):
         return self.name
 
-def load_building_data():
-    json_file_path = os.path.join(settings.BASE_DIR, "reserve", "buildings_name.json")
+def load_data():
+    json_file_path = os.path.join(settings.BASE_DIR, "reserve", "data.json")
 
     with open(json_file_path, "r", encoding="utf-8") as json_file:
-        buildings_data = json.load(json_file)
+        data = json.load(json_file)
+        buildings_data = data.get("buildings", [])
+        equipments_data = data.get("equipments", [])  # Agregar carga de equipos
+        spaces_data = data.get("spaces", [])
+
+        for equipment_data in equipments_data:  # Iterar sobre los datos de los equipos
+            Equipment.objects.get_or_create(
+                id=equipment_data.get("id"),
+                name=equipment_data.get("name")
+            )
 
         for building_data in buildings_data:
             campus_name = building_data.get("campus", "")
@@ -97,12 +112,32 @@ def load_building_data():
                     campus=unique_campus,
                 )
 
+        for space_data in spaces_data:
+            building_id = space_data.get("building")
+            building = Building.objects.get(pk=building_id)
+
+            space = Space.objects.create(
+                name=space_data.get("name"),
+                building=building,
+                capacity=space_data.get("capacity"),
+                general_info=space_data.get("general_info"),
+                schedule=space_data.get("schedule"),
+                image=space_data.get("image")
+            )
+
+            feature_ids = space_data.get("features", [])
+
+            for feature_id in feature_ids:
+                try:
+                    equipment = Equipment.objects.get(id=feature_id)
+                    space.features.add(equipment)
+                except Equipment.DoesNotExist:
+                    print(f"Warning: Equipment with ID '{feature_id}' not found.")
 
 @receiver(post_migrate)
-def load_building_data_after_migrate(sender, **kwargs):
+def load_data_after_migrate(sender, **kwargs):
     if sender.name == "reserve":
-        load_building_data()
-
+        load_data()
 
 class Space(models.Model):
     name = models.CharField(max_length=250)
@@ -111,12 +146,7 @@ class Space(models.Model):
     general_info = models.TextField(null=False)
     schedule = models.TextField(null=False)
     image = models.ImageField(blank=True, null=True)
-
-class Equipment(models.Model):
-    name = models.CharField(max_length=250)
-    description = models.TextField(null=False)
-    image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
-
+    features = models.ManyToManyField(Equipment, blank=True )
 
 class SeatStatus(Enum):
     FREE = 0
@@ -128,7 +158,7 @@ class Space_item(models.Model):
     space_id = models.ForeignKey(Space, on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
     image = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
-    equipment_id = models.ManyToManyField(Equipment, blank=True)
+    # equipment_id = models.ManyToManyField(Equipment, blank=True)
     seat_status = models.IntegerField(
         default=0, choices=[(status.value, status.name) for status in SeatStatus]
     )
@@ -152,7 +182,6 @@ class Booking(models.Model):
 
 
     def clean(self):
-        # Determinar el campus, edificio y espacio basado en el escritorio seleccionado
         if self.desk_id:
             desk = Desk.objects.select_related('space_id__building__campus').get(pk=self.desk_id)
             self.space = desk.space_id

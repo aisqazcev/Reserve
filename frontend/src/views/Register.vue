@@ -1,14 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="shape shape-style-1 color">
     </div>
     <div class="container pt-lg-md">
       <div class="row justify-content-center">
@@ -76,7 +68,7 @@
                     :disabled="!isValidForm || loading"
                     type="primary"
                     class="my-4"
-                    @click="register"
+                    @click="send_confirmation"
                   >
                     {{ loading ? "Creando..." : "Crear Usuario" }}
                   </base-button>
@@ -112,6 +104,7 @@ import axios from "axios";
 import { backendUrl } from "../main.js";
 import { VBTooltip } from "bootstrap-vue/esm/directives/tooltip/tooltip";
 import { VBPopover } from "bootstrap-vue/esm/directives/popover/popover";
+import router from '../router.js';
 
 axios.defaults.xsrfCookieName = "csrftoken";
 axios.defaults.xsrfHeaderName = "X-CSRFToken";
@@ -151,37 +144,20 @@ export default {
     },
   },
   methods: {
-    async register() {
-      this.errors = [];
-      this.loading = true;
-      this.errorMessage = "";
-      this.successMessage = "";
-
-      if (!this.isValidForm) {
-        this.errorMessage =
-          "Por favor, complete todos los campos correctamente.";
-        this.loading = false;
-        return;
-      }
-
+    async send_confirmation() {
       try {
-        const response = await axios.post(`${backendUrl}register/`, this.form);
-        if (response.data.detail === "Usuario registrado exitosamente") {
-          console.log("User created:", response.data);
-          this.successMessage = "Usuario creado correctamente.";
-          setTimeout(() => {
-            this.$router.push("/");
-          }, 2000);
+        const response = await axios.post(`${backendUrl}enviar_correo/`, { email: this.form.email });
+        if (response.status === 200) {
+          this.successMessage = "Correo de confirmación enviado con éxito.";
+          localStorage.setItem('formData', JSON.stringify(this.form));
+          this.$router.push({ name: 'confirm_register' });
         } else {
-          this.errorMessage =
-            "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
+          console.error('Respuesta inesperada:', response);
+          this.errorMessage = "Error al enviar el correo de confirmación.";
         }
       } catch (error) {
-        this.errorMessage =
-          "Ha ocurrido un error. Por favor, inténtelo de nuevo.";
-        console.error("Register error:", error);
-      } finally {
-        this.loading = false;
+        this.errorMessage = "Ha ocurrido un error al enviar el correo de confirmación.";
+        console.error("Confirmation email error:", error);
       }
     },
 

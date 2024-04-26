@@ -1,5 +1,14 @@
+import random
+import secrets
+import json
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.cache import cache
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import authentication_classes
@@ -9,12 +18,11 @@ from rest_framework import status
 from django.contrib.auth import logout
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
-from django.http import JsonResponse
 from datetime import datetime, timedelta
-from django.utils import timezone
+from django.contrib.auth.hashers import make_password
+
 
 
 
@@ -82,7 +90,52 @@ class LoginView(ObtainAuthToken):
         return Response(
             {"detail": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
         )
+    
+@csrf_exempt
+def change_pass_email(request, *args, **kwargs):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        email = data.get('email', '')
+        username = CustomUser.objects.get(email=email).username
+        user = CustomUser.objects.get(email=email)
+        new_password = data.get('new_password', '')
+        confirm_new_password = data.get('confirm_new_password', '')
 
+        if new_password != confirm_new_password:
+            return JsonResponse({"detail": "Las nuevas contraseñas no coinciden."}, status=400)
+        
+        else: 
+            hashed_password = make_password(new_password)
+            user.password = hashed_password
+            user.save()
+            return JsonResponse({"detail": "Contraseña cambiada exitosamente."}, status=200)
+        
+    except CustomUser.DoesNotExist:
+        return JsonResponse({"detail": "Usuario no encontrado."}, status=404)
+    except Exception as e:
+        return JsonResponse({"detail": str(e)}, status=500)
+    
+@csrf_exempt
+def send_recovery_email(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        recipient_email = data.get('email', '')
+        
+        if CustomUser.objects.filter(email=recipient_email).exists():
+            subject = 'Restauración de contraseña'
+            verification_code = secrets.token_hex(4)
+            message = f'¡Hola! Entra en este enlace para recuperar tu contraseña: {verification_code}. Por favor, no responda este correo.'
+            from_email = 'seateasy8@gmail.com'
+
+            cache.set(f'verification_code_{recipient_email}', verification_code, timeout=600)
+            
+            send_mail(subject, message, from_email, [recipient_email])
+
+            return JsonResponse({'message': 'Correo enviado con éxito.', 'verification_code':cache.get(f'verification_code_{recipient_email}')})
+        else:
+            return JsonResponse({'error': 'El correo electrónico no está asociado a ningún usuario registrado.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @authentication_classes([TokenAuthentication])
 class LogoutView(APIView):
@@ -101,8 +154,6 @@ class LogoutView(APIView):
             return Response(
                 {"detail": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST
             )
-
-
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CustomUserSerializer(data=request.data)
@@ -115,6 +166,42 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
+def enviar_correo_vista(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        recipient_email = data.get('email', '')
+        subject = 'Verificación del registro'
+        verification_code = secrets.token_hex(4)
+        message = f'¡Hola! Este es tu código de verificación para confirmar el registro: {verification_code}. Por favor, no responda este correo.'
+        from_email = 'seateasy8@gmail.com'
+
+        cache.set(f'verification_code_{recipient_email}', verification_code, timeout=600)
+
+        send_mail(subject, message, from_email, [recipient_email])
+
+        return JsonResponse({'message': 'Correo enviado con éxito.'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+def verificar_codigo(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        recipient_email = data.get('email', '')
+        verification_code = data.get('verificationCode', '')
+
+        verification_code_cached = cache.get(f'verification_code_{recipient_email}')
+       
+        if verification_code == verification_code_cached:
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': 'Código de verificación inválido'})
+
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'valid': False, 'error': 'Usuario no encontrado'})
+    except Exception as e:
+        return JsonResponse({'valid': False, 'error': str(e)}, status=500)
 @authentication_classes([TokenAuthentication])
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -161,6 +248,7 @@ class PasswordChangeView(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SpaceManagementView(APIView):
@@ -492,6 +580,7 @@ def find_available_spaces(request):
         start_time_str = request.GET.get('start_time')
         duration_str = request.GET.get('duration')
         building_id = request.GET.get('building_id')
+        campus_id = request.GET.get('campus_id')
 
         if not start_time_str or not duration_str:
             return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
@@ -507,10 +596,13 @@ def find_available_spaces(request):
                 start_time__lt=end_time, 
                 end_time__gt=start_time,                
             )
-            all_spaces = Space.objects.filter(
-                building_id=request.GET.get('building_id'))
+            all_spaces = Space.objects.all()
+            if campus_id:
+                all_spaces = all_spaces.filter(building__campus_id=campus_id)
 
-            
+            if building_id:
+                all_spaces = all_spaces.filter(building_id=building_id)
+
             available_spaces = []
             for space in all_spaces:
                 available_desks = [desk.id for desk in space.space_item_set.filter(seat_status=0)]
@@ -525,3 +617,14 @@ def find_available_spaces(request):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+        
+def get_random_images(request):
+    try:
+        espacios_aleatorios = random.sample(list(Space.objects.all()), 3)
+        urls_imagenes = [f"{settings.MEDIA_URL}{espacio.image}" if espacio.image else None for espacio in espacios_aleatorios]
+       
+        return JsonResponse({'urls_imagenes': urls_imagenes})
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+    

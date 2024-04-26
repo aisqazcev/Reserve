@@ -33,7 +33,7 @@
     position: relative;
 
     .stars-and-coded{
-        margin-top: 8rem;
+        margin-top: 5rem;
     }
     
     .shape {
@@ -76,7 +76,7 @@
         transform-origin: 0;
 
         span {
-            transform: skew(8deg);
+            transform: skew(3deg);
         }
     }
 
@@ -307,6 +307,8 @@
 
     // Styles - works with a color variation class (e.g shapes-default)
     .shape-style-2 {
+        background: white;
+
         span {
             height: 190px;
         }
@@ -316,12 +318,14 @@
         }
 
          :nth-child(1) {
+            background-color: #fcfcfc; 
             width: 33.33333%;
             top: 0;
             left: -16.66666%;
         }
 
          :nth-child(2) {
+            background-color: #fcfcfc; 
             width: 33.33333%;
             top: 0;
             left: 16.66666%;
@@ -329,18 +333,22 @@
         }
 
          :nth-child(3) {
+            background-color: #f7f7f765; 
             width: 33.33333%;
             left: 49.99999%;
             bottom: auto;
         }
 
          :nth-child(4) {
+            background-color: #f7f7f7; 
             width: 33.33333%;
             top: 55%;
             right: -16.66666%;
         }
 
          :nth-child(5) {
+            background-color: #fdfdfd; 
+
             width: 33.33333%;
             bottom: 0;
         }
@@ -359,6 +367,7 @@
     }
 
     .shape-style-3 {
+        background: white;
         span {
             height: 140px;
         }
@@ -368,12 +377,16 @@
         }
 
         :nth-child(1) {
+            background-color: #ffffff; 
+
             width: 66%;
             left: -16.66666%;
             bottom: auto;
         }
 
         :nth-child(2) {
+            background-color: #f0f0f0c1; 
+
             width: 40%;
             top: 54%;
             //height: 320px;
@@ -381,6 +394,8 @@
         }
 
         :nth-child(3) {
+            background-color: #fcfcfcdb; 
+
             width: 33.33333%;
             top: 34%;
             left: -16.66666%;
@@ -388,6 +403,8 @@
         }
 
         :nth-child(4) {
+            background-color: hsl(0, 0%, 92%); 
+
             width: 60%;
             bottom: 0;
             right: -16.66666%;
@@ -395,6 +412,8 @@
         }
 
         :nth-child(5) {
+            background-color: #f4f4f4; 
+
             width: 33.33333%;
             bottom: 0;
         }
@@ -484,9 +503,9 @@
 
 // Profile cover
 .section-profile-cover {
+    
     height: 580px;
-    background-size: cover;
-    background-position: center center;
+
 }
 
 @include media-breakpoint-down(md) {
