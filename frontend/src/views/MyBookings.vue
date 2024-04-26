@@ -32,6 +32,16 @@
         >
           Próximas
         </button>
+        <i
+          class="fas fa-info-circle"
+          size="sm"
+          type="default"
+          v-b-popover.hover.left="
+            'Se recuerda la importancia del correcto aprovechamiento de las salas. Por favor, si no puedes acudir a tu reserva, recuerda cancelar con al menos 4 horas de antelación.'
+          "
+          title="Información sobre la reserva"
+        >
+        </i>
       </div>
       <div
         v-if="errorMessage"
@@ -122,6 +132,8 @@
 import axios from "axios";
 import { backendUrl } from "../main.js";
 import Pagination from "vue-pagination-2";
+import { VBTooltip } from "bootstrap-vue/esm/directives/tooltip/tooltip";
+import { VBPopover } from "bootstrap-vue/esm/directives/popover/popover";
 
 export default {
   components: {
@@ -145,6 +157,10 @@ export default {
       this.sortBookingsByDate();
       this.filterFutureBookings();
     });
+  },
+  directives: {
+    BTooltip: VBTooltip,
+    BPopover: VBPopover,
   },
   computed: {
     displayedBookings() {
