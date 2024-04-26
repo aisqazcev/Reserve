@@ -12,6 +12,8 @@ import Bookings from "./views/MyBookings.vue";
 import Desk from "./views/SpaceList.vue";
 import Buildings from "./views/Buildings.vue";
 import ConfirmRegistration from "./views/ConfirmRegister.vue";
+import ForgetPass from "./views/ForgetPass.vue";
+import ConfirmPass from "./views/ConfirmPass.vue";
 
 Vue.use(Router);
 
@@ -109,6 +111,16 @@ const router = new Router({
       name: "confirm_register",
       component: ConfirmRegistration,
       footer: AppFooter,
+    },
+    {
+      path: "/forget_pass",
+      name: "forget_pass",
+      component: ForgetPass,
+    },
+    {
+      path: "/confirm_pass",
+      name: "confirm_pass",
+      component: ConfirmPass,
     },
   ],
   scrollBehavior: to => {

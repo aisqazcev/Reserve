@@ -67,7 +67,7 @@
           </card>
           <div class="row mt-3">
             <div class="col-6">
-              <router-link to="#" class="text-light">
+              <router-link to="/forget_pass" class="text-light">
                 <small>¿Olvidaste tu contraseña?</small>
               </router-link>
             </div>
@@ -103,6 +103,18 @@ export default {
   mounted() {
     this.checkRememberedUser();
   },
+  watch: {
+    'form.remember': function(newVal) {
+      if (!newVal) {
+        this.clearRememberedUser();
+      }
+    },
+    'form.usernameOrEmail': function(newVal) {
+      if(!newVal){
+        this.form.password = "";
+      }
+    }
+  },
   methods: {
     checkRememberedUser() {
       const rememberedUser = localStorage.getItem("rememberedUser");
@@ -112,6 +124,12 @@ export default {
         this.form.password = JSON.parse(rememberedPassword);
         this.form.remember = true;
       }
+    },
+    clearRememberedUser() {
+      localStorage.removeItem("rememberedUser");
+      localStorage.removeItem("rememberedPassword");
+      this.form.usernameOrEmail = "";
+      this.form.password = "";
     },
     async handleSubmit() {
       if (!this.form.usernameOrEmail || !this.form.password) {
