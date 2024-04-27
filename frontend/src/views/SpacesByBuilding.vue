@@ -31,50 +31,48 @@
           </div>
           <div class="col-md-7">
             <div class="card-body-1">
-              <h3 class="card-title">
-                Información y contacto
-              </h3>
+              <h3 class="card-title">Información y contacto</h3>
 
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <i
                   class="ni ni-square-pin mr-2"
-                  style="font-size: 24px; color:#be0f2e;"
+                  style="font-size: 24px; color: #be0f2e"
                 ></i>
                 {{ building.address }}
               </div>
 
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <i
                   class="ni ni-world-2 mr-2"
-                  style="font-size: 24px; color:#be0f2e"
+                  style="font-size: 24px; color: #be0f2e"
                 ></i>
                 {{ building.web }}
               </div>
 
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <i
                   class="ni ni-email-83 mr-2"
-                  style="font-size: 24px; color:#be0f2e;"
+                  style="font-size: 24px; color: #be0f2e"
                 ></i>
                 {{ building.email }}
               </div>
 
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <i
-                  class="ni ni-mobile-button mr-2 "
-                  style="font-size: 24px; color:#be0f2e;"
+                  class="ni ni-mobile-button mr-2"
+                  style="font-size: 24px; color: #be0f2e"
                 ></i>
                 {{ building.phone }}
               </div>
@@ -95,7 +93,7 @@
                 class="col-lg-4 col-md-6 mb-4"
               >
                 <card class="border-0" hover shadow body-classes="py-5">
-                  <div class="square-frame">
+                  <div class="square-frame mb-3">
                     <img
                       :src="
                         space.image
@@ -109,16 +107,19 @@
 
                   <h5 :class="space.name">{{ space.name }}</h5>
                   <div class="d-flex align-items-center icon-container">
-                    <equipment :equipments="space.features" :show-equipment-names="false"></equipment>
+                    <equipment
+                      :equipments="space.features"
+                      :show-equipment-names="false"
+                    ></equipment>
                   </div>
                   <div class="progress-label mt-4">
                     <span
-                      >Ocupación actual
+                      >Reservas ocupadas:
                       <strong>{{ space.occupation }}%</strong></span
                     >
                   </div>
 
-                  <div class="progress mt-4" style="height: 8px;">
+                  <div class="progress mt-4" style="height: 8px">
                     <div
                       role="progressbar"
                       aria-valuenow="occupation"
@@ -247,14 +248,17 @@ export default {
 </script>
 <style>
 .square-frame {
-  width: 150px;
-  height: 150px;
+  width: 100%; 
+  max-width: 300px; 
+  height: auto; 
   overflow: hidden;
-  position: relative;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
 }
 
 .square-frame img {
-  width: 100%;
+  max-width: 100%; 
   height: auto;
 }
 
@@ -262,11 +266,11 @@ export default {
   border-radius: 5px;
 }
 .icon-container {
-  height: 50px; 
+  height: 50px;
 }
 
 .icon-container equipment {
-  width: 50px; 
+  width: 50px;
   height: 50px;
   margin-right: 10px;
 }

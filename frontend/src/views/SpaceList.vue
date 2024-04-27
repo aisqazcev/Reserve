@@ -217,7 +217,7 @@ export default {
       this.reservationStartTime = routeQuery.time;
       document.getElementById("start_time").value = routeQuery.time;
 
-      document.getElementById("duration").value = routeQuery.duration;
+      this.duration= routeQuery.duration;
 
       this.searchDisponibility();
     }
@@ -464,17 +464,7 @@ export default {
 .table-container table {
   background-color: transparent;
 }
-.square-frame {
-  width: 150px;
-  height: 150px;
-  overflow: hidden;
-  position: relative;
-}
 
-.square-frame img {
-  width: 100%;
-  height: auto;
-}
 
 .rounded-square {
   border-radius: 5px;
