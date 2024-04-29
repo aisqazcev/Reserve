@@ -27,6 +27,10 @@
         <router-link to="/bookings" class="nav-link">
           <span class="nav-link-inner--text">Mis reservas</span>
         </router-link>
+
+        <router-link to="/incidences" class="nav-link">
+          <span class="nav-link-inner--text">Incidencias</span>
+        </router-link>
       </ul>
       <ul class="navbar-nav align-items-lg-center ml-lg-auto"></ul>
       <button class="btn btn-neutral" @click="perfil">

@@ -627,4 +627,24 @@ def get_random_images(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def send_incidence(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        subject = data.get('subject')
+        message = data.get('message')
+        equipment = data.get('equipment')
+
+        sender_email = 'seateasy8@gmail.com'  
+        receiver_email = 'cokecola7777@gmail.com'
+        message = f'El equipamiento afectado es: {equipment}\n\n{message}'  
+
+        send_mail(subject, message, sender_email, [receiver_email])
+        return JsonResponse({'success': True, 'message': 'Correo electrónico enviado con éxito.'})
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
+
     
