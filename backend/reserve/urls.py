@@ -7,7 +7,7 @@ app_name="reserve"
 
 urlpatterns = [
     path('bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
-    path('space/', SpaceItemListView.as_view()),
+    path('spaces/', SpaceManagementView.as_view()),
     path('spaces/<int:space_id>/', SpaceShowView.as_view()),
     path('room/', RoomListView.as_view()),
     path('room/<int:room_id>/', RoomShowView.as_view()),
