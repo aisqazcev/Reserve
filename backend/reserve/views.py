@@ -647,12 +647,16 @@ def send_incidence(request):
         campus_name = get_object_or_404(Campus, id=campus).campus_name
         building_name = get_object_or_404(Building, id=building).name_complete
         space_name = get_object_or_404(Space, id=space).name
-        desk_name = get_object_or_404(Desk, id=desk).name
 
+        if(desk != None):
+            desk_name = get_object_or_404(Desk, id=desk).name
+            message = f'Ha ocurrido un problema en: {campus_name}, {building_name}, {space_name}, asiento: {desk_name} \n\nEl equipamiento afectado es: {equipment_name}\n\nDescripción del problema: {message}'  
+        else: 
+          message = f'Ha ocurrido un problema en: {campus_name}, {building_name}, {space_name}\n\nEl equipamiento afectado es: {equipment_name}\n\nDescripción del problema: {message}'  
+  
         sender_email = 'seateasy8@gmail.com'  
         receiver_email = 'olivasanchez14@hotmail.com'
-        message = f'Ha ocurrido un problema en: {campus_name}, {building_name}, {space_name}, asiento: {desk_name}\n\nEl equipamiento afectado es: {equipment_name}\n\n{message}'  
-
+        
         send_mail(subject, message, sender_email, [receiver_email])
         return JsonResponse({'success': True, 'message': 'Correo electrónico enviado con éxito.'})
     return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)

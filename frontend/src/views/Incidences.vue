@@ -42,7 +42,7 @@
                     class="form-control"
                     id="campusType"
                   >
-                    <option :value="null">Cualquiera</option>
+                    <option :value="null">Seleccionar campus</option>
                     <option
                       v-for="campus in campuses"
                       :key="campus.id"
@@ -60,7 +60,7 @@
                     class="form-control"
                     id="buildingType"
                   >
-                    <option :value="null">Cualquiera</option>
+                    <option :value="null">Seleccionar edificio</option>
                     <option
                       v-for="building in filteredBuildings"
                       :key="building.id"
@@ -72,11 +72,11 @@
                 <div class="form-group">
                   <label for="spaceType" style="color: black">Sala</label>
                   <select
-                    v-model="selectedSpaces"
+                    v-model="selectedSpace"
                     class="form-control"
                     id="spaceType"
                   >
-                    <option :value="null">Cualquiera</option>
+                    <option :value="null">Seleccionar sala</option>
                     <option
                       v-for="space in filteredSpaces"
                       :key="space.id"
@@ -88,12 +88,12 @@
                 <div class="form-group">
                   <label for="deskType" style="color: black">Asiento</label>
                   <select
-                    v-model="selectedDesks"
+                    v-model="selectedDesk"
                     class="form-control"
                     id="deskType"
-                    :disabled="!selectedSpaces"
+                    :disabled="!selectedSpace"
                   >
-                    <option :value="null">Cualquiera</option>
+                    <option :value="null">Seleccionar asiento</option>
                     <option
                       v-for="desk in filteredDesks"
                       :key="desk.id"
@@ -174,8 +174,8 @@ export default {
       equipmentList: [],
       selectedCampus: null,
       selectedBuilding: null,
-      selectedSpaces: null,
-      selectedDesks: null,
+      selectedSpace: null,
+      selectedDesk: null,
       campuses: [],
       buildings: [],
       spaces: [],
@@ -200,14 +200,16 @@ export default {
       return this.spaces;
     },
     filteredDesks() {
-      if (this.selectedSpaces) {
-        return this.desks.filter((desk) => desk.space_id === this.selectedSpaces);
+      if (this.selectedSpace) {
+        return this.desks.filter(
+          (desk) => desk.space_id === this.selectedSpace
+        );
       }
       return this.desks;
     },
   },
   watch: {
-    selectedSpaces(newVal, oldVal) {
+    selectedSpace(newVal, oldVal) {
       if (newVal !== null) {
         this.loadDesks();
       }
@@ -276,7 +278,7 @@ export default {
     async loadDesks() {
       try {
         const response = await axios.get(
-          `${backendUrl}${this.selectedSpaces}/desk/`
+          `${backendUrl}${this.selectedSpace}/desk/`
         );
         this.desks = response.data;
         console.log("Desks: ", this.desks);
@@ -289,12 +291,13 @@ export default {
       if (
         !this.formData.title ||
         !this.formData.description ||
-        !this.formData.equipment 
-        // !this.formData.campus ||
-        // !this.formData.building ||
-        // !this.formData.space
+        !this.formData.equipment ||
+        !this.selectedCampus ||
+        !this.selectedBuilding ||
+        !this.selectedSpace
       ) {
-        this.errorMessage = "Es necesario completar todos los campos excepto el Asiento.";
+        this.errorMessage =
+          "Es necesario completar todos los campos excepto el Asiento.";
         return;
       }
       const subject = this.formData.title;
@@ -302,20 +305,35 @@ export default {
       const equipment = this.formData.equipment;
       const campus = this.selectedCampus;
       const building = this.selectedBuilding;
-      const space = this.selectedSpaces;
-      const desk = this.selectedDesks;
+      const space = this.selectedSpace;
+      const desk = this.selectedDesk;
+      const token = localStorage.getItem("token");
       axios
-        .post(`${backendUrl}send_incidence/`, {
-          subject: subject,
-          message: message,
-          equipment: equipment,
-          campus: campus,
-          building: building,
-          space: space,
-          desk: desk,
-        })
+        .post(
+          `${backendUrl}send_incidence/`,
+          {
+            subject: subject,
+            message: message,
+            equipment: equipment,
+            campus: campus,
+            building: building,
+            space: space,
+            desk: desk,
+          },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          }
+        )
         .then((response) => {
-          console.log("Correo electrónico enviado con éxito:", response.data);
+          this.formData.title = "";
+          this.formData.description = "";
+          this.formData.equipment = "";
+          this.selectedCampus = null;
+          this.selectedBuilding = null;
+          this.selectedSpaces = null;
+          this.selectedDesks = null;
         })
         .catch((error) => {
           console.error("Error al enviar el correo electrónico:", error);
@@ -324,7 +342,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* Aquí puedes agregar estilos específicos para esta plantilla si es necesario */
-</style>
