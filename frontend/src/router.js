@@ -14,6 +14,7 @@ import Buildings from "./views/Buildings.vue";
 import ConfirmRegistration from "./views/ConfirmRegister.vue";
 import ForgetPass from "./views/ForgetPass.vue";
 import ConfirmPass from "./views/ConfirmPass.vue";
+import Incidences from "./views/Incidences.vue";
 
 Vue.use(Router);
 
@@ -103,6 +104,16 @@ const router = new Router({
         header: AppHeader,
         default: Desk,
         footer: AppFooter,
+      },
+      meta: { requiresAuth: true }
+    },
+    {
+      path: "/incidences",
+      name: "Incidences",
+      components: {
+        header: AppHeader,
+        default: Incidences,
+        footer: AppFooter
       },
       meta: { requiresAuth: true }
     },

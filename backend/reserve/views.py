@@ -627,4 +627,38 @@ def get_random_images(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def send_incidence(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        subject = data.get('subject')
+        message = data.get('message')
+        equipment = data.get('equipment')
+        campus = data.get('campus')
+        building = data.get('building')
+        space = data.get('space')
+        desk = data.get('desk')
+
+        equipment_name = get_object_or_404(Equipment, id=equipment).name
+        campus_name = get_object_or_404(Campus, id=campus).campus_name
+        building_name = get_object_or_404(Building, id=building).name_complete
+        space_name = get_object_or_404(Space, id=space).name
+
+        if(desk != None):
+            desk_name = get_object_or_404(Desk, id=desk).name
+            message = f'Ha ocurrido un problema en: {campus_name}, {building_name}, {space_name}, asiento: {desk_name} \n\nEl equipamiento afectado es: {equipment_name}\n\nDescripción del problema: {message}'  
+        else: 
+          message = f'Ha ocurrido un problema en: {campus_name}, {building_name}, {space_name}\n\nEl equipamiento afectado es: {equipment_name}\n\nDescripción del problema: {message}'  
+  
+        sender_email = 'seateasy8@gmail.com'  
+        receiver_email = 'olivasanchez14@hotmail.com'
+        
+        send_mail(subject, message, sender_email, [receiver_email])
+        return JsonResponse({'success': True, 'message': 'Correo electrónico enviado con éxito.'})
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
+
     

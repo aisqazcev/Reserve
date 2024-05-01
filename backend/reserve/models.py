@@ -146,7 +146,7 @@ class Space(models.Model):
     general_info = models.TextField(null=False)
     schedule = models.TextField(null=False)
     image = models.ImageField(blank=True, null=True)
-    features = models.ManyToManyField(Equipment, blank=True )
+    features = models.ManyToManyField(Equipment, blank=True)
 
 class SeatStatus(Enum):
     FREE = 0
