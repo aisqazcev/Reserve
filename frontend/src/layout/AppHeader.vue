@@ -34,7 +34,7 @@
           <span
             class="nav-link-inner--text"
             @click.prevent="showLogoutConfirmationCard = true"
-            >Logout</span
+            >Cerrar sesión</span
           >
         </router-link>
 
