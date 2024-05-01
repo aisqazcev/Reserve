@@ -307,7 +307,6 @@ export default {
       const building = this.selectedBuilding;
       const space = this.selectedSpace;
       const desk = this.selectedDesk;
-      const token = localStorage.getItem("token");
       axios
         .post(
           `${backendUrl}send_incidence/`,
@@ -319,11 +318,6 @@ export default {
             building: building,
             space: space,
             desk: desk,
-          },
-          {
-            headers: {
-              Authorization: `Token ${token}`,
-            },
           }
         )
         .then((response) => {
@@ -332,8 +326,8 @@ export default {
           this.formData.equipment = "";
           this.selectedCampus = null;
           this.selectedBuilding = null;
-          this.selectedSpaces = null;
-          this.selectedDesks = null;
+          this.selectedSpace = null;
+          this.selectedDesk = null;
         })
         .catch((error) => {
           console.error("Error al enviar el correo electrónico:", error);
