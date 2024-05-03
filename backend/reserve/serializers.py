@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from .models import (
     Booking,
@@ -70,10 +71,23 @@ class RoomSerializer(serializers.ModelSerializer):
 
 
 class DeskSerializer(serializers.ModelSerializer):
+    nearby_desks_names = serializers.SerializerMethodField()
+
     class Meta:
         model = Desk
+        fields = ['id', 'name', 'space_id', 'seat_status', 'nearby_desks_names', 'image']
 
-        fields = '__all__'
+    def get_nearby_desks_names(self, obj):
+        nearby_desks = obj.nearby_pl.all()
+        formatted_names = []
+        for desk in nearby_desks:
+            numbers = re.findall(r'\d+', desk.name)
+            if numbers:
+                desk_number = numbers[-1]
+                first_letter = desk.name[0].upper()
+                formatted_names.append(f"{first_letter}{desk_number}")
+        return formatted_names
+    
 class CampusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campus

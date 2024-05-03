@@ -1,7 +1,7 @@
 <template>
   <section class="section-shaped section-lg my-0 d-flex justify-content-center">
     <div class="shape shape-style-3 shape-default">
-      <span style="visibility: hidden;"></span>
+      <span style="visibility: hidden"></span>
       <span></span>
       <span></span>
       <span></span>
@@ -10,7 +10,8 @@
       <h1 class="mb-4">
         <span class="icon-arrow-left" @click="goBack"></span>
         {{ building.name_complete }}
-        <i class="ni ni-bold-right" style="font-size: 24px; color:#303030 ;"> </i>
+        <i class="ni ni-bold-right" style="font-size: 24px; color: #303030">
+        </i>
         {{ spaceDetails.name }}
       </h1>
       <card class="mb-3">
@@ -28,23 +29,21 @@
           </div>
           <div class="col-md-7">
             <div class="card-body-1">
-              <h3 class="card-title">
-                Detalles del Espacio
-              </h3>
+              <h3 class="card-title">Detalles del Espacio</h3>
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <i
                   class="ni ni-chart-bar-32 mr-2"
-                  style="font-size: 24px; color:#be0f2e;"
+                  style="font-size: 24px; color: #be0f2e"
                 >
                 </i>
-                Capacidad: {{ spaceDetails.capacity }} 
+                Capacidad: {{ spaceDetails.capacity }}
               </div>
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <div v-if="spaceDetails && spaceDetails.features">
                   Equipamiento:
@@ -53,11 +52,11 @@
               </div>
               <div
                 class="d-flex align-items-center"
-                style="margin-bottom: 20px;"
+                style="margin-bottom: 20px"
               >
                 <i
                   class="fas fa-info-circle mr-2"
-                  style="font-size: 24px; color:#be0f2e;"
+                  style="font-size: 24px; color: #be0f2e"
                 ></i>
                 <td>{{ spaceDetails.general_info }}</td>
               </div>
@@ -71,13 +70,23 @@
             <div class="col-md-4 mb-3">
               <div class="form-group">
                 <label for="fecha">Fecha:</label>
-                <input type="date" id="date" v-model="reservationDate" class="form-control" />
+                <input
+                  type="date"
+                  id="date"
+                  v-model="reservationDate"
+                  class="form-control"
+                />
               </div>
             </div>
             <div class="col-md-4 mb-3">
               <div class="form-group">
                 <label for="horaInicio">Hora de inicio:</label>
-                <input type="time" id="start_time" v-model="reservationStartTime" class="form-control" />
+                <input
+                  type="time"
+                  id="start_time"
+                  v-model="reservationStartTime"
+                  class="form-control"
+                />
               </div>
             </div>
             <div class="col-md-4 mb-3">
@@ -141,15 +150,17 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>id</th>
                   <th>Nombre</th>
+                  <th>Asientos cercanos</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(item, index) in spacesItems" :key="index">
-                  <td data-label="Id">{{ item.id }}</td>
                   <td data-label="Nombre">{{ item.name }}</td>
+                  <td data-label="Asientos cercanos">
+                    {{ formatDeskNames(item.nearby_desks_names) }}
+                  </td>
                   <td data-label="Acciones">
                     <button
                       class="btn btn-primary"
@@ -182,8 +193,8 @@ export default {
     const currentDate = now.toISOString().substring(0, 10);
     now.setMinutes(0, 0, 0);
     now.setHours(now.getHours() + 1);
-    let hours = now.getHours().toString().padStart(2, '0');
-    let minutes = now.getMinutes().toString().padStart(2, '0');
+    let hours = now.getHours().toString().padStart(2, "0");
+    let minutes = now.getMinutes().toString().padStart(2, "0");
     const nextHour = `${hours}:${minutes}`;
 
     return {
@@ -217,12 +228,15 @@ export default {
       this.reservationStartTime = routeQuery.time;
       document.getElementById("start_time").value = routeQuery.time;
 
-      document.getElementById("duration").value = routeQuery.duration;
+      this.duration = routeQuery.duration;
 
       this.searchDisponibility();
     }
   },
   methods: {
+    formatDeskNames(deskNames) {
+      return deskNames.join(", ");
+    },
     goBack() {
       this.$router.go(-1);
     },
@@ -464,27 +478,16 @@ export default {
 .table-container table {
   background-color: transparent;
 }
-.square-frame {
-  width: 150px;
-  height: 150px;
-  overflow: hidden;
-  position: relative;
-}
-
-.square-frame img {
-  width: 100%;
-  height: auto;
-}
 
 .rounded-square {
   border-radius: 5px;
 }
 
 .icon-arrow-left {
-  color: #be0f2e; 
-} 
+  color: #be0f2e;
+}
 
 .icon-arrow-left:hover {
-  color: #0f1af2; 
+  color: #0f1af2;
 }
 </style>

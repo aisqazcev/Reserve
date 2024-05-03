@@ -77,14 +77,14 @@ class Building(models.Model):
 
 def load_data():
     json_file_path = os.path.join(settings.BASE_DIR, "reserve", "data.json")
-
     with open(json_file_path, "r", encoding="utf-8") as json_file:
         data = json.load(json_file)
         buildings_data = data.get("buildings", [])
-        equipments_data = data.get("equipments", [])  # Agregar carga de equipos
+        equipments_data = data.get("equipments", [])
         spaces_data = data.get("spaces", [])
+        desks_data = data.get("desks", [])
 
-        for equipment_data in equipments_data:  # Iterar sobre los datos de los equipos
+        for equipment_data in equipments_data:
             Equipment.objects.get_or_create(
                 id=equipment_data.get("id"),
                 name=equipment_data.get("name")
@@ -92,52 +92,69 @@ def load_data():
 
         for building_data in buildings_data:
             campus_name = building_data.get("campus", "")
-
             unique_campus, _ = Campus.objects.get_or_create(campus_name=campus_name)
 
-            existing_building = Building.objects.filter(
-                name=building_data.get("name")
-            ).first()
-
-            if not existing_building:
-                Building.objects.create(
-                    name=building_data.get("name", ""),
-                    name_complete=building_data.get("name_complete", ""),
-                    address=building_data.get("address", ""),
-                    web=building_data.get("web", ""),
-                    email=building_data.get("email", ""),
-                    phone=building_data.get("phone", ""),
-                    services=building_data.get("services", ""),
-                    image=building_data.get("image", ""),
-                    campus=unique_campus,
-                )
+            Building.objects.get_or_create(
+                id=building_data.get("id"),
+                defaults={
+                    'name': building_data.get("name"),
+                    'name_complete': building_data.get("name_complete"),
+                    'address': building_data.get("address"),
+                    'web': building_data.get("web"),
+                    'email': building_data.get("email"),
+                    'phone': building_data.get("phone"),
+                    'services': building_data.get("services"),
+                    'image': building_data.get("image"),
+                    'campus': unique_campus
+                }
+            )
 
         for space_data in spaces_data:
             building_id = space_data.get("building")
             building = Building.objects.get(pk=building_id)
 
-            space = Space.objects.create(
+            space, _ = Space.objects.get_or_create(
                 name=space_data.get("name"),
                 building=building,
-                capacity=space_data.get("capacity"),
-                general_info=space_data.get("general_info"),
-                schedule=space_data.get("schedule"),
-                image=space_data.get("image")
+                defaults={
+                    'capacity': space_data.get("capacity"),
+                    'general_info': space_data.get("general_info"),
+                    'schedule': space_data.get("schedule"),
+                    'image': space_data.get("image")
+                }
             )
 
             feature_ids = space_data.get("features", [])
-
             for feature_id in feature_ids:
-                try:
-                    equipment = Equipment.objects.get(id=feature_id)
-                    space.features.add(equipment)
-                except Equipment.DoesNotExist:
-                    print(f"Warning: Equipment with ID '{feature_id}' not found.")
+                equipment = Equipment.objects.get(id=feature_id)
+                space.features.add(equipment)
+
+        desk_dict = {}
+        for desk_data in desks_data:
+            space_id = desk_data.get("space")
+            space = Space.objects.get(pk=space_id)
+
+            desk, created = Desk.objects.get_or_create(
+                id=desk_data.get("id"),
+                defaults={
+                    'name': desk_data.get("name"),
+                    'space_id': space,
+                    'seat_status': desk_data.get("seat_status"),
+                    'image': desk_data.get("image", None) 
+                }
+            )
+            desk_dict[desk.id] = desk
+
+        for desk_data in desks_data:
+            desk = desk_dict[desk_data.get("id")]
+            nearby_desks = [desk_dict[nearby_id] for nearby_id in desk_data.get("nearby_desks") if nearby_id in desk_dict]
+            desk.nearby_pl.set(nearby_desks)
 
 @receiver(post_migrate)
 def load_data_after_migrate(sender, **kwargs):
     if sender.name == "reserve":
         load_data()
+
 
 class Space(models.Model):
     name = models.CharField(max_length=250)
@@ -146,7 +163,7 @@ class Space(models.Model):
     general_info = models.TextField(null=False)
     schedule = models.TextField(null=False)
     image = models.ImageField(blank=True, null=True)
-    features = models.ManyToManyField(Equipment, blank=True )
+    features = models.ManyToManyField(Equipment, blank=True)
 
 class SeatStatus(Enum):
     FREE = 0
