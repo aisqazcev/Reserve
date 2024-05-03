@@ -1,6 +1,6 @@
 <template>
-  <section class="section-shaped my-0 d-flex ">
-    <div class="shape shape-style-3 shape-default ">
+  <section class="section-shaped section-lg my-0 d-flex justify-content-center">
+    <div class="shape shape-style-3 shape-default">
       <span></span>
       <span></span>
       <span></span>
@@ -14,7 +14,7 @@
     <div class="container mt-3">
       <div class="col px-0">
         <h1 class="mb-4">Lista de facultades</h1>
-        <p class="mb-3" style="color: azure;">Filtra por campus:</p>
+        <p class="mb-3">Filtra por campus:</p>
         <b-form-select
           v-model="selectedCampus"
           :options="campusOptions"
@@ -23,7 +23,11 @@
         ></b-form-select>
         <div class="row">
           <div class="col-md-12 mb-4">
-            <div v-for="building in filteredBuildings" :key="building.id" class="mb-4">
+            <div
+              v-for="building in filteredBuildings"
+              :key="building.id"
+              class="mb-4"
+            >
               <card class="custom-card">
                 <div class="row">
                   <div class="col-md-5">
@@ -44,11 +48,11 @@
                       </h3>
                       <div
                         class="d-flex align-items-center"
-                        style="margin-bottom: 20px;"
+                        style="margin-bottom: 20px"
                       >
                         <i
                           class="ni ni-square-pin mr-2"
-                          style="font-size: 24px; color:#be0f2e;"
+                          style="font-size: 24px; color: #be0f2e"
                         ></i>
                         {{ building.address }}
                       </div>

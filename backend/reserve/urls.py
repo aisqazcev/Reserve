@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, send_recovery_email, verificar_codigo
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, send_incidence, send_recovery_email, verificar_codigo
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -24,7 +24,7 @@ urlpatterns = [
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
     path('bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
-    path('space/', SpaceItemListView.as_view()),
+    path('spaces/', SpaceManagementView.as_view()),
     path('spaces/<int:space_id>/', SpaceShowView.as_view()),
     path('room/', RoomListView.as_view()),
     path('room/<int:room_id>/', RoomShowView.as_view()),
@@ -38,6 +38,7 @@ urlpatterns = [
 
     path('login/', LoginView.as_view(), name='login'),
     path('send_recovery/', send_recovery_email, name='send_recovery'),
+    path('send_incidence/', send_incidence, name='send_incidence'),
     path('change_pass/', change_pass_email, name='change_pass'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
