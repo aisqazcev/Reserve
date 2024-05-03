@@ -87,11 +87,47 @@
                   type="button"
                   rel="tooltip"
                   class="btn btn-default btn-icon btn-sm"
-                  data-original-title=""
-                  title=""
+                  @click="openInviteModal"
                 >
                   <i class="ni ni-circle-08 pt-1"></i>
                 </button>
+                <modal
+                  v-if="showInviteModal"
+                  :show.sync="showInviteModal"
+                  body-classes="p-0"
+                  modal-classes="modal-dialog-centered modal-sm"
+                >
+                  <card
+                    type="secondary"
+                    shadow
+                    header-classes="bg-white pb-5"
+                    body-classes="px-lg-5 py-lg-5"
+                    class="border-0"
+                  >
+                    <template>
+                      <div class="text-center text-muted mb-4">
+                        <h2>¿A quién quieres invitar?</h2>
+                      </div>
+                      <form @submit.prevent="invite">
+                        <base-input
+                          alternative
+                          class="mb-3"
+                          placeholder="Email del usuario invitado"
+                          v-model="invitedEmail"
+                          type="email"
+                        ></base-input>
+                        <div class="text-center">
+                          <base-button
+                            type="primary"
+                            class="my-4"
+                            @click="invite(item)"
+                            >Invitar</base-button
+                          >
+                        </div>
+                      </form>
+                    </template>
+                  </card>
+                </modal>
                 <button
                   type="button"
                   rel="tooltip"
@@ -138,6 +174,8 @@ export default {
       selectedOption: "future",
       filteredBookings: [],
       errorMessage: "",
+      showInviteModal: false,
+      invitedEmail: "",
     };
   },
   mounted() {
@@ -300,6 +338,47 @@ export default {
         .catch((error) => {
           console.error("Cancellation Error:", error);
         });
+    },
+    openInviteModal() {
+      this.showInviteModal = true;
+    },
+    closeInviteModal() {
+      this.showInviteModal = false;
+    },
+    search_available_nearby(){
+      
+    },
+    invite(booking) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        axios
+          .get(`${backendUrl}profile/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.userData = response.data;
+            axios
+              .post(
+                `${backendUrl}invite/`,
+                {
+                  invited_email: this.invitedEmail,
+                  user_data: this.userData,
+                  booking_data: booking,
+                },
+              )
+              .then((response) => {
+                this.showInviteModal = false;
+              })
+              .catch((error) => {
+                console.error("Error al invitar:", error);
+              });
+          })
+          .catch((error) => {
+            console.error("Error al obtener los datos:", error);
+          });
+      } else {
+        console.error("No se encontró el token de autenticación.");
+      }
     },
   },
 };

@@ -627,4 +627,52 @@ def get_random_images(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'error': 'Error interno del servidor'}, status=500)
+
+def find_nearby_seats(request):
+    if request.method == 'POST':
+        desk_id = request.data.get('desk')
+
+        try:
+            current_desk = Desk.objects.get(id=desk_id)
+            nearby_desk = current_desk.nearby_pl.values_list('id', flat=True)
+            return Response({'nearby_seat_ids': nearby_desk})
+        except Desk.DoesNotExist:
+           return Response({'error': 'El escritorio no existe'}, status=404)
+        
+def get_current_user(request):
+    if request.user.is_authenticated:
+        user_data = {
+            'username': request.user.username,
+            'email': request.user.email,
+        }
+        return JsonResponse(user_data)
+    else:
+        return JsonResponse({'error': 'Usuario no autenticado'}, status=401)
+
+@csrf_exempt  
+@authentication_classes([TokenAuthentication]) 
+def invite(request):
+        
+    try:
+        data = json.loads(request.body)
+        invited_email = data.get('email')
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            invited_email = data.get('invited_email')
+            current_user = data.get('user_data')
+            user_log = current_user.get('username')
+            reserve_data = data.get('booking_data')
+
+            if CustomUser.objects.filter(email=invited_email).exists():
+                subject = 'Ey, ¿te sientas a mi lado?'
+                message = f'¡Hola! {user_log} Le ha invitado a sentarse a su lado. Si no puede acudir recuerde cancelar la reserva.\n\nLos datos para la reserva son los siguientes: {reserve_data}\n\nPor favor, no responda este correo.'
+                from_email = 'seateasy8@gmail.com'
+                
+                send_mail(subject, message, from_email, [invited_email])
+    
+                return JsonResponse({'message': 'Correo enviado con éxito.'})
+            else:
+                return JsonResponse({'error': 'El correo electrónico no está asociado a ningún usuario registrado.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
     
