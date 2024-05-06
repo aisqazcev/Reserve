@@ -399,6 +399,7 @@ export default {
               })
               .then((response) => {
                 this.showInviteModal = false;
+                this.invitedEmail = "";
               })
               .catch((error) => {
                 console.error("Error al invitar:", error);
