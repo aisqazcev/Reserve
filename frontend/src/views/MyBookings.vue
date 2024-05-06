@@ -120,7 +120,7 @@
                           <base-button
                             type="primary"
                             class="my-4"
-                            @click="invite(item)"
+                            @click="search_available_nearby(item)"
                             >Invitar</base-button
                           >
                         </div>
@@ -345,8 +345,42 @@ export default {
     closeInviteModal() {
       this.showInviteModal = false;
     },
-    search_available_nearby(){
-      
+    search_available_nearby(booking) {
+      axios
+        .post(`${backendUrl}find_nearby_seats/`, {
+          desk: booking.desk,
+        })
+        .then((nearbyResponse) => {
+          if (nearbyResponse.data.nearby_seat_ids.length > 0) {
+            const formattedStartTime = new Date(booking.start_time).toISOString().slice(0, 19).replace('T', ' ');
+            const durationInMinutes = parseInt(booking.duration);
+            axios
+              .get(`${backendUrl}find-available-seats/`, {
+                params: {
+                  start_time: formattedStartTime,
+                  duration: durationInMinutes,
+                },
+              })
+              .then((availableResponse) => {
+                console.log(availableResponse.data.available_seats.length)
+                if (availableResponse.data.available_seats.length > 0) {
+                  const availableSeatIds = nearbyResponse.data.nearby_seat_ids;
+                  const nearbySeatsIds = nearbyResponse.data.nearby_seat_ids;
+                  let nearbySeatAvailable = false;
+                  for (const availableSeat of availableSeatIds) {
+                      if (nearbySeatsIds.includes(availableSeat)) {
+                          nearbySeatAvailable = true;
+                          this.invite(booking);
+                          break;
+                      }
+                  }
+                } 
+              });
+          }
+        })
+        .catch((error) => {
+          console.error("Error al buscar asientos cercanos:", error);
+        });
     },
     invite(booking) {
       const token = localStorage.getItem("token");
@@ -358,14 +392,11 @@ export default {
           .then((response) => {
             this.userData = response.data;
             axios
-              .post(
-                `${backendUrl}invite/`,
-                {
-                  invited_email: this.invitedEmail,
-                  user_data: this.userData,
-                  booking_data: booking,
-                },
-              )
+              .post(`${backendUrl}invite/`, {
+                invited_email: this.invitedEmail,
+                user_data: this.userData,
+                booking_data: booking,
+              })
               .then((response) => {
                 this.showInviteModal = false;
               })

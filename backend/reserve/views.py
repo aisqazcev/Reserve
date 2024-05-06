@@ -658,16 +658,19 @@ def send_incidence(request):
         return JsonResponse({'success': True, 'message': 'Correo electrónico enviado con éxito.'})
     return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
 
+@csrf_exempt  
 def find_nearby_seats(request):
-    if request.method == 'POST':
-        desk_id = request.data.get('desk')
-
-        try:
-            current_desk = Desk.objects.get(id=desk_id)
-            nearby_desk = current_desk.nearby_pl.values_list('id', flat=True)
-            return Response({'nearby_seat_ids': nearby_desk})
-        except Desk.DoesNotExist:
-           return Response({'error': 'El escritorio no existe'}, status=404)
+    try:
+        data = json.loads(request.body)
+        desk_id = data.get('desk')
+        current_desk = Desk.objects.get(pk=desk_id)
+        print(f"Desk: ", current_desk)
+        nearby_desks = current_desk.nearby_pl.all()
+        nearby_desk_ids = [desk.id for desk in nearby_desks]
+        print(f"Desk cercanos: ", nearby_desks)
+        return JsonResponse({'nearby_seat_ids': nearby_desk_ids})
+    except Exception as e:
+            return JsonResponse({'El asiento no existe': str(e)}, status=400)
 
 @csrf_exempt  
 @authentication_classes([TokenAuthentication]) 

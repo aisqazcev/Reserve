@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, invite, occupation_actual, enviar_correo_vista, send_incidence, send_recovery_email, verificar_codigo
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, find_nearby_seats, get_random_images, invite, occupation_actual, enviar_correo_vista, send_incidence, send_recovery_email, verificar_codigo
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -72,6 +72,7 @@ urlpatterns = [
     path('verify_code/', verificar_codigo, name='verify_code'),
 
     path('invite/', invite, name='invite'),
+    path('find_nearby_seats/', find_nearby_seats, name='find_nearby_seats'),
     
 ]
 
