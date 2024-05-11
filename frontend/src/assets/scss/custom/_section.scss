@@ -49,7 +49,7 @@
 
         +.container {
             position: relative;
-            padding-top: 6rem;
+            padding-top: 1rem;
             padding-bottom: 0rem;
             height: 100%;
         }
@@ -504,13 +504,13 @@
 // Profile cover
 .section-profile-cover {
     
-    height: 580px;
+    height: 480px;
 
 }
 
 @include media-breakpoint-down(md) {
     .section-profile-cover {
-        height: 400px;
+        height: 200px;
     }
 }
 
