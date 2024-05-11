@@ -209,6 +209,17 @@ export default {
     },
   },
   watch: {
+    selectedCampus(newVal, oldVal) {
+      if (newVal !== null) {
+        this.selectedBuilding = null;
+        this.selectedSpace = null;
+      }
+    },
+    selectedBuilding(newVal, oldVal) {
+      if (newVal !== null) {
+        this.selectedSpace = null;
+      }
+    },
     selectedSpace(newVal, oldVal) {
       if (newVal !== null) {
         this.loadDesks();
@@ -328,6 +339,7 @@ export default {
           this.selectedBuilding = null;
           this.selectedSpace = null;
           this.selectedDesk = null;
+          this.errorMessage = "";
         })
         .catch((error) => {
           console.error("Error al enviar el correo electrónico:", error);

@@ -234,7 +234,7 @@ export default {
 
       this.booking.forEach((booking) => {
         deskPromises.push(axios.get(`${backendUrl}desk/${booking.desk}/`));
-        spacePromises.push(axios.get(`${backendUrl}spaces/${booking.space}/`));
+        spacePromises.push(axios.get(`${backendUrl}space/${booking.space}/`));
         buildingPromises.push(
           axios.get(`${backendUrl}building/${booking.building}/`)
         );

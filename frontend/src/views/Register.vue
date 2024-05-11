@@ -146,7 +146,7 @@ export default {
   methods: {
     async send_confirmation() {
       try {
-        const response = await axios.post(`${backendUrl}enviar_correo/`, { email: this.form.email });
+        const response = await axios.post(`${backendUrl}send_email/`, { email: this.form.email });
         if (response.status === 200) {
           this.successMessage = "Correo de confirmación enviado con éxito.";
           localStorage.setItem('formData', JSON.stringify(this.form));
