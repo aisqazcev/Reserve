@@ -275,7 +275,7 @@ export default {
       const spaceId = this.$route.params.spaceId;
       if (token) {
         axios
-          .get(`${backendUrl}spaces/${spaceId}/`, {
+          .get(`${backendUrl}space/${spaceId}/`, {
             headers: { Authorization: `Token ${token}` },
           })
           .then((response) => {
@@ -377,54 +377,40 @@ export default {
 
     bookingDesk(deskId) {
       const date = document.getElementById("date").value;
-      const start_time = document.getElementById("start_time").value;
+      const startTimeInput = document.getElementById("start_time").value;
       const durationMinutes = parseInt(
         document.getElementById("duration").value
       );
       const spaceId = this.$route.params.spaceId;
 
-      const startTimeSplit = start_time.split(":");
-      const startHour = parseInt(startTimeSplit[0]);
-      const startMinute = parseInt(startTimeSplit[1]);
-      const endMinute = startMinute + durationMinutes;
+      // Crear objetos de fecha y hora para la reserva nueva
+      const startDate = new Date(`${date}T${startTimeInput}`);
+      const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
 
-      const durationHours = Math.floor(durationMinutes / 60);
-      const durationMinutesRemainder = durationMinutes % 60;
+      // Comprobar si hay solapamientos con las reservas existentes
+      let overlappingReservation = this.userReservations.some((reservation) => {
+        const reservationStartDate = new Date(reservation.start_time);
+        const reservationEndDate = new Date(reservation.end_time);
 
-      const formattedDuration = `${durationHours
-        .toString()
-        .padStart(2, "0")}:${durationMinutesRemainder
-        .toString()
-        .padStart(2, "0")}:00`;
-
-      const end_time =
-        new Date(`${date} ${start_time}`).getTime() +
-        durationMinutes * 60 * 1000;
-      const formattedEndTime = new Date(end_time)
-        .toISOString()
-        .slice(0, 19)
-        .replace("T", " ");
-
-      const token = localStorage.getItem("token");
-
-      const overlappingReservation = this.userReservations.some(
-        (reservation) => {
-          const reservationStart = new Date(reservation.start_time).getTime();
-          const reservationEnd = new Date(reservation.end_time).getTime();
-
+        // Revisar si las fechas son las mismas
+        if (reservationStartDate.toDateString() === startDate.toDateString()) {
+          // Comprobar si los intervalos de tiempo se solapan
           return (
-            (reservationStart <= new Date(end_time).getTime() &&
-              new Date(end_time).getTime() <= reservationEnd) ||
-            (reservationStart <= new Date(`${date} ${start_time}`).getTime() &&
-              new Date(`${date} ${start_time}`).getTime() <= reservationEnd)
+            startDate < reservationEndDate && endDate > reservationStartDate
           );
         }
-      );
+        return false;
+      });
 
       if (overlappingReservation) {
-        this.errorMessage = "Ya tienes una reserva en esta franja horaria.";
+        this.errorMessage =
+          "Ya tienes una reserva en esta franja horaria para el mismo día.";
+        console.error(this.errorMessage);
         return;
       }
+
+      // Continuar con la creación de la reserva si no hay solapamientos
+      const token = localStorage.getItem("token");
       if (token) {
         axios
           .post(
@@ -432,9 +418,9 @@ export default {
             {
               desk: deskId,
               date: date,
-              start_time: `${date} ${start_time}`,
-              duration: formattedDuration,
-              end_time: formattedEndTime,
+              start_time: startDate.toISOString(),
+              duration: durationMinutes,
+              end_time: endDate.toISOString(),
               space_id: spaceId,
             },
             {
@@ -442,14 +428,16 @@ export default {
             }
           )
           .then((response) => {
+                    
             this.spacesItems = this.spacesItems.filter(
               (item) => item.id !== deskId
             );
             this.bookingMessage = "Reserva exitosa";
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 1500);
           })
           .catch((error) => {
-            this.errorMessage = "Error al reservar el escritorio.";
+            this.errorMessage =
+              "Error al reservar el escritorio: " + error.message;
           });
       } else {
         this.errorMessage = "No se encontró el token de autenticación.";

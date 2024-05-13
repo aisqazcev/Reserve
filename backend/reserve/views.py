@@ -167,7 +167,7 @@ class RegisterView(APIView):
 
 
 @csrf_exempt
-def enviar_correo_vista(request):
+def send_email_view(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
         recipient_email = data.get('email', '')
@@ -185,7 +185,7 @@ def enviar_correo_vista(request):
         return JsonResponse({'error': str(e)}, status=500)
     
 @csrf_exempt
-def verificar_codigo(request):
+def verify_code(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
         recipient_email = data.get('email', '')
@@ -313,14 +313,6 @@ class SpaceItemListView(APIView):
     def get(self, request, *args, **kwargs):
         space_items = Space_item.objects.all()
         serializer = SpaceSerializer(space_items, many=True)
-
-        return Response(serializer.data)
-
-
-class SpaceShowView(APIView):
-    def get(self, request, space_id, *args, **kwargs):
-        space = get_object_or_404(Space, id=space_id)
-        serializer = SpaceSerializer(space)
 
         return Response(serializer.data)
 

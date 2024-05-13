@@ -356,7 +356,7 @@ export default {
           const spacesDetails = await Promise.all(
             availableSpaceIds.map(async (spaceId) => {
               const spaceResponse = await axios.get(
-                `${backendUrl}spaces/${spaceId}/`
+                `${backendUrl}space/${spaceId}/`
               );
               return spaceResponse.data;
             })

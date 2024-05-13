@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, enviar_correo_vista, send_incidence, send_recovery_email, verificar_codigo
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, send_email_view, send_incidence, send_recovery_email, verify_code
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -25,14 +25,12 @@ urlpatterns = [
 
     path('bookings/<int:booking_id>/', BookingShowView.as_view(), name='booking-show'),
     path('spaces/', SpaceManagementView.as_view()),
-    path('spaces/<int:space_id>/', SpaceShowView.as_view()),
+    path('space/<int:space_id>/', SpaceShowView.as_view()),
     path('room/', RoomListView.as_view()),
     path('room/<int:room_id>/', RoomShowView.as_view()),
     path('<int:space_id>/desk/', DeskListView.as_view()),
     path('desk/<int:desk_id>/', DeskShowView.as_view()),
-    path('location/', SpaceManagementView.as_view()),
-    path('location/<int:location_id>/', SpaceShowView.as_view()),
-    path('location/create/', SpaceManagementView.as_view(), name='location-create'),
+
     path('equipment/', EquipmentManagementView.as_view()),
     path('equipment/<int:equipment_id>/', EquipmentShowView.as_view()),
 
@@ -44,13 +42,15 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', UserView.as_view(), name='get_user_data'),
     path('change-password/', PasswordChangeView.as_view(), name='change-password'),
+    
+    path('send_email/', send_email_view, name='send_email'),
+    path('verify_code/', verify_code, name='verify_code'),
 
     path('campuses/', CampusListView.as_view(), name='campus-list'), 
     path('campus/<int:campus_id>/', CampusDetailView.as_view(), name='campus-details'), 
 
     path('buildings/', BuildingListView.as_view(), name='building-list'),
 
-    path('register/', RegisterView.as_view(), name='register'),
     path('booking/', BookingManagementView.as_view(), name='booking'),
     
     path('building/<int:building_id>/', BuildingDetailstView.as_view(), name='building-details'),
@@ -67,9 +67,7 @@ urlpatterns = [
 
     path('get-random-images/', get_random_images, name='get-random-images'),
     
-    path('register/', RegisterView.as_view(), name='register'),
-    path('enviar_correo/', enviar_correo_vista, name='enviar_correo'),
-    path('verify_code/', verificar_codigo, name='verify_code'),
+
     
 ]
 
