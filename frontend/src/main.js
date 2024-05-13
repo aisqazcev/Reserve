@@ -22,6 +22,8 @@ import Argon from "./plugins/argon-kit";
 import "./registerServiceWorker";
 // import store from './store';
 import Modal from "./components/Modal.vue";
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 
 import VueAxios from "vue-axios";
 import axios from "axios";
