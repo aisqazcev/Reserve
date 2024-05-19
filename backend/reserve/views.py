@@ -4,6 +4,7 @@ import json
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
@@ -392,19 +393,71 @@ class DeskShowView(APIView):
 
         return Response(serializer.data)
 
+from datetime import datetime, timedelta
+from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import authentication_classes
+from .models import Booking, Desk
+from .serializers import BookingSerializer
 
 @authentication_classes([TokenAuthentication])
 class BookingManagementView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, *args, **kwargs):
 
+    def post(self, request, *args, **kwargs):
         request.data['user'] = request.user.id
-        
-        serializer = BookingSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=ST_201)
-        return Response(data=serializer.errors, status=ST_409)
+
+        start_time_str = request.data.get('start_time')
+        duration_minutes = int(request.data.get('duration'))
+        desk_id = request.data.get('desk')
+
+        if not start_time_str or not duration_minutes or not desk_id:
+            return Response({'error': 'Faltan datos necesarios para crear la reserva.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+            start_time = timezone.make_aware(start_time, timezone.utc)
+
+            duration = timedelta(minutes=duration_minutes)
+            end_time = start_time + duration
+
+            # Verificar superposición de reservas para el mismo usuario
+            overlapping_bookings = Booking.objects.filter(
+                user=request.user,
+                start_time__lt=end_time,
+                end_time__gt=start_time
+            )
+
+            if overlapping_bookings.exists():
+                return Response({'error': 'Ya tienes una reserva en esta franja horaria.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Verificar superposición de reservas para el mismo escritorio
+            overlapping_bookings = Booking.objects.filter(
+                desk_id=desk_id,
+                start_time__lt=end_time,
+                end_time__gt=start_time
+            )
+
+            if overlapping_bookings.exists():
+                return Response({'error': 'Este asiento ya está reservado para este intervalo de tiempo.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            request.data['start_time'] = start_time.isoformat()
+            request.data['end_time'] = end_time.isoformat()
+            request.data['duration'] = duration  # Guardar la duración como timedelta
+
+            serializer = BookingSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except ValueError as e:
+            return Response({'error': f'Formato de fecha inválido: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
     def put(self, request, booking_id, *args, **kwargs):
         booking = get_object_or_404(Booking, id=booking_id)
@@ -419,6 +472,42 @@ class BookingManagementView(APIView):
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
     
+class FindAvailableSeatsView(APIView):
+    def get(self, request, *args, **kwargs):
+        start_time_str = request.GET.get('start_time')
+        duration_str = request.GET.get('duration')
+        space_id = request.GET.get('space_id')
+
+        if not start_time_str or not duration_str or not space_id:
+            return JsonResponse({'error': 'Debes proporcionar la hora de inicio, la duración y el ID del espacio.'}, status=400)
+
+        try:
+            start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+            
+            # Check if start_time is naive
+            if timezone.is_naive(start_time):
+                start_time = timezone.make_aware(start_time, timezone.utc)
+                
+            duration = timedelta(minutes=int(duration_str))
+            end_time = start_time + duration
+
+            overlapping_bookings = Booking.objects.filter(
+                space_id=space_id,
+                start_time__lt=end_time,
+                end_time__gt=start_time
+            )
+
+            all_seats = Desk.objects.filter(space_id=space_id)
+            unavailable_seats_ids = overlapping_bookings.values_list('desk_id', flat=True)
+            available_seats = all_seats.exclude(id__in=unavailable_seats_ids)
+
+            available_seats_ids = [seat.id for seat in available_seats]
+
+            return JsonResponse({'available_seats': available_seats_ids})
+
+        except ValueError as e:
+            return JsonResponse({'error': f'Formato de fecha inválido: {str(e)}'}, status=400)
+    
 @authentication_classes([TokenAuthentication])
 class BookingListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -426,12 +515,19 @@ class BookingListView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             bookings = Booking.objects.filter(user=request.user)
-            serializer = BookingSerializer(bookings, many=True)
+            serialized_bookings = []
+            for booking in bookings:
+                serialized_booking = BookingSerializer(booking).data
+                # Convertir a UTC
+                serialized_booking['start_time'] = booking.start_time.astimezone(timezone.utc).isoformat()
+                serialized_booking['end_time'] = booking.end_time.astimezone(timezone.utc).isoformat()
+                serialized_booking['duration'] = int(booking.duration.total_seconds() // 60)  # Asegurarse de que la duración esté en minutos
+                serialized_bookings.append(serialized_booking)
             
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serialized_bookings, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
 
 class BookingShowView(APIView):
     def get(self, request, booking_id, *args, **kwargs):
@@ -439,47 +535,6 @@ class BookingShowView(APIView):
         serializer = BookingSerializer(booking)
 
         return Response(serializer.data)
-    
-def find_available_seats(request):
-    if request.method == 'GET':
-   
-        start_time_str = request.GET.get('start_time')
-        duration_str = request.GET.get('duration')
-
-        if not start_time_str or not duration_str:
-            return JsonResponse({'error': 'Debes proporcionar la hora de inicio y la duración.'}, status=400)
-
-        try:
-            start_time_str = start_time_str.rstrip('Z').split('.')[0]
-            start_time = datetime.fromisoformat(start_time_str)
-
-            duration = timedelta(minutes=int(duration_str))
-            end_time = start_time + duration
- 
-            overlapping_bookings = Booking.objects.filter(date=start_time.date()).filter(
-                start_time__lt=end_time, end_time__gt=start_time
-            )
-
-      
-            all_seats = Desk.objects.all()
-
-            available_seats = []
-            for seat in all_seats:
-                is_available = True
-                for booking in overlapping_bookings:
-                    if seat.id == booking.desk.id:
-                        is_available = False
-                        break
-                if is_available:
-                    available_seats.append(seat)
-
-            available_seats_ids = [seat.id for seat in available_seats]
-
-            return JsonResponse({'available_seats': available_seats_ids})
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
 
 class EquipmentManagementView(APIView):
 
