@@ -74,6 +74,7 @@
                   type="date"
                   id="date"
                   v-model="reservationDate"
+                  :min="minDate"  
                   class="form-control"
                 />
               </div>
@@ -85,6 +86,7 @@
                   type="time"
                   id="start_time"
                   v-model="reservationStartTime"
+                  :min="minTime" 
                   class="form-control"
                 />
               </div>
@@ -211,6 +213,8 @@ export default {
       userReservations: "",
       search: false,
       bookingMessage: "",
+      minDate: currentDate,
+      minTime: nextHour,
     };
   },
   mounted() {
@@ -227,11 +231,21 @@ export default {
       document.getElementById("start_time").value = routeQuery.time;
 
       this.duration = routeQuery.duration;
-
-      this.searchDisponibility();
+      
     }
+    this.checkDate();
   },
   methods: {
+    checkDate() {
+      if (this.reservationDate === this.minDate) {
+        const now = new Date();
+        const currentHour = now.getHours().toString().padStart(2, "0");
+        const currentMinute = now.getMinutes().toString().padStart(2, "0");
+        this.minTime = `${currentHour}:${currentMinute}`;
+      } else {
+        this.minTime = "00:00";
+      }
+    },
     formatDeskNames(deskNames) {
       return deskNames.join(", ");
     },
@@ -319,7 +333,7 @@ export default {
     },
 
     searchDisponibility() {
-    this.search = true;
+    
     this.errorMessage = "";
     const date = document.getElementById("date").value;
     const start_time = document.getElementById("start_time").value;
@@ -327,16 +341,18 @@ export default {
     const spaceId = this.$route.params.spaceId;
 
     if (this.isPastDate(date)) {
+      this.search = false;
       this.errorMessage = "No se puede seleccionar una fecha pasada.";
       return;
     }
 
     if (date === this.getCurrentDate() && this.isPastTime(start_time)) {
+      this.search = false;
       this.errorMessage =
         "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
       return;
     }
-
+    this.search = true;
     const startDateTime = new Date(`${date}T${start_time}`);
     const startDateTimeUTC = new Date(startDateTime.getTime() - (startDateTime.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
 
