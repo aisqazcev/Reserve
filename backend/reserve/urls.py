@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_seats, find_available_spaces, get_random_images, occupation_actual, send_email_view, send_incidence, send_recovery_email, verify_code
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, FindAvailableSeatsView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_spaces, get_random_images, occupation_actual, send_email_view, send_incidence, send_recovery_email, verify_code
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -60,7 +60,7 @@ urlpatterns = [
     path('bookings/', BookingListView.as_view(), name='booking-list'),
     path('booking/<int:booking_id>/', BookingManagementView.as_view(), name='delete-booking'),
 
-    path('find-available-seats/', find_available_seats, name='find_available_seats'),
+    path('find-available-seats/', FindAvailableSeatsView.as_view(), name='find_available_seats'),
 
     path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
     path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),

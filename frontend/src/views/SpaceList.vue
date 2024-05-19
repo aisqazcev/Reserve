@@ -193,9 +193,7 @@ export default {
     const currentDate = now.toISOString().substring(0, 10);
     now.setMinutes(0, 0, 0);
     now.setHours(now.getHours() + 1);
-    let hours = now.getHours().toString().padStart(2, "0");
-    let minutes = now.getMinutes().toString().padStart(2, "0");
-    const nextHour = `${hours}:${minutes}`;
+    const nextHour = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
 
     return {
       spacesItems: [],
@@ -248,10 +246,11 @@ export default {
         axios
           .get(`${backendUrl}bookings/`, {
             headers: { Authorization: `Token ${token}` },
-          })
+       
+        })
           .then((response) => {
             this.userReservations = response.data;
-          })
+        })
           .catch((error) => {
             console.error("Error al obtener reservas del usuario:", error);
           });
@@ -320,129 +319,124 @@ export default {
     },
 
     searchDisponibility() {
-      this.search = true;
-      this.errorMessage = "";
-      const date = document.getElementById("date").value;
-      const start_time = document.getElementById("start_time").value;
-      const duration = document.getElementById("duration").value;
-      const spaceId = this.$route.params.spaceId;
+    this.search = true;
+    this.errorMessage = "";
+    const date = document.getElementById("date").value;
+    const start_time = document.getElementById("start_time").value;
+    const duration = document.getElementById("duration").value;
+    const spaceId = this.$route.params.spaceId;
 
-      if (this.isPastDate(date)) {
-        this.errorMessage = "No se puede seleccionar una fecha pasada.";
-        return;
+    if (this.isPastDate(date)) {
+      this.errorMessage = "No se puede seleccionar una fecha pasada.";
+      return;
+    }
+
+    if (date === this.getCurrentDate() && this.isPastTime(start_time)) {
+      this.errorMessage =
+        "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
+      return;
+    }
+
+    const startDateTime = new Date(`${date}T${start_time}`);
+    const startDateTimeUTC = new Date(startDateTime.getTime() - (startDateTime.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+
+    axios
+      .get(`${backendUrl}find-available-seats/`, {
+        params: {
+          start_time: startDateTimeUTC,
+          duration: duration,
+          space_id: spaceId,
+        },
+      })
+      .then((response) => {
+        const availableSeats = response.data.available_seats;
+        const filteredSeats = this.originalSpacesItems.filter((seat) =>
+          availableSeats.includes(seat.id)
+        );
+
+        this.spacesItems = filteredSeats.map((seat) => ({
+          ...seat,
+          seat_status: "AVAILABLE",
+        }));
+        if (this.spacesItems.length === 0) {
+          this.showNoResultsMessage = true;
+        } else {
+          this.showNoResultsMessage = false;
+        }
+      })
+      .catch((error) => {
+        console.error("Error al buscar disponibilidad:", error);
+      });
+  },
+  bookingDesk(deskId) {
+    const date = document.getElementById("date").value;
+    const startTimeInput = document.getElementById("start_time").value;
+    const durationMinutes = parseInt(document.getElementById("duration").value);
+    const spaceId = this.$route.params.spaceId;
+
+    const startDate = new Date(`${date}T${startTimeInput}`);
+    const startDateUTC = new Date(startDate.getTime() - (startDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+    const endDateUTC = new Date(endDate.getTime() - (endDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+
+    let overlappingReservation = this.userReservations.some((reservation) => {
+      const reservationStartDate = new Date(reservation.start_time).toISOString().slice(0, 16);
+      const reservationEndDate = new Date(reservation.end_time).toISOString().slice(0, 16);
+
+      if (reservationStartDate.toString === startDateUTC.toString) {
+        return (
+          startDateUTC < reservationEndDate && endDateUTC > reservationStartDate
+        );
       }
+      return false;
+    });
 
-      if (date === this.getCurrentDate() && this.isPastTime(start_time)) {
-        this.errorMessage =
-          "No se puede seleccionar una hora anterior a la hora actual para el día de hoy.";
-        return;
-      }
+    if (overlappingReservation) {
+      this.errorMessage =
+        "Ya tienes una reserva en esta franja horaria para el mismo día.";
+      return;
+    }
 
+    const token = localStorage.getItem("token");
+    if (token) {
       axios
-        .get(`${backendUrl}find-available-seats/`, {
-          params: {
-            start_time: `${date} ${start_time}`,
-            duration: duration,
-            space_id: spaceId,
+        .post(
+          `${backendUrl}booking/`,
+          {
+            desk: deskId,
             date: date,
+            start_time: startDateUTC,
+            duration: durationMinutes, 
+            end_time: endDateUTC,
+            space_id: spaceId,
           },
-        })
-        .then((response) => {
-          const availableSeats = response.data.available_seats;
-          const filteredSeats = this.originalSpacesItems.filter((seat) =>
-            availableSeats.includes(seat.id)
-          );
-
-          this.spacesItems = filteredSeats.map((seat) => ({
-            ...seat,
-            seat_status: "AVAILABLE",
-          }));
-          if (this.spacesItems.length === 0) {
-            this.showNoResultsMessage = true;
-          } else {
-            this.showNoResultsMessage = false;
+          {
+            headers: { Authorization: `Token ${token}` },
           }
+        )
+        .then((response) => {
+          this.spacesItems = this.spacesItems.filter(
+            (item) => item.id !== deskId
+          );
+          this.bookingMessage = "Reserva exitosa";
+          setTimeout(() => window.location.reload(), 1500);
         })
         .catch((error) => {
-          console.error("Error al buscar disponibilidad:", error);
+          this.errorMessage =
+            "Error al reservar el escritorio: " + error.message;
         });
-    },
-    getCurrentDate() {
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-      const day = String(currentDate.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    },
+    } else {
+      this.errorMessage = "No se encontró el token de autenticación.";
+    }
+  },
 
-    bookingDesk(deskId) {
-      const date = document.getElementById("date").value;
-      const startTimeInput = document.getElementById("start_time").value;
-      const durationMinutes = parseInt(
-        document.getElementById("duration").value
-      );
-      const spaceId = this.$route.params.spaceId;
-
-      // Crear objetos de fecha y hora para la reserva nueva
-      const startDate = new Date(`${date}T${startTimeInput}`);
-      const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
-
-      // Comprobar si hay solapamientos con las reservas existentes
-      let overlappingReservation = this.userReservations.some((reservation) => {
-        const reservationStartDate = new Date(reservation.start_time);
-        const reservationEndDate = new Date(reservation.end_time);
-
-        // Revisar si las fechas son las mismas
-        if (reservationStartDate.toDateString() === startDate.toDateString()) {
-          // Comprobar si los intervalos de tiempo se solapan
-          return (
-            startDate < reservationEndDate && endDate > reservationStartDate
-          );
-        }
-        return false;
-      });
-
-      if (overlappingReservation) {
-        this.errorMessage =
-          "Ya tienes una reserva en esta franja horaria para el mismo día.";
-        console.error(this.errorMessage);
-        return;
-      }
-
-      // Continuar con la creación de la reserva si no hay solapamientos
-      const token = localStorage.getItem("token");
-      if (token) {
-        axios
-          .post(
-            `${backendUrl}booking/`,
-            {
-              desk: deskId,
-              date: date,
-              start_time: startDate.toISOString(),
-              duration: durationMinutes,
-              end_time: endDate.toISOString(),
-              space_id: spaceId,
-            },
-            {
-              headers: { Authorization: `Token ${token}` },
-            }
-          )
-          .then((response) => {
-                    
-            this.spacesItems = this.spacesItems.filter(
-              (item) => item.id !== deskId
-            );
-            this.bookingMessage = "Reserva exitosa";
-            setTimeout(() => window.location.reload(), 1500);
-          })
-          .catch((error) => {
-            this.errorMessage =
-              "Error al reservar el escritorio: " + error.message;
-          });
-      } else {
-        this.errorMessage = "No se encontró el token de autenticación.";
-      }
-    },
+  getCurrentDate() {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  },
     getSpaceImageUrl(relativePath) {
       relativePath = relativePath.replace(/^\/media*/, "");
       const imageUrl = `${backendUrl}${relativePath}`;
