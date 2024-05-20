@@ -72,13 +72,14 @@
           </thead>
           <tbody>
             <tr v-for="(item, index) in displayedBookings" :key="index">
-
               <td data-label="Fecha">{{ formatDate(item.date) }}</td>
-    <td data-label="Hora inicio">{{ formatHour(item.start_time) }}</td>
-    <td data-label="Hora fin">{{ formatHour(item.end_time) }}</td>
-    <td data-label="Asiento">{{ item.deskName }}</td>
-    <td data-label="Sala">{{ item.spaceName }}</td>
-    <td data-label="Edificio">{{ item.buildingName }}</td>
+              <td data-label="Hora inicio">
+                {{ formatHour(item.start_time) }}
+              </td>
+              <td data-label="Hora fin">{{ formatHour(item.end_time) }}</td>
+              <td data-label="Asiento">{{ item.deskName }}</td>
+              <td data-label="Sala">{{ item.spaceName }}</td>
+              <td data-label="Edificio">{{ item.name_complete }}</td>
               <td class="td-actions" v-if="isFutureBooking(item)">
                 <button
                   type="button"
@@ -105,7 +106,7 @@
                       <div class="text-center text-muted mb-4">
                         <h2>¿A quién quieres invitar?</h2>
                       </div>
-                      <form @submit.prevent="invite">
+                      <form @keydown.enter.prevent @submit.prevent="invite">
                         <base-input
                           alternative
                           class="mb-3"
@@ -283,7 +284,7 @@ export default {
             const buildingIndex = index + this.booking.length * 2;
             booking.deskName = responses[deskIndex].data.name;
             booking.spaceName = responses[spaceIndex].data.name;
-            booking.buildingName = responses[buildingIndex].data.name;
+            booking.name_complete = responses[buildingIndex].data.name_complete;
           });
 
           this.isLoading = false;
@@ -299,21 +300,21 @@ export default {
       this.currentPage = page;
     },
     formatDate(date) {
-  const dateObject = new Date(date);
-  return dateObject.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC' // Agregar esta línea para forzar la zona horaria UTC
-  });
-},
+      const dateObject = new Date(date);
+      return dateObject.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+    },
     formatHour(dateTime) {
       const date = new Date(dateTime);
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        timeZone: 'UTC'
+        timeZone: "UTC",
       });
     },
     cancelBooking(bookingId, index) {
@@ -355,33 +356,36 @@ export default {
     search_available_nearby(booking) {
       axios
         .post(`${backendUrl}find_nearby_seats/`, {
-          desk: booking.desk,
+          desk_id: booking.desk,
         })
         .then((nearbyResponse) => {
           if (nearbyResponse.data.nearby_seat_ids.length > 0) {
-            const formattedStartTime = new Date(booking.start_time).toISOString().slice(0, 19).replace('T', ' ');
+            const formattedStartTime = new Date(booking.start_time)
+              .toISOString()
+              .slice(0, 16);
             const durationInMinutes = parseInt(booking.duration);
             axios
               .get(`${backendUrl}find-available-seats/`, {
                 params: {
                   start_time: formattedStartTime,
                   duration: durationInMinutes,
+                  desk_id: booking.desk,
+                  space_id: booking.space,
                 },
               })
               .then((availableResponse) => {
-                console.log(availableResponse.data.available_seats.length)
                 if (availableResponse.data.available_seats.length > 0) {
                   const availableSeatIds = nearbyResponse.data.nearby_seat_ids;
                   const nearbySeatsIds = nearbyResponse.data.nearby_seat_ids;
                   let nearbySeatAvailable = false;
                   for (const availableSeat of availableSeatIds) {
-                      if (nearbySeatsIds.includes(availableSeat)) {
-                          nearbySeatAvailable = true;
-                          this.invite(booking);
-                          break;
-                      }
+                    if (nearbySeatsIds.includes(availableSeat)) {
+                      nearbySeatAvailable = true;
+                      this.invite(booking, availableSeatIds);
+                      break;
+                    }
                   }
-                } 
+                }
               });
           }
         })
@@ -389,7 +393,7 @@ export default {
           console.error("Error al buscar asientos cercanos:", error);
         });
     },
-    invite(booking) {
+    invite(booking, nearbySeats) {
       const token = localStorage.getItem("token");
       if (token) {
         axios
@@ -403,6 +407,7 @@ export default {
                 invited_email: this.invitedEmail,
                 user_data: this.userData,
                 booking_data: booking,
+                nearby_seats: nearbySeats,
               })
               .then((response) => {
                 this.showInviteModal = false;

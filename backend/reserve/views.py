@@ -709,12 +709,10 @@ def send_incidence(request):
 def find_nearby_seats(request):
     try:
         data = json.loads(request.body)
-        desk_id = data.get('desk')
+        desk_id = data.get('desk_id')
         current_desk = Desk.objects.get(pk=desk_id)
-        print(f"Desk: ", current_desk)
         nearby_desks = current_desk.nearby_pl.all()
         nearby_desk_ids = [desk.id for desk in nearby_desks]
-        print(f"Desk cercanos: ", nearby_desks)
         return JsonResponse({'nearby_seat_ids': nearby_desk_ids})
     except Exception as e:
             return JsonResponse({'El asiento no existe': str(e)}, status=400)
@@ -732,10 +730,79 @@ def invite(request):
             current_user = data.get('user_data')
             user_log = current_user.get('username')
             reserve_data = data.get('booking_data')
+            nearby_seats = data.get('nearby_seats', [])
+
+            date = datetime.strptime(reserve_data['date'], "%Y-%m-%d")
+            formatted_date = date.strftime("%d-%m-%Y")
+            start_time = datetime.strptime(reserve_data['start_time'], "%Y-%m-%dT%H:%M:%S%z")
+            end_time = datetime.strptime(reserve_data['end_time'], "%Y-%m-%dT%H:%M:%S%z")
+            formatted_start_time = start_time.strftime("%H:%M")
+            formatted_end_time = end_time.strftime("%H:%M")
+
+            nearby_seats_list = "".join([f"<li>{seat}</li>" for seat in nearby_seats])
 
             if CustomUser.objects.filter(email=invited_email).exists():
                 subject = 'Ey, ¿te sientas a mi lado?'
-                message = f'¡Hola! {user_log} Le ha invitado a sentarse a su lado. Si no puede acudir recuerde cancelar la reserva.\n\nLos datos para la reserva son los siguientes: {reserve_data}\n\nPor favor, no responda este correo.'
+                message = f"""
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #ECECEC; margin: 0; padding: 0;">
+    <div style="margin: 0 auto; padding: 20px; max-width: 600px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 10px;">
+        <div style="font-size: 20px; margin-bottom: 20px;">
+            ¡Hola! {user_log} le ha invitado a sentarse a su lado.
+        </div>
+        <div>
+            Si no puede acudir recuerde cancelar la reserva.
+        </div>
+        <div style="margin-top: 20px;">
+            <strong>Los datos para la reserva son los siguientes:</strong><br>
+            <table style="border-collapse: collapse; width: 100%;">
+                <tr>
+                    <td style="padding: 5px;"><strong>Edificio:</strong></td>
+                    <td style="padding: 5px;">{reserve_data['name_complete']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><strong>Espacio:</strong></td>
+                    <td style="padding: 5px;">{reserve_data['spaceName']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><strong>Asiento de tu compañero:</strong></td>
+                    <td style="padding: 5px;">{reserve_data['deskName']}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><strong>Fecha:</strong></td>
+                    <td style="padding: 5px;">{formatted_date}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><strong>Hora de inicio:</strong></td>
+                    <td style="padding: 5px;">{formatted_start_time}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><strong>Duración:</strong></td>
+                    <td style="padding: 5px;">{reserve_data['duration']} minutos</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><strong>Hora de fin:</strong></td>
+                    <td style="padding: 5px;">{formatted_end_time}</td>
+                </tr>
+            </table>
+        </div>
+        <div style="margin-top: 20px;">
+            Tienes estos sitios cercanos disponibles:<br>
+                {nearby_seats_list}
+        </div>
+        <div>
+            Entra en seatEasy y reserva un hueco.
+            <strong>¡No te quedes sin tu sitio!</strong><br>
+        </div>
+        <div style="margin-top: 20px; font-size: 12px; color: #888;">
+            Por favor, no responda este correo.
+        </div>
+    </div>
+</body>
+</html>
+"""
+
                 from_email = 'seateasy8@gmail.com'
                 
                 send_mail(subject, message, from_email, [invited_email])
