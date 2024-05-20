@@ -7,7 +7,7 @@
       <div class="row" slot="content-header" slot-scope="{ closeMenu }">
         <div class="col-6 collapse-brand"></div>
         <div class="col-6 collapse-close">
-          <close-button @click="closeMenu"></close-button>
+          <close-button id="custom-close-button" @click="closeMenu"></close-button>
         </div>
       </div>
 
@@ -131,6 +131,10 @@ export default {
 </script>
 
 <style>
+#custom-close-button {
+  background-color: #f8f9fa; 
+}
+
 .header-global .navbar-brand {
   font-family: "Raleway", sans-serif;
 }

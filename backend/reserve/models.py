@@ -1,3 +1,5 @@
+from django.utils import timezone
+from datetime import timedelta, datetime
 from enum import Enum
 import json
 import os
@@ -186,17 +188,19 @@ class Room(Space_item):
 class Desk(Space_item):
     nearby_pl = models.ManyToManyField("self", blank=True)
 
+from django.utils import timezone
+from datetime import timedelta, datetime
+
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    campus = models.ForeignKey(Campus, on_delete=models.CASCADE, editable = False)
-    building = models.ForeignKey(Building, on_delete=models.CASCADE, editable = False)
-    space = models.ForeignKey(Space, on_delete=models.CASCADE, editable = False)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE, editable=False)
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, editable=False)
+    space = models.ForeignKey(Space, on_delete=models.CASCADE, editable=False)
     desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
     date = models.DateField() 
     start_time = models.DateTimeField() 
     duration = models.DurationField()
     end_time = models.DateTimeField()
-
 
     def clean(self):
         if self.desk_id:
@@ -205,13 +209,15 @@ class Booking(models.Model):
             self.building = desk.space_id.building
             self.campus = desk.space_id.building.campus
 
-
-            # Validar que la fecha esté dentro del horario de funcionamiento del espacio
-        # if not self.space.is_open_at(self.date, self.start_time, self.end_time):
-        #     raise ValidationError(_("El espacio no está disponible en este horario."))
-            
     def save(self, *args, **kwargs):
-         
         self.end_time = self.start_time + self.duration
+        
+        # Check if the start_time and end_time are naive
+        if timezone.is_naive(self.start_time):
+            self.start_time = timezone.make_aware(self.start_time, timezone.utc)
+        if timezone.is_naive(self.end_time):
+            self.end_time = timezone.make_aware(self.end_time, timezone.utc)
+            
         self.full_clean()
         super().save(*args, **kwargs)
+

@@ -209,6 +209,17 @@ export default {
     },
   },
   watch: {
+    selectedCampus(newVal, oldVal) {
+      if (newVal !== null) {
+        this.selectedBuilding = null;
+        this.selectedSpace = null;
+      }
+    },
+    selectedBuilding(newVal, oldVal) {
+      if (newVal !== null) {
+        this.selectedSpace = null;
+      }
+    },
     selectedSpace(newVal, oldVal) {
       if (newVal !== null) {
         this.loadDesks();
@@ -281,7 +292,6 @@ export default {
           `${backendUrl}${this.selectedSpace}/desk/`
         );
         this.desks = response.data;
-        console.log("Desks: ", this.desks);
         this.desks.unshift({ id: null, name: "Cualquiera" });
       } catch (error) {
         console.error("Error fetching buildings:", error);
@@ -328,6 +338,7 @@ export default {
           this.selectedBuilding = null;
           this.selectedSpace = null;
           this.selectedDesk = null;
+          this.errorMessage = "";
         })
         .catch((error) => {
           console.error("Error al enviar el correo electrónico:", error);

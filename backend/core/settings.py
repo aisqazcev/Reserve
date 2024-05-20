@@ -176,3 +176,6 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+USE_TZ = True
+TIME_ZONE = 'Europe/Madrid'

@@ -46,13 +46,14 @@
                 <i class="ni location_pin mr-2"></i>
                 {{ userData ? userData.username : "Username Desconocido" }}
               </div>
-            </div>
-
-            <div class="text-center">
+              <div class="text-center">
               <base-button type="primary" @click="openChangePasswordModal"
                 >Cambiar Contraseña</base-button
               >
             </div>
+            </div>
+
+           
 
             <modal
               v-if="showChangePasswordModal"

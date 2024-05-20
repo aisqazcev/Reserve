@@ -40,11 +40,23 @@ class PasswordChangeSerializer(serializers.Serializer):
     confirm_new_password = serializers.CharField(write_only=True)
 
 
+from rest_framework import serializers
+from .models import Booking
+from datetime import datetime, timedelta
+from django.utils import timezone
+
+
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = "__all__"
-
+        fields = ['id', 'user', 'campus', 'building', 'space', 'desk', 'date', 'start_time', 'duration', 'end_time']
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['start_time'] = instance.start_time.astimezone(timezone.utc).isoformat()
+        ret['end_time'] = instance.end_time.astimezone(timezone.utc).isoformat()
+        ret['duration'] = int(instance.duration.total_seconds() // 60)  # Convertir la duración a minutos
+        return ret
 
 class EquipmentSerializer(serializers.ModelSerializer):
     class Meta:

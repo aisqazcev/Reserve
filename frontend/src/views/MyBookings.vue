@@ -6,9 +6,7 @@
       <span></span>
     </div>
     <div class="container mt-0 mb-3">
-      <h1 class="mb-4" style="color: #051551;">
-        Reservas
-      </h1>
+      <h1 class="mb-4" style="color: #051551">Reservas</h1>
       <div class="mb-3">
         <button
           @click="filterPastBookings"
@@ -17,7 +15,7 @@
             'btn-secondary': selectedOption !== 'past',
           }"
           class="btn mr-2"
-          style="text-transform: none;"
+          style="text-transform: none"
         >
           Pasadas
         </button>
@@ -28,7 +26,7 @@
             'btn-secondary': selectedOption !== 'future',
           }"
           class="btn"
-          style="text-transform: none;"
+          style="text-transform: none"
         >
           Próximas
         </button>
@@ -74,14 +72,13 @@
           </thead>
           <tbody>
             <tr v-for="(item, index) in displayedBookings" :key="index">
-              <td data-label="Fecha">{{ item.date }}</td>
-              <td data-label="Hora inicio">
-                {{ formatHour(item.start_time) }}
-              </td>
-              <td data-label="Hora fin">{{ formatHour(item.end_time) }}</td>
-              <td data-label="Asiento">{{ item.deskName }}</td>
-              <td data-label="Sala">{{ item.spaceName }}</td>
-              <td data-label="Edificio">{{ item.buildingName }}</td>
+
+              <td data-label="Fecha">{{ formatDate(item.date) }}</td>
+    <td data-label="Hora inicio">{{ formatHour(item.start_time) }}</td>
+    <td data-label="Hora fin">{{ formatHour(item.end_time) }}</td>
+    <td data-label="Asiento">{{ item.deskName }}</td>
+    <td data-label="Sala">{{ item.spaceName }}</td>
+    <td data-label="Edificio">{{ item.buildingName }}</td>
               <td class="td-actions" v-if="isFutureBooking(item)">
                 <button
                   type="button"
@@ -218,7 +215,7 @@ export default {
       this.selectedOption = "future";
       const currentDate = new Date();
 
-      this.currentPage = 1; // Reset currentPage
+      this.currentPage = 1;
       if (this.booking !== null) {
         this.filteredBookings = this.booking.filter((booking) => {
           const endDateTime = new Date(booking.end_time);
@@ -272,7 +269,7 @@ export default {
 
       this.booking.forEach((booking) => {
         deskPromises.push(axios.get(`${backendUrl}desk/${booking.desk}/`));
-        spacePromises.push(axios.get(`${backendUrl}spaces/${booking.space}/`));
+        spacePromises.push(axios.get(`${backendUrl}space/${booking.space}/`));
         buildingPromises.push(
           axios.get(`${backendUrl}building/${booking.building}/`)
         );
@@ -301,12 +298,22 @@ export default {
     onPageChange(page) {
       this.currentPage = page;
     },
+    formatDate(date) {
+  const dateObject = new Date(date);
+  return dateObject.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC' // Agregar esta línea para forzar la zona horaria UTC
+  });
+},
     formatHour(dateTime) {
       const date = new Date(dateTime);
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        timeZone: 'UTC'
       });
     },
     cancelBooking(bookingId, index) {
