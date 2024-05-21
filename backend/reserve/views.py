@@ -717,6 +717,15 @@ def find_nearby_seats(request):
     except Exception as e:
             return JsonResponse({'El asiento no existe': str(e)}, status=400)
 
+def get_desk_name(desk_id):
+    try:
+        desk = Desk.objects.get(id=desk_id)
+        return desk.name
+    except Desk.DoesNotExist:
+        return 'Nombre no disponible'
+    except Exception as e:
+        return str(e)
+    
 @csrf_exempt  
 @authentication_classes([TokenAuthentication]) 
 def invite(request):
@@ -739,7 +748,15 @@ def invite(request):
             formatted_start_time = start_time.strftime("%H:%M")
             formatted_end_time = end_time.strftime("%H:%M")
 
-            nearby_seats_list = "".join([f"<li>{seat}</li>" for seat in nearby_seats])
+            nearby_desk_names = []
+            for desk_id in nearby_seats:
+                desk_name = get_desk_name(desk_id)
+                print("nombre del asiento: ",desk_name)
+                nearby_desk_names.append(desk_name)
+            
+            nearby_seats_list = "<ul>" + "".join([f"<li>{name}</li>" for name in nearby_desk_names]) + "</ul>"
+            
+            # nearby_seats_list = "".join([f"<li>{name}</li>" for name in nearby_seat_names])
 
             if CustomUser.objects.filter(email=invited_email).exists():
                 subject = 'Ey, ¿te sientas a mi lado?'
@@ -752,38 +769,16 @@ def invite(request):
             ¡Hola! {user_log} le ha invitado a sentarse a su lado.
         </div>
         <div>
-            Si no puede acudir recuerde cancelar la reserva.
-        </div>
-        <div style="margin-top: 20px;">
             <strong>Los datos para la reserva son los siguientes:</strong><br>
             <table style="border-collapse: collapse; width: 100%;">
                 <tr>
-                    <td style="padding: 5px;"><strong>Edificio:</strong></td>
-                    <td style="padding: 5px;">{reserve_data['name_complete']}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;"><strong>Espacio:</strong></td>
-                    <td style="padding: 5px;">{reserve_data['spaceName']}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;"><strong>Asiento de tu compañero:</strong></td>
-                    <td style="padding: 5px;">{reserve_data['deskName']}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;"><strong>Fecha:</strong></td>
-                    <td style="padding: 5px;">{formatted_date}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;"><strong>Hora de inicio:</strong></td>
-                    <td style="padding: 5px;">{formatted_start_time}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;"><strong>Duración:</strong></td>
-                    <td style="padding: 5px;">{reserve_data['duration']} minutos</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;"><strong>Hora de fin:</strong></td>
-                    <td style="padding: 5px;">{formatted_end_time}</td>
+                    <td style="padding: 5px;"><strong>Edificio:</strong> {reserve_data['name_complete']}</td>
+                    <td style="padding: 5px;"><strong>Espacio:</strong> {reserve_data['spaceName']}</td>
+                    <td style="padding: 5px;"><strong>Asiento de tu compañero:</strong> {reserve_data['deskName']}</td>
+                    <td style="padding: 5px;"><strong>Fecha:</strong> {formatted_date}h</td>
+                    <td style="padding: 5px;"><strong>Hora de inicio:</strong> {formatted_start_time}</td>
+                    <td style="padding: 5px;"><strong>Hora de fin:</strong> {formatted_end_time}h</td>
+                    <td style="padding: 5px;"><strong>Duración:</strong> {reserve_data['duration']} minutos</td>
                 </tr>
             </table>
         </div>
