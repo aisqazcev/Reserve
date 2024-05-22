@@ -813,7 +813,6 @@ def get_desk_name(desk_id):
 @csrf_exempt  
 @authentication_classes([TokenAuthentication]) 
 def invite(request):
-        
     try:
         data = json.loads(request.body)
         invited_email = data.get('email')
@@ -821,16 +820,23 @@ def invite(request):
             data = json.loads(request.body)
             invited_email = data.get('invited_email')
             current_user = data.get('user_data')
-            user_log = current_user.get('username')
+            user_log = current_user.get('name')
             reserve_data = data.get('booking_data')
             nearby_seats = data.get('nearby_seats', [])
 
             date = datetime.strptime(reserve_data['date'], "%Y-%m-%d")
             formatted_date = date.strftime("%d-%m-%Y")
-            start_time = datetime.strptime(reserve_data['start_time'], "%Y-%m-%dT%H:%M:%S%z")
-            end_time = datetime.strptime(reserve_data['end_time'], "%Y-%m-%dT%H:%M:%S%z")
-            formatted_start_time = start_time.strftime("%H:%M")
-            formatted_end_time = end_time.strftime("%H:%M")
+            start_time_local = datetime.strptime(reserve_data['start_time'], "%Y-%m-%dT%H:%M:%S%z")
+            print(start_time_local)
+            end_time_local = datetime.strptime(reserve_data['end_time'], "%Y-%m-%dT%H:%M:%S%z")
+            formatted_start_time = start_time_local.strftime("%H:%M")
+            formatted_end_time = end_time_local.strftime("%H:%M")
+
+            start_time_utc = start_time_local
+            end_time_utc = end_time_local
+            start_datetime_utc = start_time_utc.strftime('%Y%m%dT%H%M%S')
+            print(start_datetime_utc)
+            end_datetime_utc = end_time_utc.strftime('%Y%m%dT%H%M%S')
 
             nearby_desk_names = []
             for desk_id in nearby_seats:
@@ -841,6 +847,14 @@ def invite(request):
             
             if CustomUser.objects.filter(email=invited_email).exists():
                 subject = 'Ey, ¿te sientas a mi lado?'
+
+                google_calendar_url = (
+                    f"https://www.google.com/calendar/render?action=TEMPLATE"
+                    f"&text=Reserva+en+{reserve_data['name_complete']}"
+                    f"&details=Reserva+de+{invited_email}+en+{reserve_data['name_complete']}"
+                    f"&location={reserve_data['name_complete']},+{reserve_data['spaceName']}"
+                    f"&dates={start_datetime_utc}/{end_datetime_utc}"
+                )
 
                 message = f"""
                 <!DOCTYPE html>
@@ -876,6 +890,7 @@ def invite(request):
                         </div>
                         <div style="text-align: center; margin-bottom: 20px;">
                             <p style="font-size: 16px; color: #555;">Entra en <a href="https://seatEasy.com" target="_blank" style="color: #007bff; text-decoration: none;">SeatEasy</a> y reserva tu asiento. ¡No te quedes sin tu sitio!</p>
+                            <p><a href="{google_calendar_url}" target="_blank" style="color: #007bff; text-decoration: none;">Añadir al Calendario de Google</a></p>
                         </div>
                         <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
                             Por favor, no responda este correo.
@@ -885,19 +900,12 @@ def invite(request):
                 </html>
                 """
 
-                from_email = "seateasy8@gmail.com"
+                from_email = 'seateasy8@gmail.com'
 
-                send_mail(
-                    subject, "", from_email, [invited_email], html_message=message
-                )
+                send_mail(subject, '', from_email, [invited_email], html_message=message)
 
-                return JsonResponse({"message": "Correo enviado con éxito."})
+                return JsonResponse({'message': 'Correo enviado con éxito.'})
             else:
-                return JsonResponse(
-                    {
-                        "error": "El correo electrónico no está asociado a ningún usuario registrado."
-                    },
-                    status=400,
-                )
+                return JsonResponse({'error': 'El correo electrónico no está asociado a ningún usuario registrado.'}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
