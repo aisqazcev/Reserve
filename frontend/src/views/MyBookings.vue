@@ -31,19 +31,15 @@
           Próximas
         </button>
       </div>
-      <div
-        v-if="errorMessage"
-        class="alert alert-default error-message"
-        role="alert"
-      >
-        <i class="fas fa-exclamation-triangle"></i>
-        {{ errorMessage }}
-        <button
-          type="button"
-          class="close"
-          @click="closeErrorMessage"
-          aria-label="Close"
-        >
+      <div v-if="bookingMessage" class="alert alert-success alert-dismissible" role="alert">
+        {{ bookingMessage }}
+        <button type="button" class="close" @click="closeBookingMessage" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div v-if="bookingError" class="alert alert-default alert-dismissible" role="alert">
+        {{ bookingError }}
+        <button type="button" class="close" @click="closeBookingError" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -72,23 +68,70 @@
           </thead>
           <tbody>
             <tr v-for="(item, index) in displayedBookings" :key="index">
-
               <td data-label="Fecha">{{ formatDate(item.date) }}</td>
-    <td data-label="Hora inicio">{{ formatHour(item.start_time) }}</td>
-    <td data-label="Hora fin">{{ formatHour(item.end_time) }}</td>
-    <td data-label="Asiento">{{ item.deskName }}</td>
-    <td data-label="Sala">{{ item.spaceName }}</td>
-    <td data-label="Edificio">{{ item.buildingName }}</td>
+              <td data-label="Hora inicio">
+                {{ formatHour(item.start_time) }}
+              </td>
+              <td data-label="Hora fin">{{ formatHour(item.end_time) }}</td>
+              <td data-label="Asiento">{{ item.deskName }}</td>
+              <td data-label="Sala">{{ item.spaceName }}</td>
+              <td data-label="Edificio">{{ item.name_complete }}</td>
               <td class="td-actions" v-if="isFutureBooking(item)">
                 <button
                   type="button"
                   rel="tooltip"
                   class="btn btn-default btn-icon btn-sm"
-                  data-original-title=""
-                  title=""
+                  @click="openInviteModal(item)"
                 >
                   <i class="ni ni-circle-08 pt-1"></i>
                 </button>
+                <modal
+                  v-if="showInviteModal"
+                  :show.sync="showInviteModal"
+                  body-classes="p-0"
+                  modal-classes="modal-dialog-centered modal-sm"
+                >
+                  <card
+                    type="secondary"
+                    shadow
+                    header-classes="bg-white pb-5"
+                    body-classes="px-lg-5 py-lg-5"
+                    class="border-0"
+                  >
+                    <template>
+                      <div class="text-center text-muted mb-4">
+                        <h2>¿A quién quieres invitar?</h2>
+                      </div>
+                      <form @keydown.enter.prevent @submit.prevent="invite">
+                        <base-input
+                          alternative
+                          class="mb-3"
+                          placeholder="Email del usuario invitado"
+                          v-model="invitedEmail"
+                          type="email"
+                        ></base-input>
+                        <div
+                          v-if="inviteError"
+                          class="alert alert-default alert-dismissible"
+                          role="alert"
+                        >
+                          {{ inviteError }}
+                          <button type="button" class="close" @click="closeInviteError" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="text-center">
+                          <base-button
+                            type="primary"
+                            class="my-4"
+                            @click="search_available_nearby(selectedBooking)"
+                            >Invitar</base-button
+                          >
+                        </div>
+                      </form>
+                    </template>
+                  </card>
+                </modal>
                 <button
                   type="button"
                   rel="tooltip"
@@ -114,7 +157,6 @@
     </div>
   </section>
 </template>
-
 <script>
 import axios from "axios";
 import { backendUrl } from "../main.js";
@@ -134,7 +176,12 @@ export default {
       sortDirection: "desc",
       selectedOption: "future",
       filteredBookings: [],
-      errorMessage: "",
+      bookingError: "",
+      inviteError: "",
+      bookingMessage: "",
+      showInviteModal: false,
+      invitedEmail: "",
+      selectedBooking: null,
     };
   },
   mounted() {
@@ -157,7 +204,17 @@ export default {
       return endDateTime > currentDate;
     },
     closeErrorMessage() {
-      this.errorMessage = "";
+      this.bookingError = "";
+      this.inviteError = "";
+    },
+    closeBookingMessage() {
+      this.bookingMessage = "";
+    },
+    closeBookingError() {
+      this.bookingError = "";
+    },
+    closeInviteError() {
+      this.inviteError = "";
     },
 
     filterPastBookings() {
@@ -245,7 +302,7 @@ export default {
             const buildingIndex = index + this.booking.length * 2;
             booking.deskName = responses[deskIndex].data.name;
             booking.spaceName = responses[spaceIndex].data.name;
-            booking.buildingName = responses[buildingIndex].data.name;
+            booking.name_complete = responses[buildingIndex].data.name_complete;
           });
 
           this.isLoading = false;
@@ -261,21 +318,21 @@ export default {
       this.currentPage = page;
     },
     formatDate(date) {
-  const dateObject = new Date(date);
-  return dateObject.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC' // Agregar esta línea para forzar la zona horaria UTC
-  });
-},
+      const dateObject = new Date(date);
+      return dateObject.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+    },
     formatHour(dateTime) {
       const date = new Date(dateTime);
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        timeZone: 'UTC'
+        timeZone: "UTC",
       });
     },
     cancelBooking(bookingId, index) {
@@ -289,8 +346,11 @@ export default {
         const hoursDifference = timeDifference / (1000 * 60 * 60);
 
         if (hoursDifference <= 4) {
-          this.errorMessage =
+          this.bookingError =
             "No se pueden cancelar reservas que comienzan en 4 horas o menos.";
+          setTimeout(() => {
+            this.bookingError = "";
+          }, 5000);
           return;
         }
       }
@@ -303,10 +363,135 @@ export default {
           this.displayedBookings.splice(index, 1);
           this.totalItems--;
           this.totalItems = this.filteredBookings.length;
+          this.listBookings().then(() => {
+            this.sortBookingsByDate();
+            this.filterFutureBookings();
+          });
+          this.bookingMessage = "Reserva cancelada con éxito.";
+          setTimeout(() => {
+            this.bookingMessage = "";
+          }, 5000);
         })
         .catch((error) => {
-          console.error("Cancellation Error:", error);
+          console.error("Error al cancelar la reserva:", error);
+          if (error.response && error.response.data && error.response.data.error) {
+            this.bookingError = error.response.data.error;
+          } else {
+            this.bookingError = "Ocurrió un error al cancelar la reserva.";
+          }
+          setTimeout(() => {
+            this.bookingError = "";
+          }, 5000);
         });
+    },
+    openInviteModal(booking) {
+      this.selectedBooking = booking;
+      this.showInviteModal = true;
+      this.inviteError = ""; // Limpiar el mensaje de error cuando se abre el modal
+    },
+    closeInviteModal() {
+      this.showInviteModal = false;
+      this.selectedBooking = null;
+    },
+    search_available_nearby(booking) {
+      axios
+        .post(`${backendUrl}find_nearby_seats/`, {
+          desk_id: booking.desk,
+        })
+        .then((nearbyResponse) => {
+          if (nearbyResponse.data.nearby_seat_ids.length > 0) {
+            const formattedStartTime = new Date(booking.start_time)
+              .toISOString()
+              .slice(0, 16);
+            const durationInMinutes = parseInt(booking.duration);
+            axios
+              .get(`${backendUrl}find-available-seats/`, {
+                params: {
+                  start_time: formattedStartTime,
+                  duration: durationInMinutes,
+                  desk_id: booking.desk,
+                  space_id: booking.space,
+                },
+              })
+              .then((availableResponse) => {
+                if (availableResponse.data.available_seats.length > 0) {
+                  const availableSeatIds = nearbyResponse.data.nearby_seat_ids;
+                  const nearbySeatsIds = nearbyResponse.data.nearby_seat_ids;
+                  let nearbySeatAvailable = false;
+                  for (const availableSeat of availableSeatIds) {
+                    if (nearbySeatsIds.includes(availableSeat)) {
+                      nearbySeatAvailable = true;
+                      this.invite(booking, availableSeatIds);
+                      break;
+                    }
+                  }
+                }
+              });
+          }
+        })
+        .catch((error) => {
+          console.error("Error al buscar asientos cercanos:", error);
+          this.inviteError = "Ocurrió un error al buscar asientos cercanos.";
+          setTimeout(() => {
+            this.inviteError = "";
+          }, 5000);
+        });
+    },
+    invite(booking, nearbySeats) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        axios
+          .get(`${backendUrl}profile/`, {
+            headers: { Authorization: `Token ${token}` },
+          })
+          .then((response) => {
+            this.userData = response.data;
+            axios
+              .post(`${backendUrl}invite/`, {
+                invited_email: this.invitedEmail,
+                user_data: this.userData,
+                booking_data: booking,
+                nearby_seats: nearbySeats,
+              })
+              .then((response) => {
+                this.showInviteModal = false;
+                this.invitedEmail = "";
+                this.bookingMessage = "Correo de invitación enviado con éxito.";
+                setTimeout(() => {
+                  this.bookingMessage = "";
+                }, 5000);
+              })
+              .catch((error) => {
+                console.error("Error al invitar:", error);
+                // Obtener el mensaje de error específico del backend
+                if (error.response && error.response.data && error.response.data.error) {
+                  this.inviteError = error.response.data.error;
+                } else {
+                  this.inviteError = "Ocurrió un error al enviar la invitación.";
+                }
+                setTimeout(() => {
+                  this.inviteError = "";
+                }, 5000);
+              });
+          })
+          .catch((error) => {
+            console.error("Error al obtener los datos:", error);
+            if (error.response && error.response.data && error.response.data.error) {
+              this.inviteError = error.response.data.error;
+            } else {
+              this.inviteError = "Ocurrió un error al obtener los datos del usuario.";
+            }
+            setTimeout(() => {
+              this.inviteError = "";
+            }, 5000);
+          });
+      } else {
+        console.error("No se encontró el token de autenticación.");
+        this.inviteError = "No se encontró el token de autenticación.";
+        setTimeout(() => {
+          this.inviteError = "";
+        }, 5000);
+      }
     },
   },
 };
