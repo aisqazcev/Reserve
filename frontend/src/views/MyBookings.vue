@@ -85,7 +85,7 @@
                   type="button"
                   rel="tooltip"
                   class="btn btn-default btn-icon btn-sm"
-                  @click="openInviteModal"
+                  @click="openInviteModal(item)"
                 >
                   <i class="ni ni-circle-08 pt-1"></i>
                 </button>
@@ -118,7 +118,7 @@
                           <base-button
                             type="primary"
                             class="my-4"
-                            @click="search_available_nearby(item)"
+                            @click="search_available_nearby(selectedBooking)"
                             >Invitar</base-button
                           >
                         </div>
@@ -174,6 +174,7 @@ export default {
       errorMessage: "",
       showInviteModal: false,
       invitedEmail: "",
+      selectedBooking: null, 
     };
   },
   mounted() {
@@ -342,16 +343,23 @@ export default {
           this.displayedBookings.splice(index, 1);
           this.totalItems--;
           this.totalItems = this.filteredBookings.length;
+          this.listBookings().then(() => {
+            this.sortBookingsByDate();
+            this.filterFutureBookings();
+          });
+          
         })
         .catch((error) => {
           console.error("Cancellation Error:", error);
         });
     },
-    openInviteModal() {
+    openInviteModal(booking) {
+      this.selectedBooking = booking; 
       this.showInviteModal = true;
     },
     closeInviteModal() {
       this.showInviteModal = false;
+      this.selectedBooking = null; 
     },
     search_available_nearby(booking) {
       axios
