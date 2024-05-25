@@ -442,24 +442,76 @@ from rest_framework.decorators import authentication_classes
 from django.core.mail import send_mail
 from .models import Booking, Desk
 from .serializers import BookingSerializer
+from django.utils.html import strip_tags
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+from datetime import datetime, timedelta
 
 def send_booking_email(user_email, reservation_details):
     subject = 'Detalles de su reserva'
-    message = (
-        f"Hola,\n\n"
-        f"Gracias por su reserva. Aquí están los detalles:\n"
-        f"Edificio: {reservation_details['building_name']}\n"
-        f"Sala: {reservation_details['space_name']}\n"
-        f"Asiento: {reservation_details['desk_name']}\n"
-        f"Fecha: {reservation_details['date']}\n"
-        f"Hora de inicio: {reservation_details['start_time']}\n"
-        f"Duración: {reservation_details['duration']} minutos\n\n"
-        f"Gracias por usar SeatEasy."
+
+    reservation_date = reservation_details['date']
+    start_time_str = f"{reservation_date}T{reservation_details['start_time']}:00+00:00"
+    start_time_local = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%S%z")
+    end_time_local = start_time_local + timedelta(minutes=reservation_details['duration'])
+
+    start_datetime_utc = start_time_local.strftime('%Y%m%dT%H%M%S')
+    end_datetime_utc = end_time_local.strftime('%Y%m%dT%H%M%S')
+
+    google_calendar_url = (
+        f"https://www.google.com/calendar/render?action=TEMPLATE"
+        f"&text=Reserva+en+{reservation_details['building_name']}"
+        f"&details=Reserva+de+{reservation_details['desk_name']}+en+{reservation_details['building_name']}+sala+{reservation_details['space_name']}"
+        f"&location={reservation_details['building_name']},+{reservation_details['space_name']}"
+        f"&dates={start_datetime_utc}/{end_datetime_utc}"
     )
+
+    html_message = f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
+        <div style="margin: 0 auto; padding: 20px; max-width: 600px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #333;">¡Hola!</h2>
+                <p style="font-size: 18px; color: #555;">Gracias por su reserva. Aquí están los detalles:</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #ddd; padding: 8px;">Edificio</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Sala</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Fecha</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Hora de inicio</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Hora de finalización</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Duración</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['building_name']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['space_name']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{start_time_local.strftime('%d-%m-%Y')}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{start_time_local.strftime('%H:%M')}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{end_time_local.strftime('%H:%M')}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['duration']} minutos</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <p><a href="{google_calendar_url}" target="_blank" style="color: #007bff; text-decoration: none;">Añadir al Calendario de Google</a></p>
+
+                <p style="font-size: 16px; color: #555;">Gracias por usar SeatEasy.</p>
+            </div>
+            <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
+                Por favor, no responda este correo.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    plain_message = strip_tags(html_message)
     from_email = 'seateasy8@gmail.com'
     
     try:
-        send_mail(subject, message, from_email, [user_email])
+        send_mail(subject, plain_message, from_email, [user_email], html_message=html_message)
     except Exception as e:
         print(f"Error enviando email: {e}")
 
