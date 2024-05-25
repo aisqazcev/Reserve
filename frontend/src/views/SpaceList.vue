@@ -396,55 +396,56 @@ export default {
     const endDateUTC = new Date(endDate.getTime() - (endDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
 
     let overlappingReservation = this.userReservations.some((reservation) => {
-      const reservationStartDate = new Date(reservation.start_time).toISOString().slice(0, 16);
-      const reservationEndDate = new Date(reservation.end_time).toISOString().slice(0, 16);
+        const reservationStartDate = new Date(reservation.start_time).toISOString().slice(0, 16);
+        const reservationEndDate = new Date(reservation.end_time).toISOString().slice(0, 16);
 
-      if (reservationStartDate.toString === startDateUTC.toString) {
-        return (
-          startDateUTC < reservationEndDate && endDateUTC > reservationStartDate
-        );
-      }
-      return false;
+        if (reservationStartDate.toString === startDateUTC.toString) {
+            return (
+                startDateUTC < reservationEndDate && endDateUTC > reservationStartDate
+            );
+        }
+        return false;
     });
 
     if (overlappingReservation) {
-      this.errorMessage =
-        "Ya tienes una reserva en esta franja horaria para el mismo día.";
-      return;
+        this.errorMessage =
+            "Ya tienes una reserva en esta franja horaria para el mismo día.";
+        return;
     }
 
     const token = localStorage.getItem("token");
     if (token) {
-      axios
-        .post(
-          `${backendUrl}booking/`,
-          {
-            desk: deskId,
-            date: date,
-            start_time: startDateUTC,
-            duration: durationMinutes, 
-            end_time: endDateUTC,
-            space_id: spaceId,
-          },
-          {
-            headers: { Authorization: `Token ${token}` },
-          }
-        )
-        .then((response) => {
-          this.spacesItems = this.spacesItems.filter(
-            (item) => item.id !== deskId
-          );
-          this.bookingMessage = "Reserva exitosa";
-          setTimeout(() => window.location.reload(), 1500);
-        })
-        .catch((error) => {
-          this.errorMessage =
-            "Error al reservar el escritorio: " + error.message;
-        });
+        axios
+            .post(
+                `${backendUrl}booking/`,
+                {
+                    desk: deskId,
+                    date: date,
+                    start_time: startDateUTC,
+                    duration: durationMinutes,
+                    end_time: endDateUTC,
+                    space_id: spaceId,
+                },
+                {
+                    headers: { Authorization: `Token ${token}` },
+                }
+            )
+            .then((response) => {
+                this.spacesItems = this.spacesItems.filter(
+                    (item) => item.id !== deskId
+                );
+                this.bookingMessage = "Reserva exitosa. Correo enviado con los detalles.";
+                setTimeout(() => window.location.reload(), 1500);
+            })
+            .catch((error) => {
+                this.errorMessage =
+                    "Error al reservar el escritorio: " + error.message;
+            });
     } else {
-      this.errorMessage = "No se encontró el token de autenticación.";
+        this.errorMessage = "No se encontró el token de autenticación.";
     }
-  },
+}
+,
 
   getCurrentDate() {
     const currentDate = new Date();

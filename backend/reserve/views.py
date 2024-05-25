@@ -428,9 +428,40 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import authentication_classes
+from django.core.mail import send_mail
 from .models import Booking, Desk
 from .serializers import BookingSerializer
 
+from datetime import datetime, timedelta
+from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import authentication_classes
+from django.core.mail import send_mail
+from .models import Booking, Desk
+from .serializers import BookingSerializer
+
+def send_booking_email(user_email, reservation_details):
+    subject = 'Detalles de su reserva'
+    message = (
+        f"Hola,\n\n"
+        f"Gracias por su reserva. Aquí están los detalles:\n"
+        f"Edificio: {reservation_details['building_name']}\n"
+        f"Sala: {reservation_details['space_name']}\n"
+        f"Asiento: {reservation_details['desk_name']}\n"
+        f"Fecha: {reservation_details['date']}\n"
+        f"Hora de inicio: {reservation_details['start_time']}\n"
+        f"Duración: {reservation_details['duration']} minutos\n\n"
+        f"Gracias por usar SeatEasy."
+    )
+    from_email = 'seateasy8@gmail.com'
+    
+    try:
+        send_mail(subject, message, from_email, [user_email])
+    except Exception as e:
+        print(f"Error enviando email: {e}")
 
 @authentication_classes([TokenAuthentication])
 class BookingManagementView(APIView):
@@ -456,23 +487,21 @@ class BookingManagementView(APIView):
             duration = timedelta(minutes=duration_minutes)
             end_time = start_time + duration
 
-            # Verificar superposición de reservas para el mismo usuario
-            overlapping_bookings = Booking.objects.filter(
+            overlapping_bookings_user = Booking.objects.filter(
                 user=request.user, start_time__lt=end_time, end_time__gt=start_time
             )
 
-            if overlapping_bookings.exists():
+            if overlapping_bookings_user.exists():
                 return Response(
                     {"error": "Ya tienes una reserva en esta franja horaria."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Verificar superposición de reservas para el mismo escritorio
-            overlapping_bookings = Booking.objects.filter(
+            overlapping_bookings_desk = Booking.objects.filter(
                 desk_id=desk_id, start_time__lt=end_time, end_time__gt=start_time
             )
 
-            if overlapping_bookings.exists():
+            if overlapping_bookings_desk.exists():
                 return Response(
                     {
                         "error": "Este asiento ya está reservado para este intervalo de tiempo."
@@ -482,11 +511,22 @@ class BookingManagementView(APIView):
 
             request.data["start_time"] = start_time.isoformat()
             request.data["end_time"] = end_time.isoformat()
-            request.data["duration"] = duration  # Guardar la duración como timedelta
+            request.data["duration"] = duration
 
             serializer = BookingSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                booking = serializer.save()
+
+                reservation_details = {
+                    'building_name': booking.space.building.name_complete,
+                    'space_name': booking.space.name,
+                    'desk_name': booking.desk.name,
+                    'date': booking.date,
+                    'start_time': start_time.strftime("%H:%M"),
+                    'duration': duration_minutes
+                }
+                send_booking_email(request.user.email, reservation_details)
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -508,7 +548,6 @@ class BookingManagementView(APIView):
         booking = get_object_or_404(Booking, id=booking_id)
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
-
 
 class FindAvailableSeatsView(APIView):
     def get(self, request, *args, **kwargs):
