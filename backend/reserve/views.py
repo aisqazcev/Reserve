@@ -233,30 +233,24 @@ class UserView(APIView):
             "username": (
                 user.get_username() if user.get_username() else "Username Desconocido"
             ),
-        }
+            "profile_image": user.profile_image,
+                    }
         return Response(data)
 
 
 @authentication_classes([TokenAuthentication])
 class PasswordChangeView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = PasswordChangeSerializer(data=request.data)
         if serializer.is_valid():
             current_password = serializer.validated_data["current_password"]
             new_password = serializer.validated_data["new_password"]
-            confirm_new_password = serializer.validated_data["confirm_new_password"]
 
             if not request.user.check_password(current_password):
                 return Response(
                     {"detail": "Contraseña actual incorrecta."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if new_password != confirm_new_password:
-                return Response(
-                    {"detail": "Las nuevas contraseñas no coinciden."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -584,8 +578,6 @@ class FindAvailableSeatsView(APIView):
 
         try:
             start_time = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M")
-
-            # Check if start_time is naive
             if timezone.is_naive(start_time):
                 start_time = timezone.make_aware(start_time, timezone.utc)
 
@@ -622,7 +614,6 @@ class BookingListView(APIView):
             serialized_bookings = []
             for booking in bookings:
                 serialized_booking = BookingSerializer(booking).data
-                # Convertir a UTC
                 serialized_booking["start_time"] = booking.start_time.astimezone(
                     timezone.utc
                 ).isoformat()
@@ -631,7 +622,7 @@ class BookingListView(APIView):
                 ).isoformat()
                 serialized_booking["duration"] = int(
                     booking.duration.total_seconds() // 60
-                )  # Asegurarse de que la duración esté en minutos
+                )  
                 serialized_bookings.append(serialized_booking)
 
             return Response(serialized_bookings, status=status.HTTP_200_OK)
@@ -967,3 +958,19 @@ def invite(request):
                 return JsonResponse({'error': 'El correo electrónico no está asociado a ningún usuario registrado.'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+from rest_framework.decorators import api_view, permission_classes
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile_image(request):
+    user = request.user
+    profile_image_url = request.data.get('profile_image', None)
+    if profile_image_url:
+        print(profile_image_url)
+        user.profile_image = profile_image_url
+        user.save()
+        return Response({"detail": "Imagen de perfil actualizada exitosamente."}, status=status.HTTP_200_OK)
+    return Response({"detail": "No se proporcionó ninguna URL de imagen de perfil."}, status=status.HTTP_400_BAD_REQUEST)

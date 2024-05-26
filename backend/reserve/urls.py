@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, FindAvailableSeatsView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_spaces, find_nearby_seats, get_random_images, invite, occupation_actual, send_booking_email, send_email_view, send_incidence, send_recovery_email, verify_code
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, FindAvailableSeatsView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_spaces, find_nearby_seats, get_random_images, invite, occupation_actual, send_booking_email, send_email_view, send_incidence, send_recovery_email, update_profile_image, verify_code
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -64,6 +64,8 @@ urlpatterns = [
     path('get-random-images/', get_random_images, name='get-random-images'),
     path('invite/', invite, name='invite'),
     path('find_nearby_seats/', find_nearby_seats, name='find_nearby_seats'),
+
+    path('update-profile-image/', update_profile_image, name='update-profile-image'),
 
     
 ]
