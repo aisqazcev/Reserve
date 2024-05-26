@@ -38,6 +38,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=250)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
+    profile_image = models.CharField(max_length=255, default='img/theme/pato.jpg')
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
@@ -211,8 +212,7 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         self.end_time = self.start_time + self.duration
-        
-        # Check if the start_time and end_time are naive
+    
         if timezone.is_naive(self.start_time):
             self.start_time = timezone.make_aware(self.start_time, timezone.utc)
         if timezone.is_naive(self.end_time):

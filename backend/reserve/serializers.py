@@ -1,5 +1,9 @@
 import re
+from .models import Booking
+from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
 from .models import (
     Booking,
     Building,
@@ -35,15 +39,27 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class PasswordChangeSerializer(serializers.Serializer):
-    current_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True)
-    confirm_new_password = serializers.CharField(write_only=True)
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    confirm_new_password = serializers.CharField(required=True)
 
+    def validate_new_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("La contraseña debe tener al menos 8 caracteres.")
+        if not re.search(r'[A-Z]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos una letra mayúscula.")
+        if not re.search(r'[a-z]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos una letra minúscula.")
+        if not re.search(r'[0-9]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos un número.")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos un carácter especial.")
+        return value
 
-from rest_framework import serializers
-from .models import Booking
-from datetime import datetime, timedelta
-from django.utils import timezone
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError("Las nuevas contraseñas no coinciden.")
+        return data
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -55,7 +71,7 @@ class BookingSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['start_time'] = instance.start_time.astimezone(timezone.utc).isoformat()
         ret['end_time'] = instance.end_time.astimezone(timezone.utc).isoformat()
-        ret['duration'] = int(instance.duration.total_seconds() // 60)  # Convertir la duración a minutos
+        ret['duration'] = int(instance.duration.total_seconds() // 60) 
         return ret
 
 class EquipmentSerializer(serializers.ModelSerializer):

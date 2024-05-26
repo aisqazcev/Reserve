@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.core.cache import cache
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import TokenAuthentication
@@ -21,9 +20,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
-from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password
-
+from django.utils.html import strip_tags
 
 from .models import (
     Booking,
@@ -52,14 +50,7 @@ from .serializers import (
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
-    HTTP_403_FORBIDDEN as ST_403,
-    HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,
-    HTTP_204_NO_CONTENT as ST_204,
-    HTTP_400_BAD_REQUEST as ST_400,
-    HTTP_205_RESET_CONTENT as ST_205,
-    HTTP_401_UNAUTHORIZED as ST_401,
-    HTTP_500_INTERNAL_SERVER_ERROR as ST_500,
 )
 
 
@@ -242,30 +233,24 @@ class UserView(APIView):
             "username": (
                 user.get_username() if user.get_username() else "Username Desconocido"
             ),
-        }
+            "profile_image": user.profile_image,
+                    }
         return Response(data)
 
 
 @authentication_classes([TokenAuthentication])
 class PasswordChangeView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = PasswordChangeSerializer(data=request.data)
         if serializer.is_valid():
             current_password = serializer.validated_data["current_password"]
             new_password = serializer.validated_data["new_password"]
-            confirm_new_password = serializer.validated_data["confirm_new_password"]
 
             if not request.user.check_password(current_password):
                 return Response(
                     {"detail": "Contraseña actual incorrecta."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if new_password != confirm_new_password:
-                return Response(
-                    {"detail": "Las nuevas contraseñas no coinciden."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -421,16 +406,75 @@ class DeskShowView(APIView):
         return Response(serializer.data)
 
 
-from datetime import datetime, timedelta
-from django.utils import timezone
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import authentication_classes
-from .models import Booking, Desk
-from .serializers import BookingSerializer
 
+
+def send_booking_email(user_email, reservation_details):
+    subject = 'Detalles de su reserva'
+
+    reservation_date = reservation_details['date']
+    start_time_str = f"{reservation_date}T{reservation_details['start_time']}:00+00:00"
+    start_time_local = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M:%S%z")
+    end_time_local = start_time_local + timedelta(minutes=reservation_details['duration'])
+
+    start_datetime_utc = start_time_local.strftime('%Y%m%dT%H%M%S')
+    end_datetime_utc = end_time_local.strftime('%Y%m%dT%H%M%S')
+
+    google_calendar_url = (
+        f"https://www.google.com/calendar/render?action=TEMPLATE"
+        f"&text=Reserva+en+{reservation_details['building_name']}"
+        f"&details=Reserva+de+{reservation_details['desk_name']}+en+{reservation_details['building_name']}+sala+{reservation_details['space_name']}"
+        f"&location={reservation_details['building_name']},+{reservation_details['space_name']}"
+        f"&dates={start_datetime_utc}/{end_datetime_utc}"
+    )
+
+    html_message = f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
+        <div style="margin: 0 auto; padding: 20px; max-width: 600px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 10px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #333;">¡Hola!</h2>
+                <p style="font-size: 18px; color: #555;">Gracias por su reserva. Aquí están los detalles:</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #ddd;">
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #ddd; padding: 8px;">Edificio</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Sala</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Asiento</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Fecha</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Hora de inicio</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Hora de finalización</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['building_name']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['space_name']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['desk_name']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{start_time_local.strftime('%d-%m-%Y')}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{start_time_local.strftime('%H:%M')}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{end_time_local.strftime('%H:%M')}</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <p style="font-size: 16px; color: #555;">No olvides cancelar tu reserva si no puedes asistir.</p>
+                <p><a href="{google_calendar_url}" target="_blank" style="color: #007bff; text-decoration: none;">Añade tu reserva a tu calendario de Google</a></p>
+                <p style="font-size: 16px; color: #555;">Gracias por usar SeatEasy.</p>
+            </div>
+            <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
+                Por favor, no responda este correo.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    plain_message = strip_tags(html_message)
+    from_email = 'seateasy8@gmail.com'
+    
+    try:
+        send_mail(subject, plain_message, from_email, [user_email], html_message=html_message)
+    except Exception as e:
+        print(f"Error enviando email: {e}")
 
 @authentication_classes([TokenAuthentication])
 class BookingManagementView(APIView):
@@ -456,23 +500,21 @@ class BookingManagementView(APIView):
             duration = timedelta(minutes=duration_minutes)
             end_time = start_time + duration
 
-            # Verificar superposición de reservas para el mismo usuario
-            overlapping_bookings = Booking.objects.filter(
+            overlapping_bookings_user = Booking.objects.filter(
                 user=request.user, start_time__lt=end_time, end_time__gt=start_time
             )
 
-            if overlapping_bookings.exists():
+            if overlapping_bookings_user.exists():
                 return Response(
                     {"error": "Ya tienes una reserva en esta franja horaria."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Verificar superposición de reservas para el mismo escritorio
-            overlapping_bookings = Booking.objects.filter(
+            overlapping_bookings_desk = Booking.objects.filter(
                 desk_id=desk_id, start_time__lt=end_time, end_time__gt=start_time
             )
 
-            if overlapping_bookings.exists():
+            if overlapping_bookings_desk.exists():
                 return Response(
                     {
                         "error": "Este asiento ya está reservado para este intervalo de tiempo."
@@ -482,11 +524,22 @@ class BookingManagementView(APIView):
 
             request.data["start_time"] = start_time.isoformat()
             request.data["end_time"] = end_time.isoformat()
-            request.data["duration"] = duration  # Guardar la duración como timedelta
+            request.data["duration"] = duration
 
             serializer = BookingSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                booking = serializer.save()
+
+                reservation_details = {
+                    'building_name': booking.space.building.name_complete,
+                    'space_name': booking.space.name,
+                    'desk_name': booking.desk.name,
+                    'date': booking.date,
+                    'start_time': start_time.strftime("%H:%M"),
+                    'duration': duration_minutes
+                }
+                send_booking_email(request.user.email, reservation_details)
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -509,7 +562,6 @@ class BookingManagementView(APIView):
         booking.delete()
         return Response(data={"message": "Booking deleted successfully"}, status=ST_200)
 
-
 class FindAvailableSeatsView(APIView):
     def get(self, request, *args, **kwargs):
         start_time_str = request.GET.get("start_time")
@@ -526,8 +578,6 @@ class FindAvailableSeatsView(APIView):
 
         try:
             start_time = datetime.strptime(start_time_str, "%Y-%m-%dT%H:%M")
-
-            # Check if start_time is naive
             if timezone.is_naive(start_time):
                 start_time = timezone.make_aware(start_time, timezone.utc)
 
@@ -564,7 +614,6 @@ class BookingListView(APIView):
             serialized_bookings = []
             for booking in bookings:
                 serialized_booking = BookingSerializer(booking).data
-                # Convertir a UTC
                 serialized_booking["start_time"] = booking.start_time.astimezone(
                     timezone.utc
                 ).isoformat()
@@ -573,7 +622,7 @@ class BookingListView(APIView):
                 ).isoformat()
                 serialized_booking["duration"] = int(
                     booking.duration.total_seconds() // 60
-                )  # Asegurarse de que la duración esté en minutos
+                )  
                 serialized_bookings.append(serialized_booking)
 
             return Response(serialized_bookings, status=status.HTTP_200_OK)
@@ -741,10 +790,10 @@ def find_available_spaces(request):
 
 def get_random_images(request):
     try:
-        espacios_aleatorios = random.sample(list(Space.objects.all()), 3)
+        random_spaces = random.sample(list(Space.objects.all()), 3)
         urls_imagenes = [
-            f"{settings.MEDIA_URL}{espacio.image}" if espacio.image else None
-            for espacio in espacios_aleatorios
+            f"{settings.MEDIA_URL}{space.image}" if space.image else None
+            for space in random_spaces
         ]
 
         return JsonResponse({"urls_imagenes": urls_imagenes})
@@ -909,3 +958,19 @@ def invite(request):
                 return JsonResponse({'error': 'El correo electrónico no está asociado a ningún usuario registrado.'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+from rest_framework.decorators import api_view, permission_classes
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile_image(request):
+    user = request.user
+    profile_image_url = request.data.get('profile_image', None)
+    if profile_image_url:
+        print(profile_image_url)
+        user.profile_image = profile_image_url
+        user.save()
+        return Response({"detail": "Imagen de perfil actualizada exitosamente."}, status=status.HTTP_200_OK)
+    return Response({"detail": "No se proporcionó ninguna URL de imagen de perfil."}, status=status.HTTP_400_BAD_REQUEST)

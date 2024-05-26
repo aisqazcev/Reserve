@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, FindAvailableSeatsView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_spaces, find_nearby_seats, get_random_images, invite, occupation_actual, send_email_view, send_incidence, send_recovery_email, verify_code
+from .views import BookingListView, BookingManagementView, BuildingDetailstView, BuildingListView, CampusDetailView, CampusListView, FindAvailableSeatsView, PasswordChangeView, RegisterView, BookingShowView, EquipmentManagementView, EquipmentShowView, LoginView, LogoutView, SpaceItemListView, SpaceShowView, SpaceManagementView, SpaceShowView, RoomListView, RoomShowView, DeskListView, DeskShowView, SpacesByBuildingView, UserView, change_pass_email, find_available_spaces, find_nearby_seats, get_random_images, invite, occupation_actual, send_booking_email, send_email_view, send_incidence, send_recovery_email, update_profile_image, verify_code
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -50,9 +50,6 @@ urlpatterns = [
     path('campus/<int:campus_id>/', CampusDetailView.as_view(), name='campus-details'), 
 
     path('buildings/', BuildingListView.as_view(), name='building-list'),
-
-    path('booking/', BookingManagementView.as_view(), name='booking'),
-    
     path('building/<int:building_id>/', BuildingDetailstView.as_view(), name='building-details'),
     path('building/<int:building_id>/spaces/', SpacesByBuildingView.as_view(), name='spaces_by_building'),
 
@@ -61,18 +58,15 @@ urlpatterns = [
     path('booking/<int:booking_id>/', BookingManagementView.as_view(), name='delete-booking'),
 
     path('find-available-seats/', FindAvailableSeatsView.as_view(), name='find_available_seats'),
-
     path('find-available-spaces/',find_available_spaces, name='find_available_spaces'),
     path('occupation-actual/<int:space_id>/', occupation_actual, name='occupation-actual'),
 
     path('get-random-images/', get_random_images, name='get-random-images'),
-    
-    path('register/', RegisterView.as_view(), name='register'),
-    path('enviar_correo/', send_email_view, name='enviar_correo'),
-    path('verify_code/', verify_code, name='verify_code'),
-
     path('invite/', invite, name='invite'),
     path('find_nearby_seats/', find_nearby_seats, name='find_nearby_seats'),
+
+    path('update-profile-image/', update_profile_image, name='update-profile-image'),
+
     
 ]
 
