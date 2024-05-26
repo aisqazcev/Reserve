@@ -55,7 +55,7 @@ class BookingSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['start_time'] = instance.start_time.astimezone(timezone.utc).isoformat()
         ret['end_time'] = instance.end_time.astimezone(timezone.utc).isoformat()
-        ret['duration'] = int(instance.duration.total_seconds() // 60)  # Convertir la duración a minutos
+        ret['duration'] = int(instance.duration.total_seconds() // 60) 
         return ret
 
 class EquipmentSerializer(serializers.ModelSerializer):

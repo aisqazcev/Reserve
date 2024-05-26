@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.core.cache import cache
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import TokenAuthentication
@@ -21,9 +20,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
-from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password
-
+from django.utils.html import strip_tags
 
 from .models import (
     Booking,
@@ -52,14 +50,7 @@ from .serializers import (
 from rest_framework.status import (
     HTTP_200_OK as ST_200,
     HTTP_201_CREATED as ST_201,
-    HTTP_403_FORBIDDEN as ST_403,
-    HTTP_404_NOT_FOUND as ST_404,
     HTTP_409_CONFLICT as ST_409,
-    HTTP_204_NO_CONTENT as ST_204,
-    HTTP_400_BAD_REQUEST as ST_400,
-    HTTP_205_RESET_CONTENT as ST_205,
-    HTTP_401_UNAUTHORIZED as ST_401,
-    HTTP_500_INTERNAL_SERVER_ERROR as ST_500,
 )
 
 
@@ -421,31 +412,7 @@ class DeskShowView(APIView):
         return Response(serializer.data)
 
 
-from datetime import datetime, timedelta
-from django.utils import timezone
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import authentication_classes
-from django.core.mail import send_mail
-from .models import Booking, Desk
-from .serializers import BookingSerializer
 
-from datetime import datetime, timedelta
-from django.utils import timezone
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import authentication_classes
-from django.core.mail import send_mail
-from .models import Booking, Desk
-from .serializers import BookingSerializer
-from django.utils.html import strip_tags
-from django.core.mail import send_mail
-from django.utils.html import strip_tags
-from datetime import datetime, timedelta
 
 def send_booking_email(user_email, reservation_details):
     subject = 'Detalles de su reserva'
@@ -480,24 +447,24 @@ def send_booking_email(user_email, reservation_details):
                     <tr style="background-color: #f2f2f2;">
                         <th style="border: 1px solid #ddd; padding: 8px;">Edificio</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Sala</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Asiento</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Fecha</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Hora de inicio</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Hora de finalización</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Duración</th>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['building_name']}</td>
                         <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['space_name']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['desk_name']}</td>
                         <td style="border: 1px solid #ddd; padding: 8px;">{start_time_local.strftime('%d-%m-%Y')}</td>
                         <td style="border: 1px solid #ddd; padding: 8px;">{start_time_local.strftime('%H:%M')}</td>
                         <td style="border: 1px solid #ddd; padding: 8px;">{end_time_local.strftime('%H:%M')}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">{reservation_details['duration']} minutos</td>
                     </tr>
                 </table>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-                <p><a href="{google_calendar_url}" target="_blank" style="color: #007bff; text-decoration: none;">Añadir al Calendario de Google</a></p>
-
+                <p style="font-size: 16px; color: #555;">No olvides cancelar tu reserva si no puedes asistir.</p>
+                <p><a href="{google_calendar_url}" target="_blank" style="color: #007bff; text-decoration: none;">Añade tu reserva a tu calendario de Google</a></p>
                 <p style="font-size: 16px; color: #555;">Gracias por usar SeatEasy.</p>
             </div>
             <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
@@ -832,10 +799,10 @@ def find_available_spaces(request):
 
 def get_random_images(request):
     try:
-        espacios_aleatorios = random.sample(list(Space.objects.all()), 3)
+        random_spaces = random.sample(list(Space.objects.all()), 3)
         urls_imagenes = [
-            f"{settings.MEDIA_URL}{espacio.image}" if espacio.image else None
-            for espacio in espacios_aleatorios
+            f"{settings.MEDIA_URL}{space.image}" if space.image else None
+            for space in random_spaces
         ]
 
         return JsonResponse({"urls_imagenes": urls_imagenes})

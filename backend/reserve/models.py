@@ -211,8 +211,7 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         self.end_time = self.start_time + self.duration
-        
-        # Check if the start_time and end_time are naive
+    
         if timezone.is_naive(self.start_time):
             self.start_time = timezone.make_aware(self.start_time, timezone.utc)
         if timezone.is_naive(self.end_time):
