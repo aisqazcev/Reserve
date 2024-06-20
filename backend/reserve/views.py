@@ -937,7 +937,7 @@ def invite(request):
                             {nearby_seats_list}
                         </div>
                         <div style="text-align: center; margin-bottom: 20px;">
-                            <p style="font-size: 16px; color: #555;">Entra en <a href="https://seatEasy.com" target="_blank" style="color: #007bff; text-decoration: none;">SeatEasy</a> y reserva tu asiento. ¡No te quedes sin tu sitio!</p>
+                            <p style="font-size: 16px; color: #555;">Entra en <a href="https://seateasy-61465.web.app/" target="_blank" style="color: #007bff; text-decoration: none;">SeatEasy</a> y reserva tu asiento. ¡No te quedes sin tu sitio!</p>
                             <p><a href="{google_calendar_url}" target="_blank" style="color: #007bff; text-decoration: none;">Añadir al Calendario de Google</a></p>
                         </div>
                         <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
