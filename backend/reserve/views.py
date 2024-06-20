@@ -704,9 +704,8 @@ class BuildingListView(APIView):
             buildings = Building.objects.all().select_related("campus")
 
         serializer = BuildingSerializer(buildings, many=True)
-        serialized_data = serializer.data
+        return Response(serializer.data)
 
-        return JsonResponse(serialized_data, safe=False)
 
 
 class BuildingDetailstView(APIView):
