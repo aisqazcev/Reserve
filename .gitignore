@@ -166,3 +166,4 @@ backend/reserve/migrations/__init__.py
 backend/reserve/migrations/0001_initial.py
 backend/reserve/migrations/0001_initial.py
 backend/reserve/models.py
+frontend/.firebase/hosting.ZGlzdA.cache
