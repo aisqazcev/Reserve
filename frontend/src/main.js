@@ -37,7 +37,7 @@ Vue.prototype.$axios = axios;
 Vue.use(VueAxios, axios)
 
 //Configuración global
-export const backendUrl = "http://localhost:8000/";
+export const backendUrl = "https://seateasy.azurewebsites.net/";
 
 Vue.component("modal", Modal);
 
