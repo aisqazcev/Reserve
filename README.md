@@ -4,10 +4,7 @@
 - [Instalación](#instalación)
 - [Uso](#uso)
 - [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Contribuir](#contribuir)
-- [Licencia](#licencia)
-- [Contacto](#contacto)
-- [Agradecimientos](#agradecimientos)
+- [Despliegue](#despliegue)
 
 ## Descripción del Proyecto
 Es una aplicación diseñada para la gestión de reservas de asientos en salas de estudio. El objetivo del proyecto es optimizar la experiencia del usuario al permitir la reserva anticipada de asientos y proporcionar información en tiempo real sobre la disponibilidad y el equipamiento de las salas.
@@ -93,5 +90,40 @@ Asegúrate de que los siguientes archivos están presentes en tu repositorio:
 - `package.json`: Lista de dependencias de Node.js.
 - `.env.example`: Archivo de ejemplo para configuración de variables de entorno.
 
+## Uso
 
+Para utilizar la aplicación:
 
+1. Accede a la interfaz web a través de tu navegador en `http://localhost:8000`.
+2. Regístrate o inicia sesión.
+3. Navega por las salas disponibles y realiza una reserva.
+4. Utiliza las funciones de reporte de incidencias e invitaciones para mejorar tu experiencia.
+
+## Tecnologías Utilizadas
+
+- **Backend**: Django
+- **Frontend**: Argon Vue
+- **Base de Datos**: SQLite (puede ser configurado para usar PostgreSQL, MySQL, etc.)
+- **Control de Versiones**: Git
+
+## Despliegue
+### Frontend (Vue.js con Firebase Hosting)
+
+Para desplegar el frontend:
+
+1. Desde el directorio del frontend:
+   ```bash
+   npm run build
+   ```
+   
+2. Una vez que el proyecto está construido, despliégalo usando Firebase:
+   ```bash
+   firebase deploy
+   ```
+
+### Backend (Django con Azure)
+   ```bash
+   az webapp up --runtime PYTHON:3.10 --logs --sku B1 --location westus
+   ```
+Asegúrate de tener instalado Azure CLI (az) y haber iniciado sesión en tu cuenta de Azure antes de ejecutar este comando.
+Este comando desplegará la aplicación Django en Azure Web Apps utilizando Python 3.10 como entorno de ejecución.
