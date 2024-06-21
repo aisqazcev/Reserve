@@ -18,28 +18,29 @@
             <div class="row">
               <div class="col-lg-6">
                 <p class="lead" v-if="!codeVerified">
-                Se ha enviado un código de verificación al correo electrónico
-                registrado, por favor, ingresa el código:
-              </p>
-              <p class="lead" v-else>
-                Ingresa tu nueva contraseña:
-              </p>
+                  Se ha enviado un código de verificación al correo electrónico
+                  registrado, por favor, ingresa el código:
+                </p>
+                <p class="lead" v-else>
+                  Ingresa tu nueva contraseña:
+                </p>
               </div>
             </div>
             <div class="row">
               <div class="col-lg-6 mt-4">
-                <form role="form" v-if="!codeVerified">
-                  <div class="ct-example-row">
+                <form @submit.prevent="codeVerified ? change_pass() : verify()">
+                  <div v-if="!codeVerified" class="ct-example-row">
                     <div class="row">
                       <div class="col-sm">
-                        <label for="date" style="color: black;"
-                          >Código de verificación</label
-                        >
+                        <label for="verificationCode" style="color: black;">
+                          Código de verificación
+                        </label>
                         <base-input
                           alternative
                           type=""
                           v-model="form.verificationCode"
                           id="verificationCode"
+                          @keydown.enter.prevent="verify()"
                         ></base-input>
                       </div>
                       <div
@@ -49,7 +50,7 @@
                           :disabled="loading"
                           type="primary"
                           class="my-4"
-                          @click="verify"
+                          @click="verify()"
                         >
                           Verificar
                         </base-button>
@@ -64,69 +65,62 @@
                       </div>
                     </div>
                   </div>
-                  <div class="text-center mt-3">
-                  <router-link to="/">
-                    Volver al inicio de sesión
-                  </router-link>
-                </div>
-                </form>
-                <form role="form" v-else>
-                <div class="ct-example-row">
-                  <div class="row">
-                    <div class="col-sm">
-                      <label for="newPassword" style="color: black;"
-                        >Nueva contraseña</label
-                      >
-                      <base-input
-                        alternative
-                        type="password"
-                        v-model="form.newPassword"
-                        id="newPassword"
-                      ></base-input>
+                  <div v-else class="ct-example-row">
+                    <div class="row">
+                      <div class="col-sm">
+                        <label for="newPassword" style="color: black;">
+                          Nueva contraseña
+                        </label>
+                        <base-input
+                          alternative
+                          type="password"
+                          v-model="form.newPassword"
+                          id="newPassword"
+                          @keydown.enter.prevent="change_pass()"
+                        ></base-input>
+                      </div>
                     </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm">
-                      <label for="confirmPassword" style="color: black;"
-                        >Confirmar contraseña</label
-                      >
-                      <base-input
-                        alternative
-                        type="password"
-                        v-model="form.confirmPassword"
-                        id="confirmPassword"
-                      ></base-input>
+                    <div class="row">
+                      <div class="col-sm">
+                        <label for="confirmPassword" style="color: black;">
+                          Confirmar contraseña
+                        </label>
+                        <base-input
+                          alternative
+                          type="password"
+                          v-model="form.confirmPassword"
+                          id="confirmPassword"
+                          @keydown.enter.prevent="change_pass()"
+                        ></base-input>
+                      </div>
                     </div>
-                  </div>
-                  <div class="row">
-                    <div
-                      class="col-sm d-flex flex-column align-items-center justify-content-center"
-                    >
-                      <base-button
-                        :disabled="loading"
-                        type="primary"
-                        class="my-4"
-                        @click="change_pass"
-                      >
-                        Cambiar contraseña
-                      </base-button>
+                    <div class="row">
                       <div
-                        v-if="errorMessage"
-                        class="alert alert-default error-message mt-3"
-                        role="alert"
+                        class="col-sm d-flex flex-column align-items-center justify-content-center"
                       >
-                        <i class="fas fa-exclamation-triangle"></i>
-                        {{ errorMessage }}
+                        <base-button
+                          :disabled="loading"
+                          type="primary"
+                          class="my-4"
+                          @click="change_pass()"
+                        >
+                          Cambiar contraseña
+                        </base-button>
+                        <div
+                          v-if="errorMessage"
+                          class="alert alert-default error-message mt-3"
+                          role="alert"
+                        >
+                          <i class="fas fa-exclamation-triangle"></i>
+                          {{ errorMessage }}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="text-center mt-3">
-                  <router-link to="/">
-                    Volver al inicio de sesión
-                  </router-link>
-                </div>
-              </form>
+                  <div class="text-center mt-3">
+                    <router-link to="/">Volver al inicio de sesión</router-link>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -188,14 +182,14 @@ export default {
       try {
         this.loading = true;
         const response = await axios.post(`${backendUrl}change_pass/`, {
-                email: this.form.email,
-                new_password: this.form.newPassword,
-                confirm_new_password: this.form.confirmPassword,
-            });
+          email: this.form.email,
+          new_password: this.form.newPassword,
+          confirm_new_password: this.form.confirmPassword,
+        });
 
         if (response.status === 200) {
           this.successMessage = "Contraseña cambiada exitosamente.";
-          localStorage.removeItem('formData');
+          localStorage.removeItem("formData");
           this.$router.push("/");
         } else {
           this.errorMessage =
@@ -212,3 +206,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Estilos específicos para este componente */
+</style>

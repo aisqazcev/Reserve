@@ -11,7 +11,6 @@
           <span></span>
           <span></span>
           <span></span>
-          <span></span>
         </div>
         <div class="container shape-container d-flex">
           <div class="col px-0">
@@ -25,36 +24,28 @@
             </div>
             <div class="row">
               <div class="col-lg-6 mt-4">
-                <form role="form">
+                <form role="form" @keydown.enter.prevent="handleEnterKey">
                   <div class="ct-example-row">
                     <div class="row">
                       <div class="col-sm">
-                        <label for="date" style="color: black;"
-                          >Código de verificación</label
-                        >
+                        <label for="date" style="color: black;">Código de verificación</label>
                         <base-input
                           alternative
-                          type=""
                           v-model="form.verificationCode"
                           id="verificationCode"
                         ></base-input>
                       </div>
-                      <div
-                        class="col-sm d-flex flex-column align-items-center justify-content-center"
-                      >
+                      <div class="col-sm d-flex flex-column align-items-center justify-content-center">
                         <base-button
+                          ref="verifyButton"
                           :disabled="loading"
                           type="primary"
                           class="my-4"
                           @click="verify"
                         >
-                          Verificar
+                          {{ loading ? "Verificando..." : "Verificar" }}
                         </base-button>
-                        <div
-                          v-if="errorMessage"
-                          class="alert alert-default error-message mt-3"
-                          role="alert"
-                        >
+                        <div v-if="errorMessage" class="alert alert-default error-message mt-3" role="alert">
                           <i class="fas fa-exclamation-triangle"></i>
                           {{ errorMessage }}
                         </div>
@@ -96,7 +87,19 @@ export default {
     }
   },
   methods: {
+    handleEnterKey() {
+      const button = this.$refs.verifyButton;
+      if (button && !button.disabled) {
+        button.$el.click();
+      }
+    },
     async verify() {
+      if (this.loading) return; 
+
+      this.loading = true; 
+      this.errorMessage = '';
+      this.successMessage = '';
+
       try {
         const response = await axios.post(
           `${backendUrl}verify_code/`,
@@ -114,6 +117,8 @@ export default {
       } catch (error) {
         this.errorMessage = "Ha ocurrido un error al verificar el código.";
         console.error("Verification error:", error);
+      } finally {
+        this.loading = false; 
       }
     },
     async register() {
