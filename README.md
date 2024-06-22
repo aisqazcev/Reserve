@@ -27,14 +27,11 @@ Asegúrate de tener instaladas las siguientes herramientas en tu sistema:
     ```bash
     git clone https://github.com/aisqazcev/Reserve.git
     ```
-
+### Configuración del Backend
 2. Navega al directorio del proyecto:
     ```bash
-    cd .\backend\
+    cd backend
     ```
-
-### Configuración del Backend
-
 3. Crea y activa un entorno virtual:
     ```bash
     python -m venv venv
@@ -60,20 +57,23 @@ Asegúrate de tener instaladas las siguientes herramientas en tu sistema:
     ```
 
 ### Configuración del Frontend
-
-7. Instala las dependencias de Node.js:
+7. Navega al directorio del proyecto:
+    ```bash
+    cd frontend
+    ```
+8. Instala las dependencias de Node.js:
     ```bash
     npm install
     ```
 
 ### Inicio de la Aplicación
 
-8. Inicia el servidor de desarrollo de Django:
+9. Inicia el servidor de desarrollo de Django desde la carpeta backend:
     ```bash
     python manage.py runserver
     ```
 
-9. Inicia el servidor de desarrollo de Vue:
+9. Inicia el servidor de desarrollo de Vue desde la carpeta frontend:
     ```bash
     npm run serve
     ```
