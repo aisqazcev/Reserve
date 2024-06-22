@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'rest_framework_simplejwt',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -175,3 +176,6 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+USE_TZ = True
+TIME_ZONE = 'Europe/Madrid'

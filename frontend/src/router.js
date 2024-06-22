@@ -14,6 +14,7 @@ import Buildings from "./views/Buildings.vue";
 import ConfirmRegistration from "./views/ConfirmRegister.vue";
 import ForgetPass from "./views/ForgetPass.vue";
 import ConfirmPass from "./views/ConfirmPass.vue";
+import Incidences from "./views/Incidences.vue";
 
 Vue.use(Router);
 
@@ -63,7 +64,8 @@ const router = new Router({
         header: AppHeader,
         default: Buildings,
         footer: AppFooter
-      }
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/building/:buildingId",
@@ -72,7 +74,8 @@ const router = new Router({
         header: AppHeader,
         default: SpacesByBuilding,
         footer: AppFooter
-      }
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/booking",
@@ -82,6 +85,7 @@ const router = new Router({
         default: Booking,
         footer: AppFooter,
       },
+      meta: { requiresAuth: true }
     },
     {
       path: "/bookings",
@@ -89,7 +93,9 @@ const router = new Router({
       components: {
         header: AppHeader,
         default: Bookings,
-      }
+        footer: AppFooter,
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/space/:spaceId",
@@ -99,11 +105,23 @@ const router = new Router({
         default: Desk,
         footer: AppFooter,
       },
+      meta: { requiresAuth: true }
+    },
+    {
+      path: "/incidences",
+      name: "Incidences",
+      components: {
+        header: AppHeader,
+        default: Incidences,
+        footer: AppFooter
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: "/confirm_register",
       name: "confirm_register",
       component: ConfirmRegistration,
+      footer: AppFooter,
     },
     {
       path: "/forget_pass",

@@ -11,16 +11,14 @@
       <span></span>
     </div>
     <div class="container pt-lg-md">
-      <div class="card mb-3  text-white">
+      <div class="card mb-3 text-white">
         <div class="card-body">
-          <h3 class="card-title">
-            Buscar Disponibilidad de Espacios
-          </h3>       
+          <h3 class="card-title">Buscar Disponibilidad de Espacios</h3>
           <form @submit.prevent="buscarDisponibilidad" role="form">
             <div class="ct-example-row">
               <div class="row">
                 <div class="col-sm">
-                  <label for="date" style="color: black;">Fecha</label>
+                  <label for="date" style="color: black">Fecha</label>
                   <base-input
                     alternative
                     type="date"
@@ -29,7 +27,7 @@
                   ></base-input>
                 </div>
                 <div class="col-sm">
-                  <label for="time" style="color: black;">Hora</label>
+                  <label for="time" style="color: black">Hora</label>
                   <base-input
                     alternative
                     type="time"
@@ -38,24 +36,31 @@
                   ></base-input>
                 </div>
                 <div class="col-sm">
-                  <label for="duracion" style="color: black;"
-                    >Duración (minutos)</label
-                  >
-                  <base-input
-                    alternative
-                    type="number"
+                  <label for="duracion" style="color: black">Duración:</label>
+                  <select
+                    id="duration"
                     v-model="selectedDuration"
-                    min="15"
-                    step="15"
-                    max="180"
-                    @keydown.prevent
-                    @click="toggleReadOnly"
-                  ></base-input>
+                    class="form-control"
+                    @change="handleDurationChange"
+                  >
+                    <option value="15">0:15</option>
+                    <option value="30">0:30</option>
+                    <option value="45">0:45</option>
+                    <option value="60">1:00</option>
+                    <option value="75">1:15</option>
+                    <option value="90">1:30</option>
+                    <option value="105">1:45</option>
+                    <option value="120">2:00</option>
+                    <option value="135">2:15</option>
+                    <option value="150">2:30</option>
+                    <option value="165">2:45</option>
+                    <option value="180">3:00</option>
+                  </select>
                 </div>
               </div>
               <div class="row">
                 <div class="col-sm-6">
-                  <label for="campusType" style="color: black;">Campus</label>
+                  <label for="campusType" style="color: black">Campus</label>
                   <select
                     v-model="selectedCampus"
                     class="form-control"
@@ -66,12 +71,13 @@
                       v-for="campus in campuses"
                       :key="campus.id"
                       :value="campus.id"
-                      >{{ campus.campus_name }}</option
                     >
+                      {{ campus.campus_name }}
+                    </option>
                   </select>
                 </div>
                 <div class="col-sm-6">
-                  <label for="buildingType" style="color: black;"
+                  <label for="buildingType" style="color: black"
                     >Facultad</label
                   >
                   <select
@@ -79,15 +85,14 @@
                     class="form-control"
                     id="buildingType"
                   >
-                    <option :value="null"
-                      >Cualquiera</option
-                    >
+                    <option :value="null">Cualquiera</option>
                     <option
                       v-for="building in filteredBuildings"
                       :key="building.id"
                       :value="building.id"
-                      >{{ building.name_complete }}</option
                     >
+                      {{ building.name_complete }}
+                    </option>
                   </select>
                 </div>
                 <div
@@ -123,9 +128,9 @@
           <card class="custom-card">
             <div class="row">
               <div class="card-body-1">
-                <h3 style="font-size: 24px;">
+                <h3 style="font-size: 24px">
                   {{ space.building.campusName }}
-                  <i class="ni ni-bold-right" ></i>
+                  <i class="ni ni-bold-right"></i>
                   {{ space.building.name_complete }}
                   <i class="ni ni-bold-right"></i>
                   {{ space.name }}
@@ -133,17 +138,34 @@
                 <div class="d-flex align-items-center">
                   <i
                     class="ni ni-square-pin"
-                    style="font-size: 24px; color:#be0f2e; margin-right: 15px; margin-top: 30px;"
+                    style="
+                      font-size: 24px;
+                      color: #be0f2e;
+                      margin-right: 15px;
+                      margin-top: 30px;
+                    "
                   ></i>
-                  <h6 style="margin-top: 30px;">
+                  <h6 style="margin-top: 30px">
                     {{ space.building.address }}
                   </h6>
                 </div>
-                <router-link :to="{ path: `/space/${space.id}`, query: { date: selectedDate, time: selectedTime, duration: selectedDuration } }">
-                <b-button variant="primary" class="mt-0 float-right" style="margin-right: 15px;"
-                  >Reservar asiento</b-button
+                <router-link
+                  :to="{
+                    path: `/space/${space.id}`,
+                    query: {
+                      date: selectedDate,
+                      time: selectedTime,
+                      duration: selectedDuration,
+                    },
+                  }"
                 >
-              </router-link>
+                  <b-button
+                    variant="primary"
+                    class="mt-0 float-right"
+                    style="margin-right: 15px"
+                    >Reservar asiento</b-button
+                  >
+                </router-link>
               </div>
             </div>
           </card>
@@ -151,7 +173,8 @@
       </div>
       <div v-if="search && spaces.length == 0" class="mt-4">
         <div class="alert alert-danger" role="alert">
-          Lo sentimos, no se han encontrado sitios disponibles para esa configuración.
+          Lo sentimos, no se han encontrado sitios disponibles para esa
+          configuración.
         </div>
       </div>
     </div>
@@ -190,8 +213,8 @@ export default {
     const currentDate = now.toISOString().substring(0, 10);
     now.setMinutes(0, 0, 0);
     now.setHours(now.getHours() + 1);
-    let hours = now.getHours().toString().padStart(2, '0');
-    let minutes = now.getMinutes().toString().padStart(2, '0');
+    let hours = now.getHours().toString().padStart(2, "0");
+    let minutes = now.getMinutes().toString().padStart(2, "0");
     const nextHour = `${hours}:${minutes}`;
 
     return {
@@ -210,18 +233,23 @@ export default {
   },
   watch: {
     async selectedCampus(newCampus) {
-    if (newCampus !== null) {
-      await this.loadBuildings();
+      if (newCampus !== null) {
+        await this.loadBuildings();
 
-      if (this.selectedBuilding !== null) {
-        this.selectedBuilding = null;
+        if (this.selectedBuilding !== null) {
+          this.selectedBuilding = null;
+        }
+      } else {
+        await this.loadBuildings();
       }
-    } else {
-      await this.loadBuildings();
-    }
-  },
+    },
   },
   computed: {
+    formattedDuration() {
+      const hours = Math.floor(this.selectedDuration / 60);
+      const minutes = this.selectedDuration % 60;
+      return `${hours}:${minutes.toString().padStart(2, "0")}`;
+    },
     filteredBuildings() {
       if (this.selectedCampus) {
         return this.buildings.filter(
@@ -236,6 +264,7 @@ export default {
     this.loadBuildings();
   },
   methods: {
+    handleDurationChange(event) {},
     toggleReadOnly() {},
     isPastDate(dateString) {
       const selectedDate = new Date(dateString);
@@ -277,7 +306,9 @@ export default {
           const response = await axios.get(`${backendUrl}buildings/`);
           this.buildings = [...response.data];
         } else {
-          const response = await axios.get(`${backendUrl}buildings/?campus_id=${this.selectedCampus}`);
+          const response = await axios.get(
+            `${backendUrl}buildings/?campus_id=${this.selectedCampus}`
+          );
           this.buildings = response.data;
           this.buildings.unshift({ id: null, name_complete: "Cualquiera" });
         }
@@ -310,7 +341,7 @@ export default {
         return;
       }
       this.search = true;
-      
+
       axios
         .get(`${backendUrl}find-available-spaces/`, {
           params: {
@@ -325,14 +356,13 @@ export default {
           const spacesDetails = await Promise.all(
             availableSpaceIds.map(async (spaceId) => {
               const spaceResponse = await axios.get(
-                `${backendUrl}spaces/${spaceId}/`
+                `${backendUrl}space/${spaceId}/`
               );
               return spaceResponse.data;
             })
           );
           this.spaces = spacesDetails;
           this.getSpaceDetails();
-
         })
         .catch((error) => {
           console.error("Error al buscar disponibilidad:", error);

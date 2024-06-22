@@ -22,6 +22,8 @@ import Argon from "./plugins/argon-kit";
 import "./registerServiceWorker";
 // import store from './store';
 import Modal from "./components/Modal.vue";
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 
 import VueAxios from "vue-axios";
 import axios from "axios";
@@ -35,7 +37,7 @@ Vue.prototype.$axios = axios;
 Vue.use(VueAxios, axios)
 
 //Configuración global
-export const backendUrl = "https://yellow-rock-dcaa6c2a584d45c4b618eaeff62b0a1b.azurewebsites.net/";
+export const backendUrl = "https://seateasy.azurewebsites.net/";
 
 Vue.component("modal", Modal);
 
