@@ -248,23 +248,23 @@ export default {
 </script>
 <style>
 .square-frame {
-  width: 100%; 
-  max-width: 300px; 
-  height: auto; 
+  width: 100%;
+  max-width: 300px;
+  height: 150px;
   overflow: hidden;
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
 }
 
 .square-frame img {
-  max-width: 100%; 
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ajusta la imagen para cubrir el contenedor */
+  border-radius: 5px; /* Asegura que las esquinas sean redondeadas */
 }
 
-.rounded-square {
-  border-radius: 5px;
-}
 .icon-container {
   height: 50px;
 }

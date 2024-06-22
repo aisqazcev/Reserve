@@ -16,7 +16,7 @@
               <div class="text-center mb-3">
                 <small>Crea tu usuario</small>
               </div>
-              <form @submit.prevent="register" role="form">
+              <form @submit.prevent="register" role="form" @keydown.enter.prevent="handleEnterKey">
                 <base-input
                   alternative
                   class="mb-3"
@@ -65,6 +65,7 @@
 
                 <div class="text-center">
                   <base-button
+                    ref="submitButton"
                     :disabled="!isValidForm || loading"
                     type="primary"
                     class="my-4"
@@ -144,6 +145,12 @@ export default {
     },
   },
   methods: {
+    handleEnterKey() {
+      const button = this.$refs.submitButton;
+      if (button && !button.disabled) { 
+        button.$el.click();
+      }
+    },
     async send_confirmation() {
       try {
         const response = await axios.post(`${backendUrl}send_email/`, { email: this.form.email });
