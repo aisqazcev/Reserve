@@ -3,13 +3,13 @@
     {
       "id": 1,
       "name": "USEdificioA",
-      "name_complete": "Facultad de Derecho",
-      "address": "Dirección Edificio A",
-      "web": "http://www.edificioa.com",
+      "name_complete": "Facultad de Matemáticas",
+      "address": " Av. de la Reina Mercedes, C. Tarfia, 41012 Sevilla",
+      "web": "https://matematicas.us.es/",
       "email": "info@edificioa.com",
-      "phone": "123-456-7890",
-      "services": "Servicios del Edificio A",
-      "image": "./media/derechoUs.jpg",
+      "phone": "954 55 79 10",
+      "services": "Servicios de la Facultad de Matemáticas",
+      "image": "./media/matematicas.jpg",
       "campus": "Reina Mercedes"
     },
     {
@@ -77,7 +77,7 @@
   ],
   "spaces": [
     {
-      "name": "Aula Magna",
+      "name": "Biblioteca",
       "building": 1,
       "capacity": 20,
       "general_info": "El acceso a la biblioteca está sujeto al cumplimiento de las normas de comportamiento y ética establecidas.",
